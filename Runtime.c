@@ -1,5 +1,6 @@
 #include "Runtime.h"
 #include "Parser.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -7,7 +8,7 @@
 #include <ctype.h>
 
 Runtime *runtime_new() {
-  GC *gc = malloc(sizeof(GC));
+  GC *gc = malloc(sizeof(GC)); // TODO: call gc_new() instead
   gc_init(gc);
   Runtime *r = malloc(sizeof(Runtime));
   r->gc = gc;
@@ -16,7 +17,7 @@ Runtime *runtime_new() {
 }
 
 void runtime_delete(Runtime *r) {
-  free(r->gc);
+  free(r->gc); // TODO: call gc_delete() instead
   free(r);
 }
 
@@ -55,6 +56,8 @@ Obj *runtime_env_lookup(Obj *env, Obj *key) {
 }
 
 Obj *eval(Runtime *r, Obj *form) {
+  // TODO: return nil instead of NULL
+  
   if(form->type == CONS) {
     if(form->car == NULL) {
       return form; // nil
@@ -74,8 +77,18 @@ Obj *eval(Runtime *r, Obj *form) {
 	return form->cdr->car;
       }
       else {
-	printf("Time to call function..?!\n");
-	return form;
+	Obj *f = eval(r, form->car);
+	if(f == NULL) {
+	  return NULL;
+	}
+	else if(f->type == FUNC) {
+	  printf("Calling function '%s'\n", obj_to_str(f));
+	  return f;
+	}
+	else {
+	  printf("Can't call non-function '%s'.\n", obj_to_str(f));
+	  return NULL;
+	}
       }
     }
     else {

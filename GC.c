@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define LOG 0
+#define LOG 1
 
 void gc_stack_push(GC *gc, Obj *o) {
   if(gc->stackSize >= STACK_MAX) error("Stack overflow.");

@@ -7,6 +7,7 @@
 typedef enum {
   CONS,
   SYMBOL,
+  FUNC,
 } Type;
 
 typedef struct sObj {
