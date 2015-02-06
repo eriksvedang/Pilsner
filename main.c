@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define LOG 0
 #define STACK_MAX 512
 
 typedef enum {
@@ -64,9 +65,11 @@ Obj *gc_get_obj(GC *gc, Type type) {
   o->reachable = false;
   o->type = type;
 
+  #if LOG
   printf("Created obj %p of type %s.\n", o, type_to_str(o->type));
+  #endif
   
-  // Put new object first:
+  // Put new object first in the linked list containing all objects:
   o->next = gc->firstObj; 
   gc->firstObj = o;
   
@@ -88,6 +91,7 @@ Obj *gc_get_symbol(GC *gc, const char *name) {
 
 void mark(Obj *o) {
   if(o->reachable) {
+    // This one has already been visited by mark(), avoid infinite loops
     return;
   }
   
@@ -109,6 +113,7 @@ void gc_init(GC *gc) {
 }
 
 void gc_collect(GC *gc) {
+  // Objects on the stack are all 'roots', i.e. they get automatically marked
   for (int i = 0; i < gc->stackSize; i++) {
     mark(gc->stack[i]);
   }
@@ -116,7 +121,7 @@ void gc_collect(GC *gc) {
   int aliveCount = 0;
   int freeCount = 0;
   
-  // SWEEP
+  // Sweep!
   Obj** obj = &gc->firstObj;
   while (*obj) {
     if ((*obj)->reachable) {
@@ -132,11 +137,31 @@ void gc_collect(GC *gc) {
     }
   }
 
+  #if LOG
   printf("Sweep done, %d objects freed and %d object still alive.\n", freeCount, aliveCount);
+  #endif
 }
+
+void test1();
 
 int main(int argc, char *argv[])
 {
+  GC gc;
+  gc_init(&gc);
+
+  
+  gc_collect(&gc);
+
+  test1();
+  
+  return 0;
+}
+
+
+
+/* TESTS */
+
+void test1() {
   GC gc;
   gc_init(&gc);
 
@@ -154,7 +179,7 @@ int main(int argc, char *argv[])
   cell1->car = cell3;
   cell2->cdr = sym2;
   cell3->car = cell4;
-  cell3->car = sym3;
+  cell3->cdr = sym3;
   cell4->car = sym1;
   cell4->cdr = sym2;
 
@@ -163,6 +188,4 @@ int main(int argc, char *argv[])
   gc_collect(&gc);
   gc_collect(&gc);
   gc_collect(&gc);
-  
-  return 0;
 }
