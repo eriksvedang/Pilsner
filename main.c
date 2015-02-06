@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define STACK_MAX 512
+
 typedef enum {
   CONS,
   SYMBOL,
@@ -18,7 +20,8 @@ typedef struct Obj {
 } Obj;
 
 typedef struct {
-  Obj *root; // the indestructible object where gc marking starts
+  Obj *stack[STACK_MAX];
+  int stackSize;
   Obj *firstObj; // sweeping starts here
 } GC;
 
@@ -44,6 +47,16 @@ const char *obj_to_str(Obj *o) {
     error("Uknown type.");
     return NULL;
   }
+}
+
+void gc_stack_push(GC *gc, Obj *o) {
+  if(gc->stackSize >= STACK_MAX) error("Stack overflow.");
+  gc->stack[gc->stackSize++] = o;
+}
+
+Obj *gc_stack_pop(GC *gc) {
+  if(gc->stackSize < 0) error("Stack underflow.");
+  return gc->stack[--gc->stackSize];
 }
 
 Obj *gc_get_obj(GC *gc, Type type) {
@@ -91,45 +104,35 @@ void mark(Obj *o) {
 }
 
 void gc_init(GC *gc) {
-  gc->root = NULL;
+  gc->stackSize = 0;
   gc->firstObj = NULL;
 }
 
 void gc_collect(GC *gc) {
-  if(gc->root) {
-    mark(gc->root);
-  } else {
-    printf("Warning, no root set.\n");
+  for (int i = 0; i < gc->stackSize; i++) {
+    mark(gc->stack[i]);
   }
 
+  int aliveCount = 0;
   int freeCount = 0;
   
   // SWEEP
-  Obj *o = gc->firstObj;
-  Obj *prev = NULL;
-  while(o) {
-    printf("Sweep visiting %p, %s. ", o, obj_to_str(o));
-    if(o->reachable) {
-      printf("\n");
-      o->reachable = false; // unmark it so that it can be deleted in the future
-      prev = o;
-      o = o->next;
-    }
-    else {
-      printf("Will free object.\n"); // %p, %s.\n", o, obj_to_str(o));
-      if(o == gc->firstObj) {
-	gc->firstObj = o->next;
-      }
-      if(prev != NULL) {
-	prev->next = o->next;
-      }
-      o = o->next;
-      free(o);
+  Obj** obj = &gc->firstObj;
+  while (*obj) {
+    if ((*obj)->reachable) {
+      Obj* reached = *obj;
+      reached->reachable = false; // reached this time, unmark it for future sweeps
+      obj = &(reached->next); // pointer to the next object
+      aliveCount++;
+    } else {
+      Obj* unreached = *obj;
+      *obj = unreached->next; // change the pointer in place, *THE MAGIC*
+      free(unreached);
       freeCount++;
     }
   }
 
-  printf("Sweep done, %d objects freed.\n", freeCount);
+  printf("Sweep done, %d objects freed and %d object still alive.\n", freeCount, aliveCount);
 }
 
 int main(int argc, char *argv[])
@@ -147,16 +150,15 @@ int main(int argc, char *argv[])
   Obj *cell3 = gc_get_cons(&gc, NULL, NULL);
   Obj *cell4 = gc_get_cons(&gc, NULL, NULL);
 
-  cell3->car = cell4;
-  cell4->cdr = cell3;
   
   cell1->car = cell3;
+  cell2->cdr = sym2;
+  cell3->car = cell4;
+  cell3->car = sym3;
   cell4->car = sym1;
   cell4->cdr = sym2;
-  cell3->cdr = sym3;
-  cell2->cdr = sym2;
 
-  gc.root = cell1;
+  gc_stack_push(&gc, cell1);
 
   gc_collect(&gc);
   gc_collect(&gc);
