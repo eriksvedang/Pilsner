@@ -4,23 +4,24 @@
 #include "GC.h"
 #include "Obj.h"
 #include "Parser.h"
+#include "Runtime.h"
 
 void repl() {
   const int BUFFER_SIZE = 256;
-  
-  GC gc;
-  gc_init(&gc);
   char str[BUFFER_SIZE];
+  
+  Runtime *r = runtime_new();
 
   while(1) {
     printf("> ");
     fgets(str, BUFFER_SIZE, stdin);
-    Obj *forms = parse(&gc, str);
-    printf("\n");
-    print_obj(forms);
-    printf("\n");
-    gc_collect(&gc);
+    if(strcmp(str, "quit\n") == 0) break;
+    runtime_eval(r, str);
   }
+  
+  runtime_inspect_env(r);
+  gc_collect(r->gc);
+  runtime_delete(r);
 }
 
 #endif
