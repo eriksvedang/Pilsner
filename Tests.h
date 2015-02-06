@@ -2,6 +2,10 @@
 #define TESTS_H
 
 #include <assert.h>
+#include "GC.h"
+#include "Obj.h"
+#include "Tests.h"
+#include "Parser.h"
 
 void test_gc() {
   GC gc;
@@ -72,6 +76,12 @@ void test_printing() {
   print_obj(cell1); printf("\n");
 
   gc_collect(&gc);
+}
+
+void test_parsing() {
+  GC gc;
+  Obj *forms = parse(&gc, "() a b c (d e) ((f g h () ()) (() i j) (k (() l ()) m))");
+  print_obj(forms);
 }
 
 #endif
