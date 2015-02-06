@@ -42,4 +42,36 @@ void test_gc() {
   assert(r3.freed == 4);
 }
 
+void test_printing() {
+  GC gc;
+  gc_init(&gc);
+
+  Obj *cell1 = gc_make_cons(&gc, NULL, NULL);
+  Obj *sym1 = gc_make_symbol(&gc, "sym1");
+  Obj *cell2 = gc_make_cons(&gc, sym1, cell1);
+  Obj *sym2 = gc_make_symbol(&gc, "sym2");
+  Obj *cell3 = gc_make_cons(&gc, sym2, cell2);
+  Obj *sym3 = gc_make_symbol(&gc, "sym3");
+  Obj *cell4 = gc_make_cons(&gc, sym3, cell3);
+  
+  print_obj(cell1); printf("\n");
+  print_obj(cell2); printf("\n");
+  print_obj(cell3); printf("\n");
+  print_obj(cell4); printf("\n");
+
+  // Add a list in the middle of the list
+  Obj *cell5 = gc_make_cons(&gc, NULL, NULL);
+  Obj *cell6 = gc_make_cons(&gc, gc_make_symbol(&gc, "sym10"), cell5);
+  Obj *cell7 = gc_make_cons(&gc, gc_make_symbol(&gc, "sym20"), cell6);
+  cell3->car = cell7;
+  print_obj(cell4); printf("\n");
+
+  // A weird cell with head but no tail
+  cell1->car = sym1;
+  cell1->cdr = NULL;
+  print_obj(cell1); printf("\n");
+
+  gc_collect(&gc);
+}
+
 #endif

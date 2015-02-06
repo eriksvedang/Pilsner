@@ -1,5 +1,6 @@
 #include "Obj.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 const char *type_to_str(Type type) {
   if(type == CONS) return "CONS";
@@ -22,3 +23,29 @@ const char *obj_to_str(Obj *o) {
     return NULL;
   }
 }
+
+void print_obj(Obj *o) {
+  if(o == NULL) {
+    printf("NULL");
+  }
+  else if(o->type == CONS) {
+    printf("(");
+    Obj *curr = o;
+    while(curr) {
+      if(curr->cdr) {
+	print_obj(curr->car);
+	if(curr->cdr->cdr) {
+	  // the next cell is not nil
+	  printf(", ");
+	}
+      }
+      curr = curr->cdr;
+      //printf("Curr set to %p", curr);
+    }
+    printf(")");
+  }
+  else if(o->type == SYMBOL) {
+    printf("%s", o->name);
+  }
+}
+
