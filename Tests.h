@@ -3,7 +3,7 @@
 
 #include <assert.h>
 
-void test1() {
+void test_gc() {
   GC gc;
   gc_init(&gc);
 
