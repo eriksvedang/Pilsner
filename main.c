@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define LOG 0
+#define LOG 1
 #define STACK_MAX 512
 
 typedef enum {
@@ -114,14 +114,20 @@ void gc_init(GC *gc) {
   gc->firstObj = NULL;
 }
 
-void gc_collect(GC *gc) {
+typedef struct {
+  int alive;
+  int freed;
+} GCResults;
+
+GCResults gc_collect(GC *gc) {
   // Objects on the stack are all 'roots', i.e. they get automatically marked
   for (int i = 0; i < gc->stackSize; i++) {
     mark(gc->stack[i]);
   }
 
-  int aliveCount = 0;
-  int freeCount = 0;
+  GCResults results;
+  results.alive = 0;
+  results.freed = 0;
   
   // Sweep!
   Obj** obj = &gc->firstObj;
@@ -130,29 +136,29 @@ void gc_collect(GC *gc) {
       Obj* reached = *obj;
       reached->reachable = false; // reached this time, unmark it for future sweeps
       obj = &(reached->next); // pointer to the next object
-      aliveCount++;
+      results.alive++;
     } else {
       Obj* unreached = *obj;
       *obj = unreached->next; // change the pointer in place, *THE MAGIC*
       free(unreached);
-      freeCount++;
+      results.freed++;
     }
   }
 
   #if LOG
-  printf("Sweep done, %d objects freed and %d object still alive.\n", freeCount, aliveCount);
+  printf("Sweep done, %d objects freed and %d object still alive.\n", results.alive, results.freed);
   #endif
+
+  return results;
 }
 
 void test1();
 
 int main(int argc, char *argv[])
 {
-  GC gc;
-  gc_init(&gc);
-
-  
-  gc_collect(&gc);
+  /* GC gc; */
+  /* gc_init(&gc); */
+  /* gc_collect(&gc); */
 
   test1();
   
@@ -177,7 +183,6 @@ void test1() {
   Obj *cell3 = gc_make_cons(&gc, NULL, NULL);
   Obj *cell4 = gc_make_cons(&gc, NULL, NULL);
 
-  
   cell1->car = cell3;
   cell2->cdr = sym2;
   cell3->car = cell4;
@@ -189,5 +194,8 @@ void test1() {
 
   gc_collect(&gc);
   gc_collect(&gc);
+
+  gc_stack_pop(&gc);
+  
   gc_collect(&gc);
 }
