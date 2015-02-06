@@ -29,5 +29,7 @@ const char *type_to_str(Type type);
 const char *obj_to_str(Obj *o);
 
 void print_obj(Obj *o);
+
+bool eq(Obj *a, Obj *b);
   
 #endif

@@ -1,6 +1,7 @@
 #include "Obj.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 const char *type_to_str(Type type) {
   if(type == CONS) return "CONS";
@@ -55,4 +56,18 @@ void print_obj(Obj *o) {
     printf("%s", o->name);
   }
 }
+
+bool eq(Obj *a, Obj *b) {
+  if(a->type != b->type) return false;
+  if(a->type == CONS) {
+    return eq(a->car, b->car) && eq(a->cdr, b->cdr);
+  }
+  else if(a->type == SYMBOL) {
+    return a->name == b->name || (strcmp(a->name, b->name) == 0);
+  }
+  else {
+    return false;
+  }
+}
+
 

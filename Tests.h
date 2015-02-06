@@ -6,6 +6,7 @@
 #include "Obj.h"
 #include "Tests.h"
 #include "Parser.h"
+#include "Runtime.h"
 
 void test_gc() {
   GC gc;
@@ -84,6 +85,13 @@ void test_parsing() {
   
   Obj *forms = parse(&gc, "() a b c (d e) ((f g h () ()) (() i j) (k (() l ()) m))");
   print_obj(forms);
+}
+
+void test_runtime() {
+  Runtime *r = runtime_new();
+  runtime_eval(r, "(def a b) (def c d) a c x");
+  runtime_inspect_env(r);
+  runtime_delete(r);
 }
 
 #endif
