@@ -36,7 +36,7 @@ void print_obj(Obj *o) {
 	print_obj(curr->car);
 	if(curr->cdr->cdr) {
 	  // the next cell is not nil
-	  printf(", ");
+	  printf(" ");
 	}
       }
       curr = curr->cdr;
