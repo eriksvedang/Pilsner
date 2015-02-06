@@ -21,6 +21,7 @@ void test1() {
   cell1->cdr = cell2;
   cell2->car = sym2;
 
+  // lone loop
   cell3->car = cell4;
   cell4->cdr = cell3;
 

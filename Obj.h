@@ -9,16 +9,20 @@ typedef enum {
   SYMBOL,
 } Type;
 
-typedef struct Obj {
+typedef struct sObj {
   Type type;
-  struct Obj *next;
+  struct sObj *next;
   bool reachable;
-  
-  // CONS
-  struct Obj *car, *cdr;
-  // SYMBOL
-  const char *name;
-  
+
+  union {
+    // CONS
+    struct {
+      struct sObj *car;
+      struct sObj *cdr;
+    };
+    // SYMBOL
+    const char *name;
+  };
 } Obj;
 
 const char *type_to_str(Type type);
