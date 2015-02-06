@@ -63,11 +63,15 @@ Obj *eval(Runtime *r, Obj *form) {
       if(strcmp(form->car->name, "def") == 0) {
 	Obj *key = form->cdr->car;
 	Obj *value = form->cdr->cdr->car;
-	printf("Defining a var named '%s' with the value ", key->name);
-	print_obj(value);
-	printf("\n");
+	/* printf("%s = ", key->name); */
+	/* print_obj(value); */
+	/* printf("\n"); */
 	r->global_env = runtime_env_assoc(r->gc, r->global_env, key, value);
+	runtime_inspect_env(r);
 	return NULL;
+      }
+      else if(strcmp(form->car->name, "quote") == 0) {
+	return form->cdr->car;
       }
       else {
 	printf("Time to call function..?!\n");
