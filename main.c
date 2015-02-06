@@ -14,10 +14,12 @@ typedef struct Obj {
   Type type;
   struct Obj *next;
   bool reachable;
-  // CONS
-  struct Obj *car, *cdr;
-  // SYMBOL
-  const char *name;
+  union {
+    // CONS
+    struct Obj *car, *cdr;
+    // SYMBOL
+    const char *name;
+  };
 } Obj;
 
 typedef struct {
