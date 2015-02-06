@@ -28,7 +28,7 @@ void print_obj(Obj *o) {
   if(o == NULL) {
     printf("NULL");
   }
-  else if(o->type == CONS) {
+  else if(o->type == CONS && o->cdr != NULL && o->cdr->type == CONS) {
     printf("(");
     Obj *curr = o;
     while(curr) {
@@ -42,6 +42,13 @@ void print_obj(Obj *o) {
       curr = curr->cdr;
       //printf("Curr set to %p", curr);
     }
+    printf(")");
+  }
+  else if(o->type == CONS) {
+    printf("(");
+    print_obj(o->car);
+    printf(" . ");
+    print_obj(o->cdr);
     printf(")");
   }
   else if(o->type == SYMBOL) {
