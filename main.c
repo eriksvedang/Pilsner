@@ -62,7 +62,7 @@ Obj *gc_stack_pop(GC *gc) {
   return gc->stack[--gc->stackSize];
 }
 
-Obj *gc_get_obj(GC *gc, Type type) {
+Obj *gc_make_obj(GC *gc, Type type) {
   Obj *o = malloc(sizeof(Obj));
   o->reachable = false;
   o->type = type;
@@ -78,15 +78,15 @@ Obj *gc_get_obj(GC *gc, Type type) {
   return o;
 }
 
-Obj *gc_get_cons(GC *gc, Obj *car, Obj *cdr) {
-  Obj *o = gc_get_obj(gc, CONS);
+Obj *gc_make_cons(GC *gc, Obj *car, Obj *cdr) {
+  Obj *o = gc_make_obj(gc, CONS);
   o->car = car;
   o->cdr = cdr;
   return o;
 }
 
-Obj *gc_get_symbol(GC *gc, const char *name) {
-  Obj *o = gc_get_obj(gc, SYMBOL);
+Obj *gc_make_symbol(GC *gc, const char *name) {
+  Obj *o = gc_make_obj(gc, SYMBOL);
   o->name = name;
   return o;
 }
@@ -167,15 +167,15 @@ void test1() {
   GC gc;
   gc_init(&gc);
 
-  Obj *sym1 = gc_get_symbol(&gc, "sym1");
-  Obj *sym2 = gc_get_symbol(&gc, "sym2");
-  Obj *sym3 = gc_get_symbol(&gc, "sym3");
-  Obj *sym4 = gc_get_symbol(&gc, "sym4");
+  Obj *sym1 = gc_make_symbol(&gc, "sym1");
+  Obj *sym2 = gc_make_symbol(&gc, "sym2");
+  Obj *sym3 = gc_make_symbol(&gc, "sym3");
+  Obj *sym4 = gc_make_symbol(&gc, "sym4");
   
-  Obj *cell1 = gc_get_cons(&gc, NULL, NULL);
-  Obj *cell2 = gc_get_cons(&gc, NULL, NULL);
-  Obj *cell3 = gc_get_cons(&gc, NULL, NULL);
-  Obj *cell4 = gc_get_cons(&gc, NULL, NULL);
+  Obj *cell1 = gc_make_cons(&gc, NULL, NULL);
+  Obj *cell2 = gc_make_cons(&gc, NULL, NULL);
+  Obj *cell3 = gc_make_cons(&gc, NULL, NULL);
+  Obj *cell4 = gc_make_cons(&gc, NULL, NULL);
 
   
   cell1->car = cell3;
