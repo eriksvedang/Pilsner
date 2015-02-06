@@ -25,7 +25,6 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
   //printf("Parsing form\n");
   if (source[p->pos] == '(') {
     //printf("Found (\n");
-    p->pos++;
     return parse_list(gc, p, source);
   }
   else if(isalpha(source[p->pos])) {
@@ -40,7 +39,6 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
     //printf("%s\n", name);
     return gc_make_symbol(gc, name);
   }
-  p->pos++;
 
   //printf("No form found, will return NULL\n");
   return NULL;
@@ -50,20 +48,22 @@ Obj *parse_list(GC *gc, Parser *p, const char *source) {
   Obj *list = gc_make_cons(gc, NULL, NULL);
   Obj *lastCons = list;
 
-  //printf("Starting work on list %p\n", list);
+  printf("Starting work on list %p\n", list);
 
+  p->pos++; // move beyond the first paren
+  
   while(1) {
     Obj *item = parse_form(gc, p, source);
     if(item) {
-      //printf("Adding item to list %p: %s\n", list, obj_to_str(item));
+      printf("Adding item to list %p: %s\n", list, obj_to_str(item));
       lastCons->car = item;
       Obj *next = gc_make_cons(gc, NULL, NULL);
       lastCons->cdr = next;
       lastCons = next;
-    }    
+    }
 
     if(source[p->pos] == ')') {
-      //printf("Found )\n");
+      printf("Found )\n");
       p->pos++;
       break;
     }
@@ -71,7 +71,7 @@ Obj *parse_list(GC *gc, Parser *p, const char *source) {
     p->pos++;
   }
 
-  //printf("Ending work on list %p\n", list);  
+  printf("Ending work on list %p\n", list);  
   return list;
 }
 
@@ -84,7 +84,7 @@ Obj *parse(GC *gc, const char *source) {
   p->last_form = p->first_form;
   
   while(p->pos < source_len) {
-    //printf("Looking for new form at pos %d \n", p->pos);
+    printf("Looking for new form at pos %d \n", p->pos);
     Obj *form = parse_form(gc, p, source);
     if(form) {
       //printf("Got top-level form: ");
@@ -94,6 +94,8 @@ Obj *parse(GC *gc, const char *source) {
       p->last_form->cdr = gc_make_cons(gc, NULL, NULL);
       p->last_form = p->last_form->cdr;
     }
+
+    p->pos++;
   }
 
   //printf("%d parens.\n", parens);
@@ -107,7 +109,7 @@ int main()
   //test_printing();
   
   GC gc;
-  Obj *forms = parse(&gc, "a b c (d e) ((f g h) (i j) (k l m))");
+  Obj *forms = parse(&gc, "() a b c (d e) ((f g h () ()) (() i j) (k (() l ()) m))");
   print_obj(forms);
 }
 
