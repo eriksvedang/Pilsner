@@ -80,6 +80,8 @@ void test_printing() {
 
 void test_parsing() {
   GC gc;
+  gc_init(&gc);
+  
   Obj *forms = parse(&gc, "() a b c (d e) ((f g h () ()) (() i j) (k (() l ()) m))");
   print_obj(forms);
 }

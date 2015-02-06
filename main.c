@@ -15,10 +15,26 @@ void tests() {
   //test_parsing();
 }
 
+void repl() {
+  GC gc;
+  gc_init(&gc);
+  char str[256];
+  //char *str = "hej\n";
+
+  while(1) {
+    printf("> ");
+    gets(str);
+    Obj *forms = parse(&gc, str);
+    printf("\n");
+    print_obj(forms);
+    printf("\n");
+    gc_collect(&gc);
+  }
+}
+
 int main()
 {
   tests();
-
-  
+  repl();
 }
 
