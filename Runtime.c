@@ -7,22 +7,6 @@
 #include <string.h>
 #include <ctype.h>
 
-Runtime *runtime_new() {
-  GC *gc = malloc(sizeof(GC)); // TODO: call gc_new() instead
-  gc_init(gc);
-  Runtime *r = malloc(sizeof(Runtime));
-  r->gc = gc;
-  r->global_env = gc_make_cons(gc, NULL, NULL);
-  r->nil = gc_make_cons(gc, NULL, NULL);
-  r->top_frame = -1;
-  return r;
-}
-
-void runtime_delete(Runtime *r) {
-  free(r->gc); // TODO: call gc_delete() instead
-  free(r);
-}
-
 Obj *runtime_env_find_pair(Obj *env, Obj *key) {
   Obj *current = env;
   while(current->car != NULL) {
@@ -34,16 +18,16 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key) {
   return NULL;
 }
 
-Obj *runtime_env_assoc(GC *gc, Obj *env, Obj *key, Obj *value) {
-  Obj *pair = runtime_env_find_pair(env, key);
+void runtime_env_assoc(Runtime *r, Obj *key, Obj *value) {
+  //printf("Will register %s with val %s\n", key->name, obj_to_str(value));
+  Obj *pair = runtime_env_find_pair(r->global_env, key);
   if(pair) {
     pair->cdr = value;
-    return env;
   }
   else {
-    Obj *new_pair = gc_make_cons(gc, key, value);
-    Obj *new_env = gc_make_cons(gc, new_pair, env);
-    return new_env;
+    Obj *new_pair = gc_make_cons(r->gc, key, value);
+    Obj *new_env = gc_make_cons(r->gc, new_pair, r->global_env);
+    r->global_env = new_env;
   }
 }
 
@@ -55,6 +39,43 @@ Obj *runtime_env_lookup(Obj *env, Obj *key) {
   else {
     return NULL;
   }
+}
+
+void register_func(Runtime *r, const char *name, void *f) {
+  Obj *function_name = gc_make_symbol(r->gc, name);
+  Obj *function_ptr = gc_make_func(r->gc, f);
+  runtime_env_assoc(r, function_name, function_ptr);
+}
+
+Obj *bleh(Obj *args) {
+  printf("BLEH!\n");
+  return NULL;
+}
+
+void register_builtin_funcs(Runtime *r) {
+  register_func(r, "bleh", &bleh);
+}
+
+Runtime *runtime_new() {
+  GC *gc = malloc(sizeof(GC)); // TODO: call gc_new() instead
+  gc_init(gc);
+  Runtime *r = malloc(sizeof(Runtime));
+  r->gc = gc;
+  r->global_env = gc_make_cons(gc, NULL, NULL);
+  r->nil = gc_make_cons(gc, NULL, NULL);
+  r->top_frame = -1;
+
+  //gc_stack_push(r->gc, r->global_env); // root the global env so it won't get GC:d
+  register_builtin_funcs(r);
+
+  //runtime_inspect_env(r);
+  
+  return r;
+}
+
+void runtime_delete(Runtime *r) {
+  free(r->gc); // TODO: call gc_delete() instead
+  free(r);
 }
 
 Frame *frame_push(Runtime *r, Obj *start_pos) {
@@ -92,7 +113,7 @@ void eval(Runtime *r) {
 	  Obj *key = form->cdr->car;
 	  Obj *value = gc_stack_pop(r->gc);
 	  if(value) {
-	    r->global_env = runtime_env_assoc(r->gc, r->global_env, key, value);
+	    runtime_env_assoc(r, key, value);
 	    Obj *ok = gc_make_symbol(r->gc, "OK");
 	    gc_stack_push(r->gc, ok);
 	    //runtime_inspect_env(r);
@@ -107,20 +128,27 @@ void eval(Runtime *r) {
 	frame_pop(r);
       }
       else {
-	error("Not supported.");
-	/*
-	Obj *f = form->car; // eval(r, form->car);
-	if(f == NULL) {
-	  gc_stack_push(r->gc, r->nil);
+	if(frame->mode == MODE_NORMAL) {
+	  frame_push(r, form->car); // push a frame that will evaluate the first position of the list
+	  frame->mode = MODE_FUNC_CALL;
 	}
-	else if(f->type == FUNC) {
-	  printf("Calling function '%s'\n", obj_to_str(f));
-	  gc_stack_push(r->gc, f);
+	else if(frame->mode == MODE_FUNC_CALL) {
+	  Obj *f = gc_stack_pop(r->gc);
+	  if(f == NULL) {
+	    printf("f == NULL\n");
+	    exit(0);
+	  }
+	  else if(f->type == FUNC) {
+	    printf("Calling func %p\n", f->func); // obj_to_str(f));
+	    Obj *result = ((Obj*(*)(Obj*))f->func)(r->nil);
+	    gc_stack_push(r->gc, result);
+	  }
+	  else {
+	    printf("Can't call non-function '%s'.\n", obj_to_str(f));
+	    gc_stack_push(r->gc, r->nil);
+	  }
+	  frame_pop(r);
 	}
-	else {
-	  printf("Can't call non-function '%s'.\n", obj_to_str(f));
-	  gc_stack_push(r->gc, r->nil);
-	  }*/
       }
     }
     else {

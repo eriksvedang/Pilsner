@@ -90,7 +90,7 @@ void test_parsing() {
 void test_runtime() {
   Runtime *r = runtime_new();
   //runtime_eval(r, "(def a b) (def c d) a c x");
-  runtime_eval(r, "(def a (quote b)) a");
+  runtime_eval(r, "(def a (quote b)) a bleh (bleh)");
   //runtime_inspect_env(r);
   runtime_delete(r);
 }

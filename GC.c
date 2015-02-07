@@ -44,6 +44,12 @@ Obj *gc_make_symbol(GC *gc, const char *name) {
   return o;
 }
 
+Obj *gc_make_func(GC *gc, void *f) {
+  Obj *o = gc_make_obj(gc, FUNC);
+  o->func = f;
+  return o;
+}
+
 void mark(Obj *o) {
   #if LOG
   printf("Marking %p, %s as reachable.\n", o, obj_to_str(o));

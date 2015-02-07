@@ -19,6 +19,9 @@ const char *obj_to_str(Obj *o) {
   else if(o->type == SYMBOL) {
     return o->name;
   }
+  else if(o->type == FUNC) {
+    return "FUNC";
+  }
   else {
     error("Uknown type.");
     return NULL;
@@ -57,6 +60,9 @@ void print_obj(Obj *o) {
   }
   else if(o->type == SYMBOL) {
     printf("%s", o->name);
+  }
+  else if(o->type == FUNC) {
+    printf("FUNC");
   }
 }
 

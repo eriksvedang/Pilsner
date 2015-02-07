@@ -23,8 +23,13 @@ typedef struct sObj {
     };
     // SYMBOL
     const char *name;
+    // FUNC
+    void *func;
   };
 } Obj;
+
+//typedef Obj (*Func)(Obj *args);
+
 
 const char *type_to_str(Type type);
 const char *obj_to_str(Obj *o);
