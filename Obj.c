@@ -29,6 +29,9 @@ void print_obj(Obj *o) {
   if(o == NULL) {
     printf("NULL");
   }
+  else if(o->type == CONS && o->car == NULL && o->cdr == NULL) {
+    printf("nil");
+  }
   else if(o->type == CONS && o->cdr != NULL && o->cdr->type == CONS) {
     printf("(");
     Obj *curr = o;

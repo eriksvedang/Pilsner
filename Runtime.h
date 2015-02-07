@@ -4,9 +4,23 @@
 #include "GC.h"
 #include "Obj.h"
 
+typedef enum {
+  MODE_NORMAL,
+  MODE_DEF,
+} Mode;
+
+typedef struct {
+  int depth;
+  Obj *p; // the program counter
+  Mode mode;
+} Frame;
+
 typedef struct {
   GC *gc;
   Obj *global_env;
+  Obj *nil;
+  Frame frames[128];
+  int top_frame;
 } Runtime;
 
 Runtime *runtime_new();

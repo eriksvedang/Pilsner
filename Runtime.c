@@ -13,6 +13,8 @@ Runtime *runtime_new() {
   Runtime *r = malloc(sizeof(Runtime));
   r->gc = gc;
   r->global_env = gc_make_cons(gc, NULL, NULL);
+  r->nil = gc_make_cons(gc, NULL, NULL);
+  r->top_frame = -1;
   return r;
 }
 
@@ -55,40 +57,70 @@ Obj *runtime_env_lookup(Obj *env, Obj *key) {
   }
 }
 
-Obj *eval(Runtime *r, Obj *form) {
-  // TODO: return nil instead of NULL
+Frame *frame_push(Runtime *r, Obj *start_pos) {
+  Frame *frame = &r->frames[++r->top_frame];
+  frame->p = start_pos;
+  frame->depth = r->top_frame;
+  frame->mode = MODE_NORMAL;
+  return frame;
+}
+
+void frame_pop(Runtime *r) {
+  r->top_frame--;
+}
+
+void eval(Runtime *r) {
+  Frame *frame = &r->frames[r->top_frame];
+  Obj *form = frame->p;
+
+  //printf("Eval in frame %d (mode %d), p is: ", frame->depth, frame->mode);
+  //print_obj(form); printf("\n");
   
   if(form->type == CONS) {
     if(form->car == NULL) {
-      return form; // nil
+      gc_stack_push(r->gc, r->nil);
     }
     else if(form->car->type == SYMBOL) {
       if(strcmp(form->car->name, "def") == 0) {
-	Obj *key = form->cdr->car;
-	Obj *value = form->cdr->cdr->car;
-	/* printf("%s = ", key->name); */
-	/* print_obj(value); */
-	/* printf("\n"); */
-	r->global_env = runtime_env_assoc(r->gc, r->global_env, key, value);
-	runtime_inspect_env(r);
-	return NULL;
+	if(frame->mode == MODE_NORMAL) {
+	  // Enter a new frame where the value of the def will be determined
+	  Obj *value_expr = form->cdr->cdr->car;
+	  frame->mode = MODE_DEF; // this frame is now in special mode, waiting only to set the def
+	  frame_push(r, value_expr);
+	}
+	else if(frame->mode == MODE_DEF) {
+	  Obj *key = form->cdr->car;
+	  Obj *value = gc_stack_pop(r->gc);
+	  if(value) {
+	    r->global_env = runtime_env_assoc(r->gc, r->global_env, key, value);
+	    Obj *ok = gc_make_symbol(r->gc, "OK");
+	    gc_stack_push(r->gc, ok);
+	    //runtime_inspect_env(r);
+	  } else {
+	    gc_stack_push(r->gc, r->nil);
+	  }
+	  frame_pop(r);
+	}	
       }
       else if(strcmp(form->car->name, "quote") == 0) {
-	return form->cdr->car;
+	gc_stack_push(r->gc, form->cdr->car);
+	frame_pop(r);
       }
       else {
-	Obj *f = eval(r, form->car);
+	error("Not supported.");
+	/*
+	Obj *f = form->car; // eval(r, form->car);
 	if(f == NULL) {
-	  return NULL;
+	  gc_stack_push(r->gc, r->nil);
 	}
 	else if(f->type == FUNC) {
 	  printf("Calling function '%s'\n", obj_to_str(f));
-	  return f;
+	  gc_stack_push(r->gc, f);
 	}
 	else {
 	  printf("Can't call non-function '%s'.\n", obj_to_str(f));
-	  return NULL;
-	}
+	  gc_stack_push(r->gc, r->nil);
+	  }*/
       }
     }
     else {
@@ -96,18 +128,19 @@ Obj *eval(Runtime *r, Obj *form) {
       print_obj(form);
       printf("\n");
       exit(1);
-      return NULL;
     }
   }
   else if(form->type == SYMBOL) {
     //printf("Looking up symbol %s\n", obj_to_str(form));
     Obj *result = runtime_env_lookup(r->global_env, form);
     if(result) {
-      return result;
+      gc_stack_push(r->gc, result);
+      frame_pop(r);
     }
     else {
       printf("Can't find a symbol named '%s'.\n", form->name);
-      return NULL;
+      gc_stack_push(r->gc, r->nil);
+      frame_pop(r);
     }
   }
   else {
@@ -115,15 +148,27 @@ Obj *eval(Runtime *r, Obj *form) {
     print_obj(form);
     printf("\n");
     exit(1);
-    return NULL;
+    gc_stack_push(r->gc, r->nil);
   }
 }
 
+void eval_top_form(Runtime *r, Obj *form) {
+  frame_push(r, form);
+  for(int i = 0; i < 20; i++) {
+    eval(r);
+    if(r->top_frame < 0) {
+      return;
+    }
+  }
+  printf("MAX EXECUTIONS REACHED, WILL INTERRUPT\n");
+}
+
 void runtime_eval(Runtime *r, const char *source) {
-  Obj *forms = parse(r->gc, source);
-  Obj *current_form = forms;
+  Obj *top_level_forms = parse(r->gc, source);
+  Obj *current_form = top_level_forms;
   while(current_form->car) {
-    Obj *result = eval(r, current_form->car);
+    eval_top_form(r, current_form->car);
+    Obj *result = gc_stack_pop(r->gc);
     if(result) {
       print_obj(result);
       printf("\n");

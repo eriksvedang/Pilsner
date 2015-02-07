@@ -20,7 +20,7 @@ void tests() {
 
 int main()
 {
-  //tests();
-  repl();
+  tests();
+  //repl();
 }
 
