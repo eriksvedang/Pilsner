@@ -145,10 +145,14 @@ void eval(Runtime *r) {
 	  }
 	  else if(f->type == FUNC) {
 	    printf("Calling func %p with %d args.\n", f->func, frame->arg_count);
-	    Obj *args = r->nil;
+	    Obj *args = gc_make_cons(r->gc, NULL, NULL);
+	    Obj *last_arg = args;
 	    for(int i = 0; i < frame->arg_count; i++) {
-	      Obj *arg = gc_stack_pop(r->gc);
-	      args = gc_make_cons(r->gc, arg, args);
+	      Obj *value = gc_stack_pop(r->gc);
+	      last_arg->car = value;
+	      Obj *new_arg = gc_make_cons(r->gc, NULL, NULL);
+	      last_arg->cdr = new_arg;
+	      last_arg = new_arg;
 	    }
 	    Obj *result = ((Obj*(*)(Runtime*,Obj*))f->func)(r, args);
 	    gc_stack_push(r->gc, result);
