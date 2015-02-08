@@ -44,7 +44,7 @@ Obj *runtime_env_lookup(Obj *env, Obj *key) {
 
 void register_func(Runtime *r, const char *name, void *f) {
   Obj *function_name = gc_make_symbol(r->gc, name);
-  Obj *function_ptr = gc_make_func(r->gc, f);
+  Obj *function_ptr = gc_make_func(r->gc, name, f);
   runtime_env_assoc(r, function_name, function_ptr);
 }
 
@@ -186,7 +186,7 @@ void eval(Runtime *r) {
       frame_pop(r);
     }
   }
-  else if(form->type == NUMBER) {
+  else if(form->type == NUMBER || form->type == STRING) {
     gc_stack_push(r->gc, form);
     frame_pop(r);
   }

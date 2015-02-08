@@ -20,13 +20,22 @@ const char *obj_to_str(Obj *o) {
     return o->name;
   }
   else if(o->type == FUNC) {
-    return "FUNC";
+    char *s = malloc(sizeof(char) * strlen(o->name) + sizeof(char) * 3); // LEAK! SHOULD BE A PROPER OBJ STRING
+    s[0] = '<';
+    s[strlen(o->name) - 2] = '>';
+    s[strlen(o->name) - 1] = '\0';
+    char *s1 = &s[1];
+    strcpy(s1, o->name);
+    return s;
   }
   else if(o->type == NUMBER) {
     const int MAX_STR_LEN = 50;
     char *output = malloc(sizeof(char) * MAX_STR_LEN); // MEMORY LEAK!!!!!
     snprintf(output, MAX_STR_LEN, "%f", o->number);
     return output;
+  }
+  else if(o->type == STRING) {
+    return o->name;
   }
   else {
     error("Uknown type.");
@@ -68,10 +77,13 @@ void print_obj(Obj *o) {
     printf("%s", o->name);
   }
   else if(o->type == FUNC) {
-    printf("FUNC");
+    printf("<%s>", o->name);
   }
   else if(o->type == NUMBER) {
     printf("%f", o->number);
+  }
+  else if(o->type == STRING) {
+    printf("\"%s\"", o->name);
   }
 }
 
@@ -80,7 +92,7 @@ bool eq(Obj *a, Obj *b) {
   if(a->type == CONS) {
     return eq(a->car, b->car) && eq(a->cdr, b->cdr);
   }
-  else if(a->type == SYMBOL) {
+  else if(a->type == SYMBOL || a->type == STRING) {
     return a->name == b->name || (strcmp(a->name, b->name) == 0);
   }
   else if(a->type == NUMBER) {

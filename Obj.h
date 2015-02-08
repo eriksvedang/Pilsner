@@ -9,13 +9,15 @@ typedef enum {
   SYMBOL,
   FUNC,
   NUMBER,
+  STRING
 } Type;
 
 typedef struct sObj {
   Type type;
   struct sObj *next;
   bool reachable;
-
+  const char *name;
+  
   union {
     // CONS
     struct {
@@ -23,7 +25,7 @@ typedef struct sObj {
       struct sObj *cdr;
     };
     // SYMBOL
-    const char *name;
+    /* uses the name field*/
     // FUNC
     void *func;
     // NUMBER

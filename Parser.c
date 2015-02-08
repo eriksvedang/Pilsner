@@ -50,6 +50,17 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
     //printf("%s\n", name);
     return gc_make_symbol(gc, name);
   }
+  else if(source[p->pos] == '"') {
+    char *text = malloc(sizeof(char) * 256); // TODO: free this when the Obj is freed
+    int i = 0;
+    p->pos++;
+    while(source[p->pos] != '"') {
+      text[i++] = source[p->pos];
+      p->pos++;
+    }
+    text[i] = '\0';
+    return gc_make_string(gc, text);
+  }
   else if(isdigit(source[p->pos])) {
     char s[256];
     int i = 0;

@@ -44,8 +44,9 @@ Obj *gc_make_symbol(GC *gc, const char *name) {
   return o;
 }
 
-Obj *gc_make_func(GC *gc, void *f) {
+Obj *gc_make_func(GC *gc, const char *name, void *f) {
   Obj *o = gc_make_obj(gc, FUNC);
+  o->name = name;
   o->func = f;
   return o;
 }
@@ -53,6 +54,12 @@ Obj *gc_make_func(GC *gc, void *f) {
 Obj *gc_make_number(GC *gc, double x) {
   Obj *o = gc_make_obj(gc, NUMBER);
   o->number = x;
+  return o;
+}
+
+Obj *gc_make_string(GC *gc, const char *text) {
+  Obj *o = gc_make_obj(gc, STRING);
+  o->name = text;
   return o;
 }
 

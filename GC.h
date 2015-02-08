@@ -26,7 +26,8 @@ Obj *gc_stack_pop(GC *gc);
 // Make objects
 Obj *gc_make_cons(GC *gc, Obj *car, Obj *cdr);
 Obj *gc_make_symbol(GC *gc, const char *name);
-Obj *gc_make_func(GC *gc, void *f);
+Obj *gc_make_func(GC *gc, const char *name, void *f);
 Obj *gc_make_number(GC *gc, double x);
+Obj *gc_make_string(GC *gc, const char *text);
 
 #endif
