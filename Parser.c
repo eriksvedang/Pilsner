@@ -17,6 +17,10 @@ Parser *parser_make() {
 
 Obj *parse_list(GC *gc, Parser *p, const char *source);
 
+bool iswhitespace(char c) {
+  return c == ' ' || c == '\t' || c == '\n';
+}
+
 Obj *parse_form(GC *gc, Parser *p, const char *source) {
   //printf("Parsing form\n");
   if (source[p->pos] == '(') {
@@ -27,7 +31,9 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
     //printf("Found symbol: ");
     char *name = malloc(sizeof(char) * 256); // TODO: free this when the Obj is freed
     char i = 0;
-    while(isalpha(source[p->pos])) {
+    while(!iswhitespace(source[p->pos]) &&
+	  source[p->pos] != ')' &&
+	  source[p->pos] != '(') {
       name[i++] = source[p->pos];
       p->pos++;
     }
