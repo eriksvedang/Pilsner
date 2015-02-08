@@ -26,4 +26,17 @@ Obj *print_two_syms(Runtime *r, Obj *args) {
   return r->nil;
 }
 
+Obj *plus(Runtime *r, Obj *args) {
+  double sum = 0.0;
+  Obj *arg = args;
+  while(arg && arg->car) {
+    if(arg->car->type != NUMBER) {
+      printf("Must add numbers.\n");
+    }
+    sum += arg->car->number;
+    arg = arg->cdr;
+  }
+  return gc_make_number(r->gc, sum);
+}
+
 #endif

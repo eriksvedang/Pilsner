@@ -50,6 +50,12 @@ Obj *gc_make_func(GC *gc, void *f) {
   return o;
 }
 
+Obj *gc_make_number(GC *gc, double x) {
+  Obj *o = gc_make_obj(gc, NUMBER);
+  o->number = x;
+  return o;
+}
+
 void mark(Obj *o) {
   #if LOG
   printf("Marking %p, %s as reachable.\n", o, obj_to_str(o));

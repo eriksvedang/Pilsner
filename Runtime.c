@@ -52,6 +52,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "bleh", &bleh);
   register_func(r, "print-sym", &print_sym);
   register_func(r, "print-two-syms", &print_two_syms);
+  register_func(r, "+", &plus);
 }
 
 Runtime *runtime_new() {
@@ -184,6 +185,10 @@ void eval(Runtime *r) {
       gc_stack_push(r->gc, r->nil);
       frame_pop(r);
     }
+  }
+  else if(form->type == NUMBER) {
+    gc_stack_push(r->gc, form);
+    frame_pop(r);
   }
   else {
     printf("Can't eval this form:\n");

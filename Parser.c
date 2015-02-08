@@ -21,16 +21,25 @@ bool iswhitespace(char c) {
   return c == ' ' || c == '\t' || c == '\n';
 }
 
+static const char *specials = "+-*/=%&,.;:_!@#?§";
+
+bool isokinsymbol(char c) {
+  for (int i = 0; i < strlen(specials); i++) {
+    if(specials[i] == c) return true;
+  }
+  return false;
+}
+
 Obj *parse_form(GC *gc, Parser *p, const char *source) {
   //printf("Parsing form\n");
   if (source[p->pos] == '(') {
     //printf("Found (\n");
     return parse_list(gc, p, source);
   }
-  else if(isalpha(source[p->pos])) {
+  else if(isalpha(source[p->pos]) || isokinsymbol(source[p->pos])) {
     //printf("Found symbol: ");
     char *name = malloc(sizeof(char) * 256); // TODO: free this when the Obj is freed
-    char i = 0;
+    int i = 0;
     while(!iswhitespace(source[p->pos]) &&
 	  source[p->pos] != ')' &&
 	  source[p->pos] != '(') {
@@ -40,6 +49,17 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
     name[i] = '\0';
     //printf("%s\n", name);
     return gc_make_symbol(gc, name);
+  }
+  else if(isdigit(source[p->pos])) {
+    char s[256];
+    int i = 0;
+    while(isdigit(source[p->pos])) {
+      s[i++] = source[p->pos];
+      p->pos++;
+    }
+    s[i] = '\0';
+    double num = atof(s);
+    return gc_make_number(gc, num);
   }
 
   //printf("No form found, will return NULL\n");

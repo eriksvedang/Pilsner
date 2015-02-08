@@ -8,6 +8,7 @@ typedef enum {
   CONS,
   SYMBOL,
   FUNC,
+  NUMBER,
 } Type;
 
 typedef struct sObj {
@@ -25,6 +26,8 @@ typedef struct sObj {
     const char *name;
     // FUNC
     void *func;
+    // NUMBER
+    double number;
   };
 } Obj;
 

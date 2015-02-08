@@ -22,6 +22,12 @@ const char *obj_to_str(Obj *o) {
   else if(o->type == FUNC) {
     return "FUNC";
   }
+  else if(o->type == NUMBER) {
+    const int MAX_STR_LEN = 50;
+    char *output = malloc(sizeof(char) * MAX_STR_LEN); // MEMORY LEAK!!!!!
+    snprintf(output, MAX_STR_LEN, "%f", o->number);
+    return output;
+  }
   else {
     error("Uknown type.");
     return NULL;
@@ -64,6 +70,9 @@ void print_obj(Obj *o) {
   else if(o->type == FUNC) {
     printf("FUNC");
   }
+  else if(o->type == NUMBER) {
+    printf("%f", o->number);
+  }
 }
 
 bool eq(Obj *a, Obj *b) {
@@ -73,6 +82,9 @@ bool eq(Obj *a, Obj *b) {
   }
   else if(a->type == SYMBOL) {
     return a->name == b->name || (strcmp(a->name, b->name) == 0);
+  }
+  else if(a->type == NUMBER) {
+    return a->number == b->number; // TODO: this is not a good way to compare doubles, I guess?
   }
   else {
     return false;
