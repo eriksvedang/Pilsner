@@ -89,8 +89,8 @@ void test_parsing() {
 
 void test_runtime() {
   Runtime *r = runtime_new();
-  //runtime_eval(r, "(def a b) (def c d) a c x");
-  runtime_eval(r, "(def a (quote b)) a bleh (bleh)");
+  //runtime_eval(r, "(def a (quote b)) a bleh (bleh)");
+  runtime_eval(r, "(bleh) (print-sym (quote apa)) (print-two-syms (quote erik) (quote svedang))");
   //runtime_inspect_env(r);
   runtime_delete(r);
 }

@@ -1,5 +1,6 @@
 #include "Runtime.h"
 #include "Parser.h"
+#include "BuiltinFuncs.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,13 +48,10 @@ void register_func(Runtime *r, const char *name, void *f) {
   runtime_env_assoc(r, function_name, function_ptr);
 }
 
-Obj *bleh(Obj *args) {
-  printf("BLEH!\n");
-  return NULL;
-}
-
 void register_builtin_funcs(Runtime *r) {
   register_func(r, "bleh", &bleh);
+  register_func(r, "print-sym", &print_sym);
+  register_func(r, "print-two-syms", &print_two_syms);
 }
 
 Runtime *runtime_new() {
@@ -64,12 +62,9 @@ Runtime *runtime_new() {
   r->global_env = gc_make_cons(gc, NULL, NULL);
   r->nil = gc_make_cons(gc, NULL, NULL);
   r->top_frame = -1;
-
-  //gc_stack_push(r->gc, r->global_env); // root the global env so it won't get GC:d
+  gc_stack_push(r->gc, r->global_env); // root the global env so it won't get GC:d
   register_builtin_funcs(r);
-
   //runtime_inspect_env(r);
-  
   return r;
 }
 
@@ -83,6 +78,7 @@ Frame *frame_push(Runtime *r, Obj *start_pos) {
   frame->p = start_pos;
   frame->depth = r->top_frame;
   frame->mode = MODE_NORMAL;
+  frame->arg_count = 0;
   return frame;
 }
 
@@ -130,6 +126,15 @@ void eval(Runtime *r) {
       else {
 	if(frame->mode == MODE_NORMAL) {
 	  frame_push(r, form->car); // push a frame that will evaluate the first position of the list
+	  Obj *arg = form->cdr;
+	  while(arg && arg->car != NULL) {
+	    //printf("Arg to eval: %s\n", obj_to_str(arg->car));
+	    if(arg->car) {
+	      frame_push(r, arg->car); // push arg to evaluate
+	      arg = arg->cdr;
+	      frame->arg_count++;
+	    }
+	  }
 	  frame->mode = MODE_FUNC_CALL;
 	}
 	else if(frame->mode == MODE_FUNC_CALL) {
@@ -139,8 +144,13 @@ void eval(Runtime *r) {
 	    exit(0);
 	  }
 	  else if(f->type == FUNC) {
-	    printf("Calling func %p\n", f->func); // obj_to_str(f));
-	    Obj *result = ((Obj*(*)(Obj*))f->func)(r->nil);
+	    printf("Calling func %p with %d args.\n", f->func, frame->arg_count);
+	    Obj *args = r->nil;
+	    for(int i = 0; i < frame->arg_count; i++) {
+	      Obj *arg = gc_stack_pop(r->gc);
+	      args = gc_make_cons(r->gc, arg, args);
+	    }
+	    Obj *result = ((Obj*(*)(Runtime*,Obj*))f->func)(r, args);
 	    gc_stack_push(r->gc, result);
 	  }
 	  else {

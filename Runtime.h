@@ -14,6 +14,7 @@ typedef struct {
   int depth;
   Obj *p; // the program counter
   Mode mode;
+  int arg_count; // this is used when entering MODE_FUNC_CALL
 } Frame;
 
 typedef struct {
