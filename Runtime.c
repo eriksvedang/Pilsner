@@ -240,10 +240,12 @@ void eval_top_form(Runtime *r, Obj *form, int top_frame_index) {
     if(r->mode == RUNTIME_MODE_RUN) {
       eval(r);
       if(r->top_frame < 0) {
+	//printf("Returning from top form\n");
 	return;
       }
       else if(r->top_frame < top_frame_index) {
 	// Back at the frame position where the break happened
+	//printf("Unbreaking\n");
 	r->mode = RUNTIME_MODE_BREAK;
 	return;
       }
@@ -254,6 +256,7 @@ void eval_top_form(Runtime *r, Obj *form, int top_frame_index) {
 	printf("%d\t%s\n", i, r->frames[i].name);
       }
       printf("------------------------------ \n");
+      printf("Debug REPL, press return to continue execution.\n");
       printf("> ");
       const int BUFFER_SIZE = 256;
       char str[BUFFER_SIZE];

@@ -93,7 +93,7 @@ void test_runtime() {
   //runtime_eval(r, "(bleh) (print-sym (quote apa)) (print-two-syms (quote erik) (quote svedang))");
   //runtime_eval(r, "(+ 2 3)");
   //runtime_eval(r, "\"erik\"");
-  runtime_eval(r, "(break) 3 4 5");
+  runtime_eval(r, "(break) 3 4 5 (+ 2 3) (break) 10 20");
   //runtime_inspect_env(r);
   runtime_delete(r);
 }
