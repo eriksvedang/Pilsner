@@ -55,6 +55,16 @@ Obj *runtime_break(Runtime *r, Obj *args) {
   return r->nil;
 }
 
+Obj *runtime_quit(Runtime *r, Obj *args) {
+  r->mode = RUNTIME_MODE_FINISHED;
+  return r->nil;
+}
+
+Obj *runtime_env(Runtime *r, Obj *args) {
+  runtime_inspect_env(r);
+  return r->nil;
+}
+
 /* void frame_pop(Runtime *r); */
 
 /* Obj *runtime_run(Runtime *r, Obj *args) { */
@@ -65,12 +75,11 @@ Obj *runtime_break(Runtime *r, Obj *args) {
 /* } */
 
 void register_builtin_funcs(Runtime *r) {
-  register_func(r, "bleh", &bleh);
-  register_func(r, "print-sym", &print_sym);
-  register_func(r, "print-two-syms", &print_two_syms);
   register_func(r, "+", &plus);
+  register_func(r, "*", &multiply);
   register_func(r, "break", &runtime_break);
-  //register_func(r, "run", &runtime_run);
+  register_func(r, "quit", &runtime_quit);
+  register_func(r, "env", &runtime_env);
 }
 
 Runtime *runtime_new() {
@@ -175,7 +184,7 @@ void eval(Runtime *r) {
 	    exit(0);
 	  }
 	  else if(f->type == FUNC) {
-	    printf("Calling func %s with %d args.\n", f->name, frame->arg_count);
+	    //printf("Calling func %s with %d args.\n", f->name, frame->arg_count);
 	    Obj *args = gc_make_cons(r->gc, NULL, NULL);
 	    Obj *last_arg = args;
 	    for(int i = 0; i < frame->arg_count; i++) {
@@ -295,7 +304,7 @@ void runtime_eval_internal(Runtime *r, const char *source, int top_frame_index) 
 }
 
 void runtime_inspect_env(Runtime *r) {
-  printf("Global env:\n");
+  //printf("Global env: ");
   print_obj(r->global_env);
   printf("\n");
 }

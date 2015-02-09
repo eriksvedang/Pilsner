@@ -12,14 +12,14 @@ void repl() {
   
   Runtime *r = runtime_new();
 
-  while(1) {
+  while(r->mode != RUNTIME_MODE_FINISHED) {
     printf("> ");
     fgets(str, BUFFER_SIZE, stdin);
     if(strcmp(str, "quit\n") == 0) break;
     runtime_eval(r, str);
   }
   
-  runtime_inspect_env(r);
+  //runtime_inspect_env(r);
   gc_collect(r->gc);
   runtime_delete(r);
 }
