@@ -8,11 +8,18 @@
 void gc_stack_push(GC *gc, Obj *o) {
   if(gc->stackSize >= STACK_MAX) error("Stack overflow.");
   gc->stack[gc->stackSize++] = o;
+  /* printf("Pushed: "); */
+  /* print_obj(o); */
+  /* printf("\n"); */
 }
 
 Obj *gc_stack_pop(GC *gc) {
   if(gc->stackSize < 0) error("Stack underflow.");
-  return gc->stack[--gc->stackSize];
+  Obj *o = gc->stack[--gc->stackSize];
+  /* printf("Popped: "); */
+  /* print_obj(o); */
+  /* printf("\n"); */
+  return o;
 }
 
 Obj *gc_make_obj(GC *gc, Type type) {

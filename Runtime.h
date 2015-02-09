@@ -8,14 +8,21 @@ typedef enum {
   MODE_NORMAL,
   MODE_DEF,
   MODE_FUNC_CALL,
-} Mode;
+} FrameMode;
 
 typedef struct {
   int depth;
   Obj *p; // the program counter
-  Mode mode;
+  FrameMode mode;
   int arg_count; // this is used when entering MODE_FUNC_CALL
+  char name[128];
 } Frame;
+
+typedef enum {
+  RUNTIME_MODE_RUN,
+  RUNTIME_MODE_BREAK,
+  RUNTIME_MODE_FINISHED,
+} RuntimeMode;
 
 typedef struct {
   GC *gc;
@@ -23,6 +30,7 @@ typedef struct {
   Obj *nil;
   Frame frames[128];
   int top_frame;
+  RuntimeMode mode;
 } Runtime;
 
 Runtime *runtime_new();

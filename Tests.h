@@ -92,7 +92,8 @@ void test_runtime() {
   //runtime_eval(r, "(def a (quote b)) a bleh (bleh)");
   //runtime_eval(r, "(bleh) (print-sym (quote apa)) (print-two-syms (quote erik) (quote svedang))");
   //runtime_eval(r, "(+ 2 3)");
-  runtime_eval(r, "\"erik\"");
+  //runtime_eval(r, "\"erik\"");
+  runtime_eval(r, "(break) 3 4 5");
   //runtime_inspect_env(r);
   runtime_delete(r);
 }

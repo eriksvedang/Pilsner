@@ -8,6 +8,8 @@
 #include <string.h>
 #include <ctype.h>
 
+void runtime_eval_internal(Runtime *r, const char *source, int top_frame_index);
+
 Obj *runtime_env_find_pair(Obj *env, Obj *key) {
   Obj *current = env;
   while(current->car != NULL) {
@@ -48,11 +50,27 @@ void register_func(Runtime *r, const char *name, void *f) {
   runtime_env_assoc(r, function_name, function_ptr);
 }
 
+Obj *runtime_break(Runtime *r, Obj *args) {
+  r->mode = RUNTIME_MODE_BREAK;
+  return r->nil;
+}
+
+/* void frame_pop(Runtime *r); */
+
+/* Obj *runtime_run(Runtime *r, Obj *args) { */
+/*   printf("RUN!\n"); */
+/*   r->mode = RUNTIME_MODE_RUN; */
+/*   frame_pop(r); */
+/*   return r->nil; */
+/* } */
+
 void register_builtin_funcs(Runtime *r) {
   register_func(r, "bleh", &bleh);
   register_func(r, "print-sym", &print_sym);
   register_func(r, "print-two-syms", &print_two_syms);
   register_func(r, "+", &plus);
+  register_func(r, "break", &runtime_break);
+  //register_func(r, "run", &runtime_run);
 }
 
 Runtime *runtime_new() {
@@ -63,6 +81,7 @@ Runtime *runtime_new() {
   r->global_env = gc_make_cons(gc, NULL, NULL);
   r->nil = gc_make_cons(gc, NULL, NULL);
   r->top_frame = -1;
+  r->mode = RUNTIME_MODE_RUN;
   gc_stack_push(r->gc, r->global_env); // root the global env so it won't get GC:d
   register_builtin_funcs(r);
   //runtime_inspect_env(r);
@@ -74,12 +93,13 @@ void runtime_delete(Runtime *r) {
   free(r);
 }
 
-Frame *frame_push(Runtime *r, Obj *start_pos) {
+Frame *frame_push(Runtime *r, Obj *start_pos, const char *name) {
   Frame *frame = &r->frames[++r->top_frame];
   frame->p = start_pos;
   frame->depth = r->top_frame;
   frame->mode = MODE_NORMAL;
   frame->arg_count = 0;
+  strcpy(frame->name, name);
   return frame;
 }
 
@@ -87,12 +107,22 @@ void frame_pop(Runtime *r) {
   r->top_frame--;
 }
 
+const char *frame_mode_to_str(FrameMode frame_mode) {
+  if(frame_mode == MODE_NORMAL) return "MODE_NORMAL";
+  else if(frame_mode == MODE_DEF) return "MODE_DEF";
+  else if(frame_mode == MODE_FUNC_CALL) return "MODE_FUNC_CALL";
+  else return "UNKNOWN_FRAME_MODE";
+}
+
 void eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
   Obj *form = frame->p;
 
-  //printf("Eval in frame %d (mode %d), p is: ", frame->depth, frame->mode);
-  //print_obj(form); printf("\n");
+  /*
+  printf("Eval in frame %d (%s), p is: ", frame->depth, frame_mode_to_str(frame->mode));
+  print_obj(form);
+  printf("\n");
+  */
   
   if(form->type == CONS) {
     if(form->car == NULL) {
@@ -104,7 +134,7 @@ void eval(Runtime *r) {
 	  // Enter a new frame where the value of the def will be determined
 	  Obj *value_expr = form->cdr->cdr->car;
 	  frame->mode = MODE_DEF; // this frame is now in special mode, waiting only to set the def
-	  frame_push(r, value_expr);
+	  frame_push(r, value_expr, "def");
 	}
 	else if(frame->mode == MODE_DEF) {
 	  Obj *key = form->cdr->car;
@@ -126,12 +156,12 @@ void eval(Runtime *r) {
       }
       else {
 	if(frame->mode == MODE_NORMAL) {
-	  frame_push(r, form->car); // push a frame that will evaluate the first position of the list
+	  frame_push(r, form->car, "eval_first_pos"); // push a frame that will evaluate the first position of the list
 	  Obj *arg = form->cdr;
 	  while(arg && arg->car != NULL) {
 	    //printf("Arg to eval: %s\n", obj_to_str(arg->car));
 	    if(arg->car) {
-	      frame_push(r, arg->car); // push arg to evaluate
+	      frame_push(r, arg->car, "eval_arg"); // push arg to evaluate
 	      arg = arg->cdr;
 	      frame->arg_count++;
 	    }
@@ -145,7 +175,7 @@ void eval(Runtime *r) {
 	    exit(0);
 	  }
 	  else if(f->type == FUNC) {
-	    printf("Calling func %p with %d args.\n", f->func, frame->arg_count);
+	    printf("Calling func %s with %d args.\n", f->name, frame->arg_count);
 	    Obj *args = gc_make_cons(r->gc, NULL, NULL);
 	    Obj *last_arg = args;
 	    for(int i = 0; i < frame->arg_count; i++) {
@@ -167,7 +197,7 @@ void eval(Runtime *r) {
       }
     }
     else {
-      printf("Malformed list:\n");
+      printf("Can't eval malformed list: ");
       print_obj(form);
       printf("\n");
       exit(1);
@@ -199,11 +229,44 @@ void eval(Runtime *r) {
   }
 }
 
-void eval_top_form(Runtime *r, Obj *form) {
-  frame_push(r, form);
-  for(int i = 0; i < 20; i++) {
-    eval(r);
-    if(r->top_frame < 0) {
+static const int MAX_EXECUTIONS = 100;
+
+void eval_top_form(Runtime *r, Obj *form, int top_frame_index) {
+  /* printf("Will eval top form: "); */
+  /* print_obj(form); */
+  /* printf("\n"); */
+  frame_push(r, form, "eval_top_form");
+  for(int i = 0; i < MAX_EXECUTIONS; i++) {
+    if(r->mode == RUNTIME_MODE_RUN) {
+      eval(r);
+      if(r->top_frame < 0) {
+	return;
+      }
+      else if(r->top_frame < top_frame_index) {
+	// Back at the frame position where the break happened
+	r->mode = RUNTIME_MODE_BREAK;
+	return;
+      }
+    }
+    else if(r->mode == RUNTIME_MODE_BREAK) {
+      printf("----------- FRAMES ----------- \n");
+      for(int i = r->top_frame; i >= 0; i--) {
+	printf("%d\t%s\n", i, r->frames[i].name);
+      }
+      printf("------------------------------ \n");
+      printf("> ");
+      const int BUFFER_SIZE = 256;
+      char str[BUFFER_SIZE];
+      fgets(str, BUFFER_SIZE, stdin);
+      r->mode = RUNTIME_MODE_RUN;
+      if(strlen(str) > 0) {
+	runtime_eval_internal(r, str, r->top_frame + 1);
+      } else {
+	// just run
+      }
+    }
+    else if(r->mode == RUNTIME_MODE_FINISHED) {
+      printf("\n");
       return;
     }
   }
@@ -211,10 +274,14 @@ void eval_top_form(Runtime *r, Obj *form) {
 }
 
 void runtime_eval(Runtime *r, const char *source) {
+  runtime_eval_internal(r, source, 0);
+}
+
+void runtime_eval_internal(Runtime *r, const char *source, int top_frame_index) {
   Obj *top_level_forms = parse(r->gc, source);
   Obj *current_form = top_level_forms;
   while(current_form->car) {
-    eval_top_form(r, current_form->car);
+    eval_top_form(r, current_form->car, top_frame_index);
     Obj *result = gc_stack_pop(r->gc);
     if(result) {
       print_obj(result);
