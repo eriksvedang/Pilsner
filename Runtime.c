@@ -121,6 +121,8 @@ const char *frame_mode_to_str(FrameMode frame_mode) {
   if(frame_mode == MODE_NORMAL) return "MODE_NORMAL";
   else if(frame_mode == MODE_DEF) return "MODE_DEF";
   else if(frame_mode == MODE_FUNC_CALL) return "MODE_FUNC_CALL";
+  else if(frame_mode == MODE_LAMBDA_RETURN) return "MODE_LAMBDA_RETURN";
+  else if(frame_mode == MODE_IMMEDIATE_RETURN) return "MODE_IMMEDIATE_RETURN";
   else return "UNKNOWN_FRAME_MODE";
 }
 
@@ -128,11 +130,16 @@ void eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
   Obj *form = frame->p;
 
-  /*
   printf("Eval in frame %d (%s), p is: ", frame->depth, frame_mode_to_str(frame->mode));
   print_obj(form);
   printf("\n");
-  */
+
+  if(frame->mode == MODE_LAMBDA_RETURN) {
+    frame_pop(r);
+  }
+  else if(frame->mode == MODE_IMMEDIATE_RETURN) {
+    frame_pop(r);
+  }
   
   if(form->type == CONS) {
     if(form->car == NULL) {
@@ -163,6 +170,17 @@ void eval(Runtime *r) {
       gc_stack_push(r->gc, form->cdr->car);
       frame_pop(r);
     }
+    else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
+      Obj *subform = form->cdr;
+      while(subform && subform->car) {
+	printf("Pushing subform ");
+	print_obj(subform->car);
+	printf("\n");
+	frame_push(r, subform->car, "subform");
+	subform = subform->cdr;
+      }
+      frame->mode = MODE_IMMEDIATE_RETURN; // TODO: number of items on the value stack is incorrect now!
+    }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "fn") == 0) {
       // TODO: store some kind of local environment
       Obj *lambda = gc_make_lambda(r->gc, form->cdr->car, form->cdr->cdr->car);
@@ -182,9 +200,6 @@ void eval(Runtime *r) {
 	  }
 	}
 	frame->mode = MODE_FUNC_CALL;
-      }
-      else if(frame->mode == MODE_LAMBDA_RETURN) {
-	frame_pop(r);
       }
       else if(frame->mode == MODE_FUNC_CALL) {
 	Obj *f = gc_stack_pop(r->gc);

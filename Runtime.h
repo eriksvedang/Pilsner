@@ -9,6 +9,7 @@ typedef enum {
   MODE_DEF,
   MODE_FUNC_CALL,
   MODE_LAMBDA_RETURN,
+  MODE_IMMEDIATE_RETURN,
 } FrameMode;
 
 typedef struct {
