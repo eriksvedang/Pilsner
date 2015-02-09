@@ -26,6 +26,7 @@ Obj *gc_make_obj(GC *gc, Type type) {
   Obj *o = malloc(sizeof(Obj));
   o->reachable = false;
   o->type = type;
+  o->name = NULL;
 
   #if LOG
   printf("Created obj %p of type %s.\n", o, type_to_str(o->type));
@@ -67,6 +68,13 @@ Obj *gc_make_number(GC *gc, double x) {
 Obj *gc_make_string(GC *gc, const char *text) {
   Obj *o = gc_make_obj(gc, STRING);
   o->name = text;
+  return o;
+}
+
+Obj *gc_make_lambda(GC *gc, Obj *args, Obj *body) {
+  Obj *o = gc_make_obj(gc, LAMBDA);
+  o->car = args;
+  o->cdr = body;
   return o;
 }
 

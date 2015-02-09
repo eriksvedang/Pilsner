@@ -42,7 +42,7 @@ const char *obj_to_str(Obj *o) {
     return o->name;
   }
   else if(o->type == LAMBDA) {
-    return "LAMBDA";
+    return "λ";
   }
   else {
     error("Uknown type.");
@@ -93,7 +93,7 @@ void print_obj(Obj *o) {
     printf("\"%s\"", o->name);
   }
   else if(o->type == LAMBDA) {
-    printf("LAMBDA");
+    printf("λ");
   }
 }
 

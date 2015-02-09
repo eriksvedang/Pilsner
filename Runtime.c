@@ -136,81 +136,91 @@ void eval(Runtime *r) {
   
   if(form->type == CONS) {
     if(form->car == NULL) {
-      gc_stack_push(r->gc, r->nil);
+      gc_stack_push(r->gc, r->nil); // if car is null it should be the magical nil value (empty list)
     }
-    else if(form->car->type == SYMBOL) {
-      if(strcmp(form->car->name, "def") == 0) {
-	if(frame->mode == MODE_NORMAL) {
-	  // Enter a new frame where the value of the def will be determined
-	  Obj *value_expr = form->cdr->cdr->car;
-	  frame->mode = MODE_DEF; // this frame is now in special mode, waiting only to set the def
-	  frame_push(r, value_expr, "def");
-	}
-	else if(frame->mode == MODE_DEF) {
-	  Obj *key = form->cdr->car;
-	  Obj *value = gc_stack_pop(r->gc);
-	  if(value) {
-	    runtime_env_assoc(r, key, value);
-	    Obj *ok = gc_make_symbol(r->gc, "OK");
-	    gc_stack_push(r->gc, ok);
-	    //runtime_inspect_env(r);
-	  } else {
-	    gc_stack_push(r->gc, r->nil);
-	  }
-	  frame_pop(r);
-	}	
+    else if(form->car->type == SYMBOL && strcmp(form->car->name, "def") == 0) {
+      if(frame->mode == MODE_NORMAL) {
+	// Enter a new frame where the value of the def will be determined
+	Obj *value_expr = form->cdr->cdr->car;
+	frame->mode = MODE_DEF; // this frame is now in special mode, waiting only to set the def
+	frame_push(r, value_expr, "def");
       }
-      else if(strcmp(form->car->name, "quote") == 0) {
-	gc_stack_push(r->gc, form->cdr->car);
+      else if(frame->mode == MODE_DEF) {
+	Obj *key = form->cdr->car;
+	Obj *value = gc_stack_pop(r->gc);
+	if(value) {
+	  runtime_env_assoc(r, key, value);
+	  Obj *ok = gc_make_symbol(r->gc, "OK");
+	  gc_stack_push(r->gc, ok);
+	  //runtime_inspect_env(r);
+	} else {
+	  gc_stack_push(r->gc, r->nil);
+	}
+	frame_pop(r);
+      }	
+    }
+    else if(form->car->type == SYMBOL && strcmp(form->car->name, "quote") == 0) {
+      gc_stack_push(r->gc, form->cdr->car);
+      frame_pop(r);
+    }
+    else if(form->car->type == SYMBOL && strcmp(form->car->name, "fn") == 0) {
+      // TODO: store some kind of local environment
+      Obj *lambda = gc_make_lambda(r->gc, form->cdr->car, form->cdr->cdr->car);
+      gc_stack_push(r->gc, lambda);
+      frame_pop(r);
+    }    
+    else {
+      if(frame->mode == MODE_NORMAL) {
+	frame_push(r, form->car, "eval_first_pos"); // push a frame that will evaluate the first position of the list
+	Obj *arg = form->cdr;
+	while(arg && arg->car != NULL) {
+	  //printf("Arg to eval: %s\n", obj_to_str(arg->car));
+	  if(arg->car) {
+	    frame_push(r, arg->car, "eval_arg"); // push arg to evaluate
+	    arg = arg->cdr;
+	    frame->arg_count++;
+	  }
+	}
+	frame->mode = MODE_FUNC_CALL;
+      }
+      else if(frame->mode == MODE_LAMBDA_RETURN) {
 	frame_pop(r);
       }
-      else {
-	if(frame->mode == MODE_NORMAL) {
-	  frame_push(r, form->car, "eval_first_pos"); // push a frame that will evaluate the first position of the list
-	  Obj *arg = form->cdr;
-	  while(arg && arg->car != NULL) {
-	    //printf("Arg to eval: %s\n", obj_to_str(arg->car));
-	    if(arg->car) {
-	      frame_push(r, arg->car, "eval_arg"); // push arg to evaluate
-	      arg = arg->cdr;
-	      frame->arg_count++;
-	    }
-	  }
-	  frame->mode = MODE_FUNC_CALL;
+      else if(frame->mode == MODE_FUNC_CALL) {
+	Obj *f = gc_stack_pop(r->gc);
+	if(f == NULL) {
+	  printf("f == NULL\n");
+	  exit(1);
 	}
-	else if(frame->mode == MODE_FUNC_CALL) {
-	  Obj *f = gc_stack_pop(r->gc);
-	  if(f == NULL) {
-	    printf("f == NULL\n");
-	    exit(0);
+	else if(f->type == FUNC || f->type == LAMBDA) {
+	  //printf("Calling func %s with %d args.\n", f->name, frame->arg_count);
+	  Obj *args = gc_make_cons(r->gc, NULL, NULL);
+	  Obj *last_arg = args;
+	  for(int i = 0; i < frame->arg_count; i++) {
+	    Obj *value = gc_stack_pop(r->gc);
+	    last_arg->car = value;
+	    Obj *new_arg = gc_make_cons(r->gc, NULL, NULL);
+	    last_arg->cdr = new_arg;
+	    last_arg = new_arg;
 	  }
-	  else if(f->type == FUNC) {
-	    //printf("Calling func %s with %d args.\n", f->name, frame->arg_count);
-	    Obj *args = gc_make_cons(r->gc, NULL, NULL);
-	    Obj *last_arg = args;
-	    for(int i = 0; i < frame->arg_count; i++) {
-	      Obj *value = gc_stack_pop(r->gc);
-	      last_arg->car = value;
-	      Obj *new_arg = gc_make_cons(r->gc, NULL, NULL);
-	      last_arg->cdr = new_arg;
-	      last_arg = new_arg;
-	    }
+	  if(f->type == FUNC) {
 	    Obj *result = ((Obj*(*)(Runtime*,Obj*))f->func)(r, args);
 	    gc_stack_push(r->gc, result);
+	    frame_pop(r);
+	  } else {
+	    /* printf("Will eval lambda body: "); */
+	    /* print_obj(f->cdr); */
+	    /* printf("\n"); */
+	    frame_push(r, f->cdr, "eval_lambda_body");
+	    frame->mode = MODE_LAMBDA_RETURN;
 	  }
-	  else {
-	    printf("Can't call non-function '%s'.\n", obj_to_str(f));
-	    gc_stack_push(r->gc, r->nil);
-	  }
+	}
+	else {
+	  printf("Can't call non-function '%s'.\n", obj_to_str(f));
+	  gc_stack_push(r->gc, r->nil);
 	  frame_pop(r);
 	}
       }
-    }
-    else {
-      printf("Can't eval malformed list: ");
-      print_obj(form);
-      printf("\n");
-      exit(1);
     }
   }
   else if(form->type == SYMBOL) {

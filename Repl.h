@@ -12,6 +12,8 @@ void repl() {
   
   Runtime *r = runtime_new();
 
+  //runtime_eval(r, "(def a (fn () (+ 2 3)))");
+  
   while(r->mode != RUNTIME_MODE_FINISHED) {
     printf("> ");
     fgets(str, BUFFER_SIZE, stdin);

@@ -20,7 +20,7 @@ typedef struct sObj {
   const char *name; // used by symbols and strings for their content
   
   union {
-    // CONS
+    // CONS & LAMBDA
     struct {
       struct sObj *car;
       struct sObj *cdr;
@@ -29,11 +29,6 @@ typedef struct sObj {
     void *func;
     // NUMBER
     double number;
-    // LAMBDA
-    struct {
-      // TODO: env
-      struct sObj *code; // car: args, cdr: body
-    };
   };
 } Obj;
 
