@@ -31,4 +31,12 @@ Obj *multiply(Runtime *r, Obj *args) {
   return gc_make_number(r->gc, sum);
 }
 
+Obj *equal(Runtime *r, Obj *args) {
+  if(eq(args->car, args->cdr->car)) {
+    return gc_make_symbol(r->gc, "true");
+  } else {
+    return r->nil;
+  }
+}
+
 #endif

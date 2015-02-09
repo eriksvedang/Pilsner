@@ -80,6 +80,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);
   register_func(r, "env", &runtime_env);
+  register_func(r, "=", &equal);
 }
 
 Runtime *runtime_new() {

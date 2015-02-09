@@ -15,7 +15,7 @@ void repl() {
   while(r->mode != RUNTIME_MODE_FINISHED) {
     printf("> ");
     fgets(str, BUFFER_SIZE, stdin);
-    if(strcmp(str, "quit\n") == 0) break;
+    //if(strcmp(str, "quit\n") == 0) break;
     runtime_eval(r, str);
   }
   

@@ -5,7 +5,11 @@
 
 const char *type_to_str(Type type) {
   if(type == CONS) return "CONS";
+  else if(type == FUNC) return "FUNC";
   else if(type == SYMBOL) return "SYMBOL";
+  else if(type == STRING) return "STRING";
+  else if(type == NUMBER) return "NUMBER";
+  else if(type == LAMBDA) return "LAMBDA";
   else return "UNKNOWN";
 }
 
@@ -36,6 +40,9 @@ const char *obj_to_str(Obj *o) {
   }
   else if(o->type == STRING) {
     return o->name;
+  }
+  else if(o->type == LAMBDA) {
+    return "LAMBDA";
   }
   else {
     error("Uknown type.");
@@ -85,11 +92,19 @@ void print_obj(Obj *o) {
   else if(o->type == STRING) {
     printf("\"%s\"", o->name);
   }
+  else if(o->type == LAMBDA) {
+    printf("LAMBDA");
+  }
 }
 
 bool eq(Obj *a, Obj *b) {
-  if(a->type != b->type) return false;
-  if(a->type == CONS) {
+  if(a == b) {
+    return true;
+  }
+  else if(a->type != b->type) {
+    return false;
+  }
+  else if(a->type == CONS) {
     return eq(a->car, b->car) && eq(a->cdr, b->cdr);
   }
   else if(a->type == SYMBOL || a->type == STRING) {
