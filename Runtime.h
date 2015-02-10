@@ -41,4 +41,8 @@ void runtime_delete(Runtime *r);
 void runtime_eval(Runtime *r, const char *source);
 void runtime_inspect_env(Runtime *r);
 
+void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value);
+Obj *runtime_env_lookup(Obj *env, Obj *key);
+Obj *runtime_env_make_local(Runtime *r, Obj *parent_env);
+
 #endif

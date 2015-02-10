@@ -93,8 +93,39 @@ void test_runtime() {
   //runtime_eval(r, "(bleh) (print-sym (quote apa)) (print-two-syms (quote erik) (quote svedang))");
   //runtime_eval(r, "(+ 2 3)");
   //runtime_eval(r, "\"erik\"");
-  runtime_eval(r, "(break) 3 4 5 (+ 2 3) (break) 10 20");
+  //runtime_eval(r, "(break) 3 4 5 (+ 2 3) (break) 10 20");
   //runtime_inspect_env(r);
+  runtime_delete(r);
+}
+
+void test_local_environments() {
+  Runtime *r = runtime_new();
+
+  print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "+"))); printf("\n");
+  print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "grgdgdger"))); printf("\n");
+
+  runtime_env_assoc(r, r->global_env, gc_make_symbol(r->gc, "HAH"), gc_make_symbol(r->gc, "mhm"));
+  print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "HAH"))); printf("\n");
+
+  printf("\nLOCALS\n");
+  
+  Obj *local_env_1 = runtime_env_make_local(r, r->global_env);
+  runtime_env_assoc(r, local_env_1, gc_make_symbol(r->gc, "local!"), gc_make_symbol(r->gc, "123"));
+  print_obj(runtime_env_lookup(local_env_1, gc_make_symbol(r->gc, "local!"))); printf("\n");
+  print_obj(runtime_env_lookup(local_env_1, gc_make_symbol(r->gc, "+"))); printf("\n");
+
+  printf("\nMORE LOCALS\n");
+  Obj *local_env_2 = runtime_env_make_local(r, local_env_1);
+  runtime_env_assoc(r, local_env_2, gc_make_symbol(r->gc, "deep"), gc_make_symbol(r->gc, "JOJO"));
+  print_obj(runtime_env_lookup(local_env_1, gc_make_symbol(r->gc, "deep"))); printf("\n");
+  print_obj(runtime_env_lookup(local_env_2, gc_make_symbol(r->gc, "deep"))); printf("\n");
+
+  /* printf("GLOBAL ENV: \n"); */
+  /* print_obj(r->global_env); */
+  /* printf("\nLOCAL ENV: \n"); */
+  /* print_obj(local_env_1); */
+  /* printf("\n"); */
+  
   runtime_delete(r);
 }
 

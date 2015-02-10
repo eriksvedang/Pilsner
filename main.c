@@ -15,13 +15,14 @@ void tests() {
   test_gc();
   //test_printing();
   //test_parsing();
-  test_runtime();
+  //test_runtime();
+  test_local_environments();
 }
 
 int main()
 {
   //printf("Size of int: %lu\nSize of Obj:%lu", sizeof(int), sizeof(Obj));
-  //tests();
-  repl();
+  tests();
+  //repl();
 }
 

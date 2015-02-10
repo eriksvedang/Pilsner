@@ -10,27 +10,33 @@
 
 void runtime_eval_internal(Runtime *r, const char *source, int top_frame_index);
 
+// The environments root is a cons cell where the car contains the a-list and the cdr contains the parent env.
+
 Obj *runtime_env_find_pair(Obj *env, Obj *key) {
-  Obj *current = env;
-  while(current->car != NULL) {
+  Obj *current = env->car; // get the a-list for this env
+  while(current->car) {
     if(eq(current->car->car, key)) {
       return current->car;
     }
     current = current->cdr;
   }
-  return NULL;
+  if(env->cdr) {
+    return runtime_env_find_pair(env->cdr, key);
+  } else {
+    return NULL;
+  }
 }
 
-void runtime_env_assoc(Runtime *r, Obj *key, Obj *value) {
+void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
   //printf("Will register %s with val %s\n", key->name, obj_to_str(value));
-  Obj *pair = runtime_env_find_pair(r->global_env, key);
+  Obj *pair = runtime_env_find_pair(env, key);
   if(pair) {
     pair->cdr = value;
   }
   else {
     Obj *new_pair = gc_make_cons(r->gc, key, value);
-    Obj *new_env = gc_make_cons(r->gc, new_pair, r->global_env);
-    r->global_env = new_env;
+    Obj *new_cons = gc_make_cons(r->gc, new_pair, env->car);
+    env->car = new_cons; // cons pair to the a-list
   }
 }
 
@@ -39,15 +45,24 @@ Obj *runtime_env_lookup(Obj *env, Obj *key) {
   if(pair) {
     return pair->cdr;
   }
+  else if(env->cdr) {
+    return runtime_env_lookup(env->cdr, key);
+  }
   else {
     return NULL;
   }
 }
 
+Obj *runtime_env_make_local(Runtime *r, Obj *parent_env) {
+  Obj *empty_alist = gc_make_cons(r->gc, NULL, NULL);
+  Obj *env = gc_make_cons(r->gc, empty_alist, parent_env);
+  return env;
+}
+
 void register_func(Runtime *r, const char *name, void *f) {
   Obj *function_name = gc_make_symbol(r->gc, name);
   Obj *function_ptr = gc_make_func(r->gc, name, f);
-  runtime_env_assoc(r, function_name, function_ptr);
+  runtime_env_assoc(r, r->global_env, function_name, function_ptr);
 }
 
 Obj *runtime_break(Runtime *r, Obj *args) {
@@ -88,7 +103,7 @@ Runtime *runtime_new() {
   gc_init(gc);
   Runtime *r = malloc(sizeof(Runtime));
   r->gc = gc;
-  r->global_env = gc_make_cons(gc, NULL, NULL);
+  r->global_env = runtime_env_make_local(r, NULL);
   r->nil = gc_make_cons(gc, NULL, NULL);
   r->top_frame = -1;
   r->mode = RUNTIME_MODE_RUN;
@@ -156,7 +171,7 @@ void eval(Runtime *r) {
 	Obj *key = form->cdr->car;
 	Obj *value = gc_stack_pop(r->gc);
 	if(value) {
-	  runtime_env_assoc(r, key, value);
+	  runtime_env_assoc(r, r->global_env, key, value);
 	  Obj *ok = gc_make_symbol(r->gc, "OK");
 	  gc_stack_push(r->gc, ok);
 	  //runtime_inspect_env(r);
