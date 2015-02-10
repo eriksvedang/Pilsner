@@ -18,6 +18,7 @@ typedef struct {
   FrameMode mode;
   int arg_count; // this is used when entering MODE_FUNC_CALL
   char name[128];
+  Obj *env;
 } Frame;
 
 typedef enum {

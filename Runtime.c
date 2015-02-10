@@ -12,7 +12,7 @@ void runtime_eval_internal(Runtime *r, const char *source, int top_frame_index);
 
 // The environments root is a cons cell where the car contains the a-list and the cdr contains the parent env.
 
-Obj *runtime_env_find_pair(Obj *env, Obj *key) {
+Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search) {
   Obj *current = env->car; // get the a-list for this env
   while(current->car) {
     if(eq(current->car->car, key)) {
@@ -20,8 +20,8 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key) {
     }
     current = current->cdr;
   }
-  if(env->cdr) {
-    return runtime_env_find_pair(env->cdr, key);
+  if(allow_parent_search && env->cdr) {
+    return runtime_env_find_pair(env->cdr, key, true);
   } else {
     return NULL;
   }
@@ -29,7 +29,7 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key) {
 
 void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
   //printf("Will register %s with val %s\n", key->name, obj_to_str(value));
-  Obj *pair = runtime_env_find_pair(env, key);
+  Obj *pair = runtime_env_find_pair(env, key, false);
   if(pair) {
     pair->cdr = value;
   }
@@ -41,7 +41,7 @@ void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
 }
 
 Obj *runtime_env_lookup(Obj *env, Obj *key) {
-  Obj *pair = runtime_env_find_pair(env, key);
+  Obj *pair = runtime_env_find_pair(env, key, true);
   if(pair) {
     return pair->cdr;
   }
@@ -118,12 +118,13 @@ void runtime_delete(Runtime *r) {
   free(r);
 }
 
-Frame *frame_push(Runtime *r, Obj *start_pos, const char *name) {
+Frame *frame_push(Runtime *r, Obj *env, Obj *start_pos, const char *name) {
   Frame *frame = &r->frames[++r->top_frame];
   frame->p = start_pos;
   frame->depth = r->top_frame;
   frame->mode = MODE_NORMAL;
   frame->arg_count = 0;
+  frame->env = env;
   strcpy(frame->name, name);
   return frame;
 }
@@ -165,13 +166,13 @@ void eval(Runtime *r) {
 	// Enter a new frame where the value of the def will be determined
 	Obj *value_expr = form->cdr->cdr->car;
 	frame->mode = MODE_DEF; // this frame is now in special mode, waiting only to set the def
-	frame_push(r, value_expr, "def");
+	frame_push(r, frame->env, value_expr, "def");
       }
       else if(frame->mode == MODE_DEF) {
 	Obj *key = form->cdr->car;
 	Obj *value = gc_stack_pop(r->gc);
 	if(value) {
-	  runtime_env_assoc(r, r->global_env, key, value);
+	  runtime_env_assoc(r, frame->env, key, value);
 	  Obj *ok = gc_make_symbol(r->gc, "OK");
 	  gc_stack_push(r->gc, ok);
 	  //runtime_inspect_env(r);
@@ -191,25 +192,27 @@ void eval(Runtime *r) {
 	printf("Pushing subform ");
 	print_obj(subform->car);
 	printf("\n");
-	frame_push(r, subform->car, "subform");
+	frame_push(r, frame->env, subform->car, "subform");
 	subform = subform->cdr;
       }
       frame->mode = MODE_IMMEDIATE_RETURN; // TODO: number of items on the value stack is incorrect now!
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "fn") == 0) {
-      // TODO: store some kind of local environment
-      Obj *lambda = gc_make_lambda(r->gc, form->cdr->car, form->cdr->cdr->car);
+      Obj *local_env = runtime_env_make_local(r, frame->env);
+      Obj *arg_names = form->cdr->car; // list item 1
+      Obj *body = form->cdr->cdr->car; // list item 2
+      Obj *lambda = gc_make_lambda(r->gc, local_env, arg_names, body);
       gc_stack_push(r->gc, lambda);
       frame_pop(r);
     }    
     else {
       if(frame->mode == MODE_NORMAL) {
-	frame_push(r, form->car, "eval_first_pos"); // push a frame that will evaluate the first position of the list
+	frame_push(r, frame->env, form->car, "eval_first_pos"); // push a frame that will evaluate the first position of the list
 	Obj *arg = form->cdr;
 	while(arg && arg->car != NULL) {
 	  //printf("Arg to eval: %s\n", obj_to_str(arg->car));
 	  if(arg->car) {
-	    frame_push(r, arg->car, "eval_arg"); // push arg to evaluate
+	    frame_push(r, frame->env, arg->car, "eval_arg"); // push arg to evaluate
 	    arg = arg->cdr;
 	    frame->arg_count++;
 	  }
@@ -241,7 +244,9 @@ void eval(Runtime *r) {
 	    /* printf("Will eval lambda body: "); */
 	    /* print_obj(f->cdr); */
 	    /* printf("\n"); */
-	    frame_push(r, f->cdr, "eval_lambda_body");
+	    Obj *local_env = f->car->car;
+	    assert(local_env);
+	    frame_push(r, local_env, f->cdr, "eval_lambda_body");
 	    frame->mode = MODE_LAMBDA_RETURN;
 	  }
 	}
@@ -285,7 +290,7 @@ void eval_top_form(Runtime *r, Obj *form, int top_frame_index) {
   /* printf("Will eval top form: "); */
   /* print_obj(form); */
   /* printf("\n"); */
-  frame_push(r, form, "eval_top_form");
+  frame_push(r, r->global_env, form, "eval_top_form");
   for(int i = 0; i < MAX_EXECUTIONS; i++) {
     if(r->mode == RUNTIME_MODE_RUN) {
       eval(r);

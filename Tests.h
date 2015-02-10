@@ -120,6 +120,11 @@ void test_local_environments() {
   print_obj(runtime_env_lookup(local_env_1, gc_make_symbol(r->gc, "deep"))); printf("\n");
   print_obj(runtime_env_lookup(local_env_2, gc_make_symbol(r->gc, "deep"))); printf("\n");
 
+  printf("\nOVERRIDE\n");
+  runtime_env_assoc(r, local_env_2, gc_make_symbol(r->gc, "HAH"), gc_make_symbol(r->gc, "mhm!!!"));
+  print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "HAH"))); printf("\n");
+  print_obj(runtime_env_lookup(local_env_2, gc_make_symbol(r->gc, "HAH"))); printf("\n");
+
   /* printf("GLOBAL ENV: \n"); */
   /* print_obj(r->global_env); */
   /* printf("\nLOCAL ENV: \n"); */
