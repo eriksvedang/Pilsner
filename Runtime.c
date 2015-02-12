@@ -28,7 +28,8 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search) {
 }
 
 void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
-  //printf("Will register %s with val %s\n", key->name, obj_to_str(value));
+  printf("Will register %s in env %p with value\n", key->name, env);
+  print_obj(value); printf("\n");
   Obj *pair = runtime_env_find_pair(env, key, false);
   if(pair) {
     pair->cdr = value;
@@ -79,15 +80,6 @@ Obj *runtime_env(Runtime *r, Obj *args) {
   runtime_inspect_env(r);
   return r->nil;
 }
-
-/* void frame_pop(Runtime *r); */
-
-/* Obj *runtime_run(Runtime *r, Obj *args) { */
-/*   printf("RUN!\n"); */
-/*   r->mode = RUNTIME_MODE_RUN; */
-/*   frame_pop(r); */
-/*   return r->nil; */
-/* } */
 
 void register_builtin_funcs(Runtime *r) {
   register_func(r, "+", &plus);
@@ -198,10 +190,9 @@ void eval(Runtime *r) {
       frame->mode = MODE_IMMEDIATE_RETURN; // TODO: number of items on the value stack is incorrect now!
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "fn") == 0) {
-      Obj *local_env = runtime_env_make_local(r, frame->env);
       Obj *arg_names = form->cdr->car; // list item 1
       Obj *body = form->cdr->cdr->car; // list item 2
-      Obj *lambda = gc_make_lambda(r->gc, local_env, arg_names, body);
+      Obj *lambda = gc_make_lambda(r->gc, arg_names, body);
       gc_stack_push(r->gc, lambda);
       frame_pop(r);
     }    
@@ -244,8 +235,19 @@ void eval(Runtime *r) {
 	    /* printf("Will eval lambda body: "); */
 	    /* print_obj(f->cdr); */
 	    /* printf("\n"); */
-	    Obj *local_env = f->car->car;
-	    assert(local_env);
+	    Obj *local_env = runtime_env_make_local(r, frame->env);
+	    Obj *arg_name = f->car;
+	    printf("Will eval lambda args: ");
+	    print_obj(arg_name);
+	    printf("\n");
+	    while(arg_name && arg_name->car) {
+	      /* printf("Will pop value for arg "); */
+	      /* print_obj(arg_name->car); */
+	      /* printf("\n"); */
+	      Obj *arg_value = gc_stack_pop(r->gc);
+	      runtime_env_assoc(r, local_env, arg_name->car, arg_value);
+	      arg_name = arg_name->cdr;
+	    }	    
 	    frame_push(r, local_env, f->cdr, "eval_lambda_body");
 	    frame->mode = MODE_LAMBDA_RETURN;
 	  }
@@ -260,7 +262,7 @@ void eval(Runtime *r) {
   }
   else if(form->type == SYMBOL) {
     //printf("Looking up symbol %s\n", obj_to_str(form));
-    Obj *result = runtime_env_lookup(r->global_env, form);
+    Obj *result = runtime_env_lookup(frame->env, form);
     if(result) {
       gc_stack_push(r->gc, result);
       frame_pop(r);

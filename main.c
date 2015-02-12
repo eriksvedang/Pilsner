@@ -22,7 +22,7 @@ void tests() {
 int main()
 {
   //printf("Size of int: %lu\nSize of Obj:%lu", sizeof(int), sizeof(Obj));
-  tests();
+  //tests();
   repl();
 }
 

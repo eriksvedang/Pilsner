@@ -10,7 +10,9 @@ Obj *plus(Runtime *r, Obj *args) {
   Obj *arg = args;
   while(arg && arg->car) {
     if(arg->car->type != NUMBER) {
-      printf("Must add numbers.\n");
+      printf("Can't call + on ");
+      print_obj(arg->car);
+      printf("\n");
     }
     sum += arg->car->number;
     arg = arg->cdr;
@@ -23,7 +25,9 @@ Obj *multiply(Runtime *r, Obj *args) {
   Obj *arg = args;
   while(arg && arg->car) {
     if(arg->car->type != NUMBER) {
-      printf("Must multiply numbers.\n");
+      printf("Can't call * on ");
+      print_obj(arg->car);
+      printf("\n");
     }
     sum *= arg->car->number;
     arg = arg->cdr;

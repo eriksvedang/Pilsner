@@ -12,7 +12,7 @@ void repl() {
   
   Runtime *r = runtime_new();
 
-  //runtime_eval(r, "(def a (fn () (+ 2 3)))");
+  runtime_eval(r, "(def a (fn (x) (+ x 3)))");
   
   while(r->mode != RUNTIME_MODE_FINISHED) {
     printf("> ");
