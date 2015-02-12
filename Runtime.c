@@ -10,9 +10,11 @@
 
 #define LOG_EVAL 0
 #define LOG_ENV 0
-#define LOG_LAMBDA_EVAL 1
+#define LOG_LAMBDA_EVAL 0
+#define LOG_VALUE_STACK 0
+#define LOG_FUNC_CALL 0
 
-void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index);
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index, int break_frame_index);
 
 // The environments root is a cons cell where the car contains the a-list and the cdr contains the parent env.
 
@@ -90,15 +92,52 @@ Obj *runtime_env(Runtime *r, Obj *args) {
   return r->nil;
 }
 
+Obj *runtime_load(Runtime *r, Obj *args) {
+  const char *filename = args->car->name;
+  printf("Loading '%s' - ", filename);
+
+  char * buffer = 0;
+  long length;
+  FILE * f = fopen (filename, "rb");
+
+  if(f) {
+    fseek (f, 0, SEEK_END);
+    length = ftell (f);
+    fseek (f, 0, SEEK_SET);
+    buffer = malloc (length);
+    if (buffer)	{
+      fread (buffer, 1, length, f);
+    }
+    fclose (f);
+  } else {
+    printf("Failed to open file.\n");
+    return r->nil;
+  }
+
+  if (buffer) {
+    printf("OK!\n");
+    //gc_stack_print(r->gc);
+    //printf("-------- Beginning evaling file. ----------\n");
+    runtime_eval_internal(r, r->global_env, buffer, r->top_frame + 1, r->top_frame + 1);
+    //printf("-------- Done evaling file. ----------\n");
+    //gc_stack_print(r->gc);
+    return r->true_val;
+  } else {
+    printf("Failed to open buffer.\n");
+    return r->nil;
+  }
+}
+
 void register_builtin_funcs(Runtime *r) {
+  register_func(r, "=", &equal);
   register_func(r, "+", &plus);
   register_func(r, "-", &minus);
   register_func(r, "*", &multiply);
+  register_func(r, "<", &greater_than);
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);
   register_func(r, "env", &runtime_env);
-  register_func(r, "=", &equal);
-  register_func(r, "<", &greater_than);
+  register_func(r, "load", &runtime_load);
 }
 
 void register_builtin_vars(Runtime *r) {
@@ -162,6 +201,9 @@ void eval(Runtime *r) {
   print_obj(form);
   printf("\n");
   #endif
+  #if LOG_VALUE_STACK
+  gc_stack_print(r->gc);
+  #endif
   #if LOG_ENV
   printf("Env: ");
   print_obj(frame->env);
@@ -191,10 +233,12 @@ void eval(Runtime *r) {
 	Obj *value = gc_stack_pop(r->gc);
 	if(value) {
 	  runtime_env_assoc(r, frame->env, key, value);
-	  Obj *ok = gc_make_symbol(r->gc, "OK");
+	  Obj *ok = gc_make_symbol(r->gc, "OKAY");
 	  gc_stack_push(r->gc, ok);
+	  //gc_stack_push(r->gc, key);
 	  //runtime_inspect_env(r);
 	} else {
+	  printf("Can't define %s to NULL.\n", obj_to_str(key));
 	  gc_stack_push(r->gc, r->nil);
 	}
 	frame_pop(r);
@@ -257,17 +301,20 @@ void eval(Runtime *r) {
 	frame->mode = MODE_FUNC_CALL;
       }
       else if(frame->mode == MODE_FUNC_CALL) {
+	//gc_stack_print(r->gc);
 	Obj *f = gc_stack_pop(r->gc);
-	/* printf("Calling lambda or function, f = "); */
-	/* print_obj(f); */
-	/* printf("\n"); */
+	#if LOG_FUNC_CALL
+	printf("Got lambda or function from the value stack, f = ");
+	print_obj(f);
+	printf("\n");
+	#endif
 	if(f == NULL) {
 	  printf("f == NULL\n");
 	  exit(1);
 	}
 	else if(f->type == FUNC || f->type == LAMBDA) {	  
 	  if(f->type == FUNC) {
-	    /* printf("Calling func %s with %d args.\n", f->name, frame->arg_count); */
+	    //printf("Calling func %s with %d args.\n", f->name, frame->arg_count);
 	    Obj *args = gc_make_cons(r->gc, NULL, NULL);
 	    Obj *last_arg = args;
 	    for(int i = 0; i < frame->arg_count; i++) {
@@ -347,7 +394,7 @@ void eval(Runtime *r) {
 
 static const int MAX_EXECUTIONS = 100;
 
-void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index) {
+void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
   /* printf("Will eval top form: "); */
   /* print_obj(form); */
   /* printf("\n"); */
@@ -355,13 +402,13 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index) {
   for(int i = 0; i < MAX_EXECUTIONS; i++) {
     if(r->mode == RUNTIME_MODE_RUN) {
       eval(r);
-      if(r->top_frame < 0) {
+      if(r->top_frame < top_frame_index) {
 	//printf("Returning from top form\n");
 	return;
       }
-      else if(r->top_frame < top_frame_index) {
+      else if(r->top_frame < break_frame_index) {
 	// Back at the frame position where the break happened
-	//printf("Unbreaking\n");
+	//printf("Re-breaking\n");
 	r->mode = RUNTIME_MODE_BREAK;
 	return;
       }
@@ -380,7 +427,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index) {
       r->mode = RUNTIME_MODE_RUN;
       if(strlen(str) > 0) {
 	Frame *top = &r->frames[r->top_frame];
-	runtime_eval_internal(r, top->env, str, r->top_frame + 1);
+	runtime_eval_internal(r, top->env, str, 0, r->top_frame + 1);
       } else {
 	// just run
       }
@@ -394,14 +441,14 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index) {
 }
 
 void runtime_eval(Runtime *r, const char *source) {
-  runtime_eval_internal(r, r->global_env, source, 0);
+  runtime_eval_internal(r, r->global_env, source, 0, -1);
 }
 
-void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index) {
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index, int break_frame_index) {
   Obj *top_level_forms = parse(r->gc, source);
   Obj *current_form = top_level_forms;
   while(current_form->car) {
-    eval_top_form(r, env, current_form->car, top_frame_index);
+    eval_top_form(r, env, current_form->car, top_frame_index, break_frame_index);
     Obj *result = gc_stack_pop(r->gc);
     if(result) {
       print_obj(result);

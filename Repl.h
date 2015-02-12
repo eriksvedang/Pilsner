@@ -12,13 +12,15 @@ void repl() {
   
   Runtime *r = runtime_new();
 
-  runtime_eval(r, "(def id (fn (x) x))");
-  runtime_eval(r, "(def inc (fn (x) (+ x 1))");
-  runtime_eval(r, "(def dec (fn (x) (- x 1))");
-  runtime_eval(r, "(def fact (fn (x) (if (< x 2) 1 (+ x (fact (- x 1))))))");
+  runtime_eval(r, "(load \"core.lisp\")");
 
-  runtime_eval(r, "(def a (fn (x) (+ x 3)))");
-  runtime_eval(r, "(def ii (fn (x) (do (break) (* x x))))");
+  /* runtime_eval(r, "(def id (fn (x) x))"); */
+  /* runtime_eval(r, "(def inc (fn (x) (+ x 1))"); */
+  /* runtime_eval(r, "(def dec (fn (x) (- x 1))"); */
+  /* runtime_eval(r, "(def fact (fn (x) (if (< x 2) 1 (+ x (fact (- x 1))))))"); */
+
+  /* runtime_eval(r, "(def a (fn (x) (+ x 3)))"); */
+  /* runtime_eval(r, "(def ii (fn (x) (do (break) (* x x))))"); */
     
   // 1 + 2 + 3 + 4 + 5
   // 1 * 2 * 3 * 4 * 5

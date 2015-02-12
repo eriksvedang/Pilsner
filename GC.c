@@ -4,22 +4,37 @@
 #include <stdbool.h>
 
 #define LOG 0
+#define LOG_PUSH_AND_POP 0
 
 void gc_stack_push(GC *gc, Obj *o) {
   if(gc->stackSize >= STACK_MAX) error("Stack overflow.");
   gc->stack[gc->stackSize++] = o;
-  /* printf("Pushed: "); */
-  /* print_obj(o); */
-  /* printf("\n"); */
+  #if LOG_PUSH_AND_POP
+  printf("Pushed: ");
+  print_obj(o);
+  printf("\n");
+  #endif
 }
 
 Obj *gc_stack_pop(GC *gc) {
   if(gc->stackSize < 0) error("Stack underflow.");
   Obj *o = gc->stack[--gc->stackSize];
-  /* printf("Popped: "); */
-  /* print_obj(o); */
-  /* printf("\n"); */
+  #if LOG_PUSH_AND_POP
+  printf("Popped: ");
+  print_obj(o);
+  printf("\n");
+  #endif
   return o;
+}
+
+void gc_stack_print(GC *gc) {
+  printf("Value stack:\n");
+  for(int i = gc->stackSize - 1; i >= 0; i--) {
+    printf("%d:\t", i);
+    print_obj(gc->stack[i]);
+    printf("\n");
+  }
+  printf("------------\n");
 }
 
 Obj *gc_make_obj(GC *gc, Type type) {

@@ -22,6 +22,7 @@ GCResult gc_collect(GC *gc);
 // Stack
 void gc_stack_push(GC *gc, Obj *o);
 Obj *gc_stack_pop(GC *gc);
+void gc_stack_print(GC *gc);
 
 // Make objects
 Obj *gc_make_cons(GC *gc, Obj *car, Obj *cdr);
