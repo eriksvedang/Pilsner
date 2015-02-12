@@ -8,6 +8,10 @@
 #include <string.h>
 #include <ctype.h>
 
+#define LOG_EVAL 0
+#define LOG_ENV 0
+#define LOG_LAMBDA_EVAL 1
+
 void runtime_eval_internal(Runtime *r, const char *source, int top_frame_index);
 
 // The environments root is a cons cell where the car contains the a-list and the cdr contains the parent env.
@@ -60,6 +64,11 @@ Obj *runtime_env_make_local(Runtime *r, Obj *parent_env) {
   return env;
 }
 
+void register_var(Runtime *r, const char *name, Obj *value) {
+  Obj *var_name = gc_make_symbol(r->gc, name);
+  runtime_env_assoc(r, r->global_env, var_name, value);
+}
+
 void register_func(Runtime *r, const char *name, void *f) {
   Obj *function_name = gc_make_symbol(r->gc, name);
   Obj *function_ptr = gc_make_func(r->gc, name, f);
@@ -83,11 +92,19 @@ Obj *runtime_env(Runtime *r, Obj *args) {
 
 void register_builtin_funcs(Runtime *r) {
   register_func(r, "+", &plus);
+  register_func(r, "-", &minus);
   register_func(r, "*", &multiply);
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);
   register_func(r, "env", &runtime_env);
   register_func(r, "=", &equal);
+  register_func(r, "<", &greater_than);
+}
+
+void register_builtin_vars(Runtime *r) {
+  register_var(r, "nil", r->nil);
+  register_var(r, "false", r->nil);
+  register_var(r, "true", r->true_val);
 }
 
 Runtime *runtime_new() {
@@ -97,10 +114,12 @@ Runtime *runtime_new() {
   r->gc = gc;
   r->global_env = runtime_env_make_local(r, NULL);
   r->nil = gc_make_cons(gc, NULL, NULL);
+  r->true_val = gc_make_symbol(r->gc, "true");
   r->top_frame = -1;
   r->mode = RUNTIME_MODE_RUN;
   gc_stack_push(r->gc, r->global_env); // root the global env so it won't get GC:d
   register_builtin_funcs(r);
+  register_builtin_vars(r);
   //runtime_inspect_env(r);
   return r;
 }
@@ -138,12 +157,16 @@ void eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
   Obj *form = frame->p;
 
-  /* printf("Eval in frame %d (%s), p is: ", frame->depth, frame_mode_to_str(frame->mode)); */
-  /* print_obj(form); */
-  /* printf("\n"); */
-  /* printf("Env: "); */
-  /* print_obj(frame->env); */
-  /* printf("\n"); */
+  #if LOG_EVAL
+  printf("Eval in frame %d (%s), p is: ", frame->depth, frame_mode_to_str(frame->mode));
+  print_obj(form);
+  printf("\n");
+  #endif
+  #if LOG_ENV
+  printf("Env: ");
+  print_obj(frame->env);
+  printf("\n");
+#endif
 
   if(frame->mode == MODE_LAMBDA_RETURN) {
     frame_pop(r);
@@ -180,6 +203,24 @@ void eval(Runtime *r) {
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "quote") == 0) {
       gc_stack_push(r->gc, form->cdr->car);
       frame_pop(r);
+    }
+    else if(form->car->type == SYMBOL && strcmp(form->car->name, "if") == 0) {
+      if(frame->mode == MODE_NORMAL) {
+	frame->mode = MODE_IF_BRANCH;
+	frame_push(r, frame->env, form->cdr->car, "eval_if_condition");
+      }
+      else if(frame->mode == MODE_IF_BRANCH) {
+	frame->mode = MODE_IF_RETURN;
+	Obj *condition = gc_stack_pop(r->gc);
+	if(!eq(condition, r->nil)) {
+	  frame_push(r, frame->env, form->cdr->cdr->car, "eval_true_branch");
+	} else {
+	  frame_push(r, frame->env, form->cdr->cdr->cdr->car, "eval_false_branch");
+	}
+      }
+      else if(frame->mode == MODE_IF_RETURN) {
+	frame_pop(r);
+      }
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
       Obj *subform = form->cdr;
@@ -240,9 +281,11 @@ void eval(Runtime *r) {
 	    gc_stack_push(r->gc, result);
 	    frame_pop(r);
 	  } else {
-	    /* printf("Will eval lambda body: "); */
-	    /* print_obj(f->cdr); */
-	    /* printf("\n"); */
+	    #if LOG_LAMBDA_EVAL
+	    printf("Will eval lambda body: ");
+	    print_obj(f->cdr);
+	    printf("\n");
+	    #endif
 	    
 	    Obj *local_env = f->car->car;
 	    assert(local_env);
@@ -255,9 +298,11 @@ void eval(Runtime *r) {
 		print_obj(arg_symbol); printf("\n");
 	      }
 	      Obj *arg_value = gc_stack_pop(r->gc);
-	      /* printf("Binding arg_symbol '%s' to value ", arg_symbol->name); */
-	      /* print_obj(arg_value); */
-	      /* printf("\n"); */
+	      #if LOG_LAMBDA_EVAL
+	      printf("Binding arg_symbol '%s' to value ", arg_symbol->name);
+	      print_obj(arg_value);
+	      printf("\n");
+	      #endif
 	      runtime_env_assoc(r, local_env, arg_symbol, arg_value);
 	      arg_symbol_cons = arg_symbol_cons->cdr;
 	    }

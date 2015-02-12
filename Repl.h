@@ -14,6 +14,10 @@ void repl() {
 
   runtime_eval(r, "(def id (fn (x) x))");
   runtime_eval(r, "(def a (fn (x) (+ x 3)))");
+  runtime_eval(r, "(def fact (fn (x) (if (< x 2) 1 (+ x (fact (- x 1))))))");
+
+  // 1 + 2 + 3 + 4 + 5
+  // 1 * 2 * 3 * 4 * 5
   
   while(r->mode != RUNTIME_MODE_FINISHED) {
     printf("> ");

@@ -10,6 +10,8 @@ typedef enum {
   MODE_FUNC_CALL,
   MODE_LAMBDA_RETURN,
   MODE_IMMEDIATE_RETURN,
+  MODE_IF_BRANCH,
+  MODE_IF_RETURN,
 } FrameMode;
 
 typedef struct {
@@ -31,6 +33,7 @@ typedef struct {
   GC *gc;
   Obj *global_env;
   Obj *nil;
+  Obj *true_val;
   Frame frames[128];
   int top_frame;
   RuntimeMode mode;
