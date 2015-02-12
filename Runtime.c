@@ -12,7 +12,7 @@
 #define LOG_ENV 0
 #define LOG_LAMBDA_EVAL 1
 
-void runtime_eval_internal(Runtime *r, const char *source, int top_frame_index);
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index);
 
 // The environments root is a cons cell where the car contains the a-list and the cdr contains the parent env.
 
@@ -347,11 +347,11 @@ void eval(Runtime *r) {
 
 static const int MAX_EXECUTIONS = 100;
 
-void eval_top_form(Runtime *r, Obj *form, int top_frame_index) {
+void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index) {
   /* printf("Will eval top form: "); */
   /* print_obj(form); */
   /* printf("\n"); */
-  frame_push(r, r->global_env, form, "eval_top_form");
+  frame_push(r, env, form, "eval_top_form");
   for(int i = 0; i < MAX_EXECUTIONS; i++) {
     if(r->mode == RUNTIME_MODE_RUN) {
       eval(r);
@@ -379,7 +379,8 @@ void eval_top_form(Runtime *r, Obj *form, int top_frame_index) {
       fgets(str, BUFFER_SIZE, stdin);
       r->mode = RUNTIME_MODE_RUN;
       if(strlen(str) > 0) {
-	runtime_eval_internal(r, str, r->top_frame + 1);
+	Frame *top = &r->frames[r->top_frame];
+	runtime_eval_internal(r, top->env, str, r->top_frame + 1);
       } else {
 	// just run
       }
@@ -393,14 +394,14 @@ void eval_top_form(Runtime *r, Obj *form, int top_frame_index) {
 }
 
 void runtime_eval(Runtime *r, const char *source) {
-  runtime_eval_internal(r, source, 0);
+  runtime_eval_internal(r, r->global_env, source, 0);
 }
 
-void runtime_eval_internal(Runtime *r, const char *source, int top_frame_index) {
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index) {
   Obj *top_level_forms = parse(r->gc, source);
   Obj *current_form = top_level_forms;
   while(current_form->car) {
-    eval_top_form(r, current_form->car, top_frame_index);
+    eval_top_form(r, env, current_form->car, top_frame_index);
     Obj *result = gc_stack_pop(r->gc);
     if(result) {
       print_obj(result);
