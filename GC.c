@@ -71,9 +71,10 @@ Obj *gc_make_string(GC *gc, const char *text) {
   return o;
 }
 
-Obj *gc_make_lambda(GC *gc, Obj *args, Obj *body) {
+Obj *gc_make_lambda(GC *gc, Obj *env, Obj *args, Obj *body) {
   Obj *o = gc_make_obj(gc, LAMBDA);
-  o->car = args;
+  Obj *envAndArgs = gc_make_cons(gc, env, args);
+  o->car = envAndArgs;
   o->cdr = body;
   return o;
 }

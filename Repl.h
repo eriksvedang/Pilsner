@@ -12,6 +12,7 @@ void repl() {
   
   Runtime *r = runtime_new();
 
+  runtime_eval(r, "(def id (fn (x) x))");
   runtime_eval(r, "(def a (fn (x) (+ x 3)))");
   
   while(r->mode != RUNTIME_MODE_FINISHED) {

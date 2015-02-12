@@ -28,8 +28,8 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search) {
 }
 
 void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
-  printf("Will register %s in env %p with value\n", key->name, env);
-  print_obj(value); printf("\n");
+  /* printf("Will register %s in env %p with value\n", key->name, env); */
+  /* print_obj(value); printf("\n"); */
   Obj *pair = runtime_env_find_pair(env, key, false);
   if(pair) {
     pair->cdr = value;
@@ -138,9 +138,12 @@ void eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
   Obj *form = frame->p;
 
-  printf("Eval in frame %d (%s), p is: ", frame->depth, frame_mode_to_str(frame->mode));
-  print_obj(form);
-  printf("\n");
+  /* printf("Eval in frame %d (%s), p is: ", frame->depth, frame_mode_to_str(frame->mode)); */
+  /* print_obj(form); */
+  /* printf("\n"); */
+  /* printf("Env: "); */
+  /* print_obj(frame->env); */
+  /* printf("\n"); */
 
   if(frame->mode == MODE_LAMBDA_RETURN) {
     frame_pop(r);
@@ -181,9 +184,9 @@ void eval(Runtime *r) {
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
       Obj *subform = form->cdr;
       while(subform && subform->car) {
-	printf("Pushing subform ");
-	print_obj(subform->car);
-	printf("\n");
+	/* printf("Pushing subform "); */
+	/* print_obj(subform->car); */
+	/* printf("\n"); */
 	frame_push(r, frame->env, subform->car, "subform");
 	subform = subform->cdr;
       }
@@ -192,7 +195,8 @@ void eval(Runtime *r) {
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "fn") == 0) {
       Obj *arg_names = form->cdr->car; // list item 1
       Obj *body = form->cdr->cdr->car; // list item 2
-      Obj *lambda = gc_make_lambda(r->gc, arg_names, body);
+      Obj *local_env = runtime_env_make_local(r, frame->env);
+      Obj *lambda = gc_make_lambda(r->gc, local_env, arg_names, body);
       gc_stack_push(r->gc, lambda);
       frame_pop(r);
     }    
@@ -208,26 +212,30 @@ void eval(Runtime *r) {
 	    frame->arg_count++;
 	  }
 	}
+	//printf("Going into MODE_FUNC_CALL with %d args.\n", frame->arg_count);
 	frame->mode = MODE_FUNC_CALL;
       }
       else if(frame->mode == MODE_FUNC_CALL) {
 	Obj *f = gc_stack_pop(r->gc);
+	/* printf("Calling lambda or function, f = "); */
+	/* print_obj(f); */
+	/* printf("\n"); */
 	if(f == NULL) {
 	  printf("f == NULL\n");
 	  exit(1);
 	}
-	else if(f->type == FUNC || f->type == LAMBDA) {
-	  //printf("Calling func %s with %d args.\n", f->name, frame->arg_count);
-	  Obj *args = gc_make_cons(r->gc, NULL, NULL);
-	  Obj *last_arg = args;
-	  for(int i = 0; i < frame->arg_count; i++) {
-	    Obj *value = gc_stack_pop(r->gc);
-	    last_arg->car = value;
-	    Obj *new_arg = gc_make_cons(r->gc, NULL, NULL);
-	    last_arg->cdr = new_arg;
-	    last_arg = new_arg;
-	  }
+	else if(f->type == FUNC || f->type == LAMBDA) {	  
 	  if(f->type == FUNC) {
+	    /* printf("Calling func %s with %d args.\n", f->name, frame->arg_count); */
+	    Obj *args = gc_make_cons(r->gc, NULL, NULL);
+	    Obj *last_arg = args;
+	    for(int i = 0; i < frame->arg_count; i++) {
+	      Obj *value = gc_stack_pop(r->gc);
+	      last_arg->car = value;
+	      Obj *new_arg = gc_make_cons(r->gc, NULL, NULL);
+	      last_arg->cdr = new_arg;
+	      last_arg = new_arg;
+	    }
 	    Obj *result = ((Obj*(*)(Runtime*,Obj*))f->func)(r, args);
 	    gc_stack_push(r->gc, result);
 	    frame_pop(r);
@@ -235,19 +243,25 @@ void eval(Runtime *r) {
 	    /* printf("Will eval lambda body: "); */
 	    /* print_obj(f->cdr); */
 	    /* printf("\n"); */
-	    Obj *local_env = runtime_env_make_local(r, frame->env);
-	    Obj *arg_name = f->car;
-	    printf("Will eval lambda args: ");
-	    print_obj(arg_name);
-	    printf("\n");
-	    while(arg_name && arg_name->car) {
-	      /* printf("Will pop value for arg "); */
-	      /* print_obj(arg_name->car); */
-	      /* printf("\n"); */
+	    
+	    Obj *local_env = f->car->car;
+	    assert(local_env);
+	    
+	    Obj *arg_symbol_cons = f->car->cdr;
+	    while(arg_symbol_cons && arg_symbol_cons->car) {
+	      Obj *arg_symbol = arg_symbol_cons->car;
+	      if(arg_symbol->type != SYMBOL) {
+		printf("Must bind symbols as args, found: ");
+		print_obj(arg_symbol); printf("\n");
+	      }
 	      Obj *arg_value = gc_stack_pop(r->gc);
-	      runtime_env_assoc(r, local_env, arg_name->car, arg_value);
-	      arg_name = arg_name->cdr;
-	    }	    
+	      /* printf("Binding arg_symbol '%s' to value ", arg_symbol->name); */
+	      /* print_obj(arg_value); */
+	      /* printf("\n"); */
+	      runtime_env_assoc(r, local_env, arg_symbol, arg_value);
+	      arg_symbol_cons = arg_symbol_cons->cdr;
+	    }
+	    
 	    frame_push(r, local_env, f->cdr, "eval_lambda_body");
 	    frame->mode = MODE_LAMBDA_RETURN;
 	  }
