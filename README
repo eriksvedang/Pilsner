@@ -1,4 +1,5 @@
-# Pilsner
+Pilsner
+-------
 
 A lisp inspired primarily by Clojure and Scheme. Implemented in C with no dependencies so far. My goal is to be able to use this for interactive play things and little games, etc. Compared to Clojure, I want a better debugging experience. Compared to Scheme, I want some more of the nice things Clojure has (most of which is not currently implemented, obviously...)
 
