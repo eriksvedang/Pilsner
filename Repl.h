@@ -12,7 +12,9 @@ void repl() {
   
   Runtime *r = runtime_new();
 
-  runtime_eval(r, "(load \"core.lisp\")");  
+  runtime_eval(r, "(load \"core.lisp\")");
+  runtime_eval(r, "(load \"misc.lisp\")");
+  
   while(r->mode != RUNTIME_MODE_FINISHED) {
     printf("> ");
     fgets(str, BUFFER_SIZE, stdin);
