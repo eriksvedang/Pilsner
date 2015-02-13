@@ -5,9 +5,9 @@ Todo
 * run gc at some point 
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
 * nicer stack trace in -break- mode
-* real number constants
+* real number constants (for example: 3.14)
 * compiled code
-* memstat function
+* memstat command
 * eval function
 * read function
 * apply function
@@ -19,7 +19,8 @@ Todo
 * do statement should not create bugs on the stack and should eval in correct order
 * macros
 * quasiquoting
-
+* some kind of support for lists/arrays using [ and ]
+* rest arg syntax
 
 
 - DONE -
