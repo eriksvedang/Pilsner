@@ -399,7 +399,7 @@ void eval(Runtime *r) {
   }
 }
 
-static const int MAX_EXECUTIONS = 100;
+static const int MAX_EXECUTIONS = 99999;
 
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
   /* printf("Will eval top form: "); */

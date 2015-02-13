@@ -7,28 +7,15 @@
 #include "Runtime.h"
 
 void repl() {
-  const int BUFFER_SIZE = 256;
+  const int BUFFER_SIZE = 2048;
   char str[BUFFER_SIZE];
   
   Runtime *r = runtime_new();
 
-  runtime_eval(r, "(load \"core.lisp\")");
-
-  /* runtime_eval(r, "(def id (fn (x) x))"); */
-  /* runtime_eval(r, "(def inc (fn (x) (+ x 1))"); */
-  /* runtime_eval(r, "(def dec (fn (x) (- x 1))"); */
-  /* runtime_eval(r, "(def fact (fn (x) (if (< x 2) 1 (+ x (fact (- x 1))))))"); */
-
-  /* runtime_eval(r, "(def a (fn (x) (+ x 3)))"); */
-  /* runtime_eval(r, "(def ii (fn (x) (do (break) (* x x))))"); */
-    
-  // 1 + 2 + 3 + 4 + 5
-  // 1 * 2 * 3 * 4 * 5
-  
+  runtime_eval(r, "(load \"core.lisp\")");  
   while(r->mode != RUNTIME_MODE_FINISHED) {
     printf("> ");
     fgets(str, BUFFER_SIZE, stdin);
-    //if(strcmp(str, "quit\n") == 0) break;
     runtime_eval(r, str);
   }
   
