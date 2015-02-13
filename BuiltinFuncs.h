@@ -75,9 +75,65 @@ Obj *greater_than(Runtime *r, Obj *args) {
   return r->true_val;
 }
 
+Obj *not_internal(Runtime *r, Obj *o) {
+  if(eq(o, r->nil)) {
+    return r->true_val;
+  } else {
+    return r->nil;
+  }
+}
+
+Obj *not(Runtime *r, Obj *args) {
+  return not_internal(r, args->car);
+}
+
+Obj *less_than(Runtime *r, Obj *args) {
+  return not_internal(r, greater_than(r, args));
+}
+
 Obj *equal(Runtime *r, Obj *args) {
   if(eq(args->car, args->cdr->car)) {
     return gc_make_symbol(r->gc, "true");
+  } else {
+    return r->nil;
+  }
+}
+
+Obj *cons(Runtime *r, Obj *args) {
+  //printf("Calling cons!\n");
+  Obj *o = args->car;
+  Obj *rest = args->cdr->car;
+  /* printf("Consing "); */
+  /* print_obj(o); */
+  /* printf(" onto "); */
+  /* print_obj(rest); */
+  /* printf("\n"); */
+  Obj *cons = gc_make_cons(r->gc, o, rest);
+  return cons;
+}
+
+Obj *first(Runtime *r, Obj *args) {
+  if(args->car->type != CONS) {
+    printf("Can't call 'first' on non-list: ");
+    print_obj(args->car);
+    printf("\n");
+  }
+  return args->car->car;
+}
+
+Obj *rest(Runtime *r, Obj *args) {
+  if(args->car->type != CONS) {
+    printf("Can't call 'rest' on non-list: ");
+    print_obj(args->car);
+    printf("\n");
+  }
+  return args->car->cdr;
+}
+
+Obj *nil_p(Runtime *r, Obj *args) {
+  Obj *o = args->car;
+  if(o->car == NULL && o->cdr == NULL) {
+    return r->true_val;
   } else {
     return r->nil;
   }

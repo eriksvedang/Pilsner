@@ -56,7 +56,8 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
     int i = 0;
     while(!iswhitespace(source[p->pos]) &&
 	  source[p->pos] != ')' &&
-	  source[p->pos] != '(') {
+	  source[p->pos] != '(' &&
+	  source[p->pos] != '\0') {
       name[i++] = source[p->pos];
       p->pos++;
     }
@@ -68,7 +69,7 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
     char *text = malloc(sizeof(char) * 256); // TODO: free this when the Obj is freed
     int i = 0;
     p->pos++;
-    while(source[p->pos] != '"') {
+    while(source[p->pos] != '"' && source[p->pos] != '\0') {
       text[i++] = source[p->pos];
       p->pos++;
     }
@@ -78,7 +79,7 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
   else if(isdigit(source[p->pos])) {
     char s[256];
     int i = 0;
-    while(isdigit(source[p->pos])) {
+    while(isdigit(source[p->pos]) && source[p->pos] != '\0') {
       s[i++] = source[p->pos];
       p->pos++;
     }
@@ -98,8 +99,15 @@ Obj *parse_list(GC *gc, Parser *p, const char *source) {
   //printf("Starting work on list %p\n", list);
 
   p->pos++; // move beyond the first paren
+
+  if(source[p->pos] == ')') {
+    //printf("Empty list\n");
+    p->pos++;
+    return list;
+  }
   
   while(1) {
+        
     Obj *item = parse_form(gc, p, source);
     if(item) {
       //printf("Adding item to list %p: %s\n", list, obj_to_str(item));
@@ -107,6 +115,11 @@ Obj *parse_list(GC *gc, Parser *p, const char *source) {
       Obj *next = gc_make_cons(gc, NULL, NULL);
       lastCons->cdr = next;
       lastCons = next;
+    }
+
+    if(source[p->pos] == '\0') {
+      printf("Parser error: Missing ending parenthesis.\n");
+      return NULL;
     }
 
     if(source[p->pos] == ')') {

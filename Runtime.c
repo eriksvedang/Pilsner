@@ -120,11 +120,7 @@ Obj *runtime_load(Runtime *r, Obj *args) {
   }
 
   if (buffer) {
-    //gc_stack_print(r->gc);
-    //printf("-------- Beginning evaling file. ----------\n");
     runtime_eval_internal(r, r->global_env, buffer, r->top_frame + 1, r->top_frame + 1, false);
-    //printf("-------- Done evaling file. ----------\n");
-    //gc_stack_print(r->gc);
     Obj *done = gc_make_symbol(r->gc, "DONE");
     return done;
   } else {
@@ -139,6 +135,13 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "-", &minus);
   register_func(r, "*", &multiply);
   register_func(r, "<", &greater_than);
+  register_func(r, ">", &less_than);
+  register_func(r, "cons", &cons);
+  register_func(r, "first", &first);
+  register_func(r, "rest", &rest);
+  register_func(r, "nil?", &nil_p);
+  register_func(r, "not", &not);
+  
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);
   register_func(r, "env", &runtime_env);
@@ -226,7 +229,9 @@ void eval(Runtime *r) {
   
   if(form->type == CONS) {
     if(form->car == NULL) {
+      //printf("Found ()\n");
       gc_stack_push(r->gc, r->nil); // if car is null it should be the magical nil value (empty list)
+      frame_pop(r);
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "def") == 0) {
       if(frame->mode == MODE_NORMAL) {
