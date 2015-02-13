@@ -21,6 +21,8 @@ Todo
 * quasiquoting
 * some kind of support for lists/arrays using [ and ]
 * rest arg syntax
+* better repl interaction, with keypresses, history, colors, etc
+* krasches when calling gc after evaling this: (def goo (λ (a b c) (cons a (cons b (cons c nil))))))
 
 
 - DONE -

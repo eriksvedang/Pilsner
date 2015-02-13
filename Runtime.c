@@ -97,6 +97,11 @@ Obj *runtime_print_stack(Runtime *r, Obj *args) {
   return r->nil;
 }
 
+Obj *runtime_gc_collect(Runtime *r, Obj *args) {
+  gc_collect(r->gc);
+  return r->nil;
+}
+
 Obj *runtime_load(Runtime *r, Obj *args) {
   const char *filename = args->car->name;
   printf("Loading '%s' - ", filename);
@@ -147,6 +152,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "env", &runtime_env);
   register_func(r, "load", &runtime_load);
   register_func(r, "stack", &runtime_print_stack);
+  register_func(r, "gc", &runtime_gc_collect);
 }
 
 void register_builtin_vars(Runtime *r) {

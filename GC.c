@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #define LOG 0
+#define LOG_GC_COLLECT_RESULT 1
 #define LOG_PUSH_AND_POP 0
 
 void gc_stack_push(GC *gc, Obj *o) {
@@ -100,7 +101,7 @@ void mark(Obj *o) {
   #endif
   
   if(o->reachable) {
-    // This one has already been visited by mark(), avoid infinite loops
+    // This one has already been visited by mark(), return to avoid infinite loops
     return;
   }
   
@@ -157,7 +158,7 @@ GCResult gc_collect(GC *gc) {
     }
   }
 
-  #if LOG
+  #if LOG_GC_COLLECT_RESULT
   printf("Sweep done, %d objects freed and %d object still alive.\n", result.freed, result.alive);
   #endif
 
