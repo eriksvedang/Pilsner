@@ -9,3 +9,5 @@
 
 (def b (fn (x) (do (break) (* x x))))
 
+(def fact (fn (x) (if (= x 1) 1 (* x (fact (- x 1))))))
+

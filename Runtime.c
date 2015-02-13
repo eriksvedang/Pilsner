@@ -279,7 +279,7 @@ void eval(Runtime *r) {
 	/* printf("Pushing subform "); */
 	/* print_obj(subform->car); */
 	/* printf("\n"); */
-	frame_push(r, frame->env, subform->car, "subform");
+	frame_push(r, frame->env, subform->car, "do_subform");
 	subform = subform->cdr;
       }
       frame->mode = MODE_IMMEDIATE_RETURN; // TODO: number of items on the value stack is incorrect now!
@@ -287,8 +287,7 @@ void eval(Runtime *r) {
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "fn") == 0) {
       Obj *arg_names = form->cdr->car; // list item 1
       Obj *body = form->cdr->cdr->car; // list item 2
-      Obj *local_env = runtime_env_make_local(r, frame->env);
-      Obj *lambda = gc_make_lambda(r->gc, local_env, arg_names, body);
+      Obj *lambda = gc_make_lambda(r->gc, frame->env, arg_names, body);
       gc_stack_push(r->gc, lambda);
       frame_pop(r);
     }    
@@ -340,9 +339,10 @@ void eval(Runtime *r) {
 	    print_obj(f->cdr);
 	    printf("\n");
 	    #endif
-	    
-	    Obj *local_env = f->car->car;
-	    assert(local_env);
+
+	    Obj *parent_env = f->car->car;
+	    assert(parent_env);
+	    Obj *local_env = runtime_env_make_local(r, parent_env);	    
 	    
 	    Obj *arg_symbol_cons = f->car->cdr;
 	    while(arg_symbol_cons && arg_symbol_cons->car) {
