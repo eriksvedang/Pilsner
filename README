@@ -5,8 +5,22 @@ Todo
 * run gc at some point 
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
 * nicer stack trace in -break- mode
+* real number constants
+* compiled code
+* memstat function
+* eval function
+* read function
+* apply function
+* str function
+* mod function
+* let expressions
+* macros
+* quasiquoting
+
+
 
 - DONE -
 * loading of files from disk
 * comments
 * quoting
+

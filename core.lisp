@@ -30,6 +30,11 @@
 		 ()
 	       (cons (f (first xs)) (map f (rest xs))))))
 
+(def reduce (fn (f x xs)
+		(if (nil? xs)
+		    x
+		  (reduce f (f x (first xs)) (rest xs)))))
+
 (def fib (fn (n)
 	     (if (= 1 n)
 		 1
