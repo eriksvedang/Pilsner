@@ -21,7 +21,7 @@ bool iswhitespace(char c) {
   return c == ' ' || c == '\t' || c == '\n';
 }
 
-static const char *specials = "+-*/=%&,.;:_!@#?§<>";
+static const char *specials = "+-*/=%&,_!@#?§<>";
 
 bool isokinsymbol(char c) {
   for (int i = 0; i < strlen(specials); i++) {
@@ -35,6 +35,20 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
   if (source[p->pos] == '(') {
     //printf("Found (\n");
     return parse_list(gc, p, source);
+  }
+  else if(source[p->pos] == ';') {
+    while(source[p->pos] != '\n' && source[p->pos] != '\0') {
+      p->pos++;
+    }
+  }
+  else if(source[p->pos] == '\'') {
+    p->pos++;
+    Obj *nil = gc_make_cons(gc, NULL, NULL);
+    Obj *quote = gc_make_symbol(gc, "quote");
+    Obj *quoted_form = parse_form(gc, p, source);
+    Obj *rest = gc_make_cons(gc, quoted_form, nil);
+    Obj *cons = gc_make_cons(gc, quote, rest);
+    return cons;
   }
   else if(isalpha(source[p->pos]) || isokinsymbol(source[p->pos])) {
     //printf("Found symbol: ");
