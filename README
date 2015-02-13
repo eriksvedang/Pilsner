@@ -1,31 +1,4 @@
-Todo
-====
+# Pilsner
 
-* proper freeing of strings and the gc
-* run gc at some point 
-* use Obj* with STRING type to handle strings in most cases (instead of c str)
-* nicer stack trace in -break- mode
-* real number constants (for example: 3.14)
-* compiled code
-* memstat command
-* eval function
-* read function
-* apply function
-* str function
-* mod function
-* let expressions
-* lambdas should keep track of their arg count
-* errors should result in breaking at the stack, with possibility to fix issue
-* do statement should not create bugs on the stack and should eval in correct order
-* macros
-* quasiquoting
-* some kind of support for lists/arrays using [ and ]
-* rest arg syntax
-* better repl interaction, with keypresses, history, colors, etc
-
-- DONE -
-* loading of files from disk
-* comments
-* quoting
-* krasches when calling gc after evaling this: (def goo (λ (a b c) (cons a (cons b (cons c nil))))))
+A lisp inspired primarily by Clojure and Scheme. Implemented in C with no dependencies so far. My goal is to be able to use this for interactive play things and little games, etc. Compared to Clojure, I want a better debugging experience. Compared to Scheme, I want some more of the nice things Clojure has (most of which is not currently implemented, obviously...)
 
