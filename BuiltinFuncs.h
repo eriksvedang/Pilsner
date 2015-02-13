@@ -53,6 +53,24 @@ Obj *multiply(Runtime *r, Obj *args) {
   return gc_make_number(r->gc, sum);
 }
 
+Obj *divide(Runtime *r, Obj *args) {
+  if(args->car == NULL) {
+    return gc_make_number(r->gc, 1.0);
+  }
+  double result = args->car->number;
+  Obj *arg = args->cdr;
+  while(arg && arg->car) {
+    if(arg->car->type != NUMBER) {
+      printf("Can't call / on ");
+      print_obj(arg->car);
+      printf("\n");
+    }
+    result /= arg->car->number;
+    arg = arg->cdr;
+  }
+  return gc_make_number(r->gc, result);
+}
+
 Obj *greater_than(Runtime *r, Obj *args) {
   if(args->car == NULL) {
     return r->nil;

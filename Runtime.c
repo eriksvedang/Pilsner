@@ -139,6 +139,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "+", &plus);
   register_func(r, "-", &minus);
   register_func(r, "*", &multiply);
+  register_func(r, "/", &divide);
   register_func(r, "<", &greater_than);
   register_func(r, ">", &less_than);
   register_func(r, "cons", &cons);

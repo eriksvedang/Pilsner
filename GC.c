@@ -107,7 +107,7 @@ void mark(Obj *o) {
   
   o->reachable = true;
   
-  if (o->type == CONS) {
+  if (o->type == CONS || o->type == LAMBDA) {
     if(o->car) {
       mark(o->car);
     }
