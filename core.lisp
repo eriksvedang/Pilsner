@@ -25,3 +25,15 @@
 		   ()
 		   (cons start (range (inc start) end)))))
 
+(def map (fn (f xs)
+	     (if (nil? xs)
+		 ()
+	       (cons (f (first xs)) (map f (rest xs))))))
+
+(def fib (fn (n)
+	     (if (= 1 n)
+		 1
+	       (if (= 2 n)
+		   1
+		 (+ (fib (dec n)) (fib (- n 2)))))))
+

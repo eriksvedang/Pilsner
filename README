@@ -1,14 +1,12 @@
 Todo
 ====
 
-* comments
-* quoting
 * proper freeing of strings and the gc
 * run gc at some point 
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
 * nicer stack trace in -break- mode
 
-
-
 - DONE -
 * loading of files from disk
+* comments
+* quoting

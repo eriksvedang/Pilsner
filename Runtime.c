@@ -411,7 +411,8 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
   /* print_obj(form); */
   /* printf("\n"); */
   frame_push(r, env, form, "eval_top_form");
-  for(int i = 0; i < MAX_EXECUTIONS; i++) {
+  //for(int i = 0; i < MAX_EXECUTIONS; i++) {
+  for(;;) {
     if(r->mode == RUNTIME_MODE_RUN) {
       eval(r);
       if(r->top_frame < top_frame_index) {
