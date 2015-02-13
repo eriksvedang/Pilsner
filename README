@@ -14,6 +14,9 @@ Todo
 * str function
 * mod function
 * let expressions
+* lambdas should keep track of their arg count
+* errors should result in breaking at the stack, with possibility to fix issue
+* do statement should not create bugs on the stack and should eval in correct order
 * macros
 * quasiquoting
 

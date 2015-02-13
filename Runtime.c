@@ -289,7 +289,9 @@ void eval(Runtime *r) {
       }
       frame->mode = MODE_IMMEDIATE_RETURN; // TODO: number of items on the value stack is incorrect now!
     }
-    else if(form->car->type == SYMBOL && strcmp(form->car->name, "fn") == 0) {
+    else if(form->car->type == SYMBOL &&
+	    (strcmp(form->car->name, "fn") == 0 ||
+	     strcmp(form->car->name, "λ") == 0)) {
       Obj *arg_names = form->cdr->car; // list item 1
       Obj *body = form->cdr->cdr->car; // list item 2
       Obj *lambda = gc_make_lambda(r->gc, frame->env, arg_names, body);
