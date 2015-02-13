@@ -37,6 +37,7 @@ typedef struct {
   Frame frames[128];
   int top_frame;
   RuntimeMode mode;
+  //bool print_top_level_result;
 } Runtime;
 
 Runtime *runtime_new();

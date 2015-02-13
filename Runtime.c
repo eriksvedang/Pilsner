@@ -14,7 +14,7 @@
 #define LOG_VALUE_STACK 0
 #define LOG_FUNC_CALL 0
 
-void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index, int break_frame_index);
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index, int break_frame_index, bool print_result);
 
 // The environments root is a cons cell where the car contains the a-list and the cdr contains the parent env.
 
@@ -115,13 +115,13 @@ Obj *runtime_load(Runtime *r, Obj *args) {
   }
 
   if (buffer) {
-    printf("OK!\n");
     //gc_stack_print(r->gc);
     //printf("-------- Beginning evaling file. ----------\n");
-    runtime_eval_internal(r, r->global_env, buffer, r->top_frame + 1, r->top_frame + 1);
+    runtime_eval_internal(r, r->global_env, buffer, r->top_frame + 1, r->top_frame + 1, false);
     //printf("-------- Done evaling file. ----------\n");
     //gc_stack_print(r->gc);
-    return r->true_val;
+    Obj *done = gc_make_symbol(r->gc, "DONE");
+    return done;
   } else {
     printf("Failed to open buffer.\n");
     return r->nil;
@@ -156,6 +156,7 @@ Runtime *runtime_new() {
   r->true_val = gc_make_symbol(r->gc, "true");
   r->top_frame = -1;
   r->mode = RUNTIME_MODE_RUN;
+  //r->print_top_level_result = true;
   gc_stack_push(r->gc, r->global_env); // root the global env so it won't get GC:d
   register_builtin_funcs(r);
   register_builtin_vars(r);
@@ -233,9 +234,9 @@ void eval(Runtime *r) {
 	Obj *value = gc_stack_pop(r->gc);
 	if(value) {
 	  runtime_env_assoc(r, frame->env, key, value);
-	  Obj *ok = gc_make_symbol(r->gc, "OKAY");
-	  gc_stack_push(r->gc, ok);
-	  //gc_stack_push(r->gc, key);
+	  //Obj *ok = gc_make_symbol(r->gc, "OKAY");
+	  //gc_stack_push(r->gc, ok);
+	  gc_stack_push(r->gc, key);
 	  //runtime_inspect_env(r);
 	} else {
 	  printf("Can't define %s to NULL.\n", obj_to_str(key));
@@ -427,7 +428,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
       r->mode = RUNTIME_MODE_RUN;
       if(strlen(str) > 0) {
 	Frame *top = &r->frames[r->top_frame];
-	runtime_eval_internal(r, top->env, str, 0, r->top_frame + 1);
+	runtime_eval_internal(r, top->env, str, 0, r->top_frame + 1, true);
       } else {
 	// just run
       }
@@ -441,16 +442,16 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
 }
 
 void runtime_eval(Runtime *r, const char *source) {
-  runtime_eval_internal(r, r->global_env, source, 0, -1);
+  runtime_eval_internal(r, r->global_env, source, 0, -1, true);
 }
 
-void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index, int break_frame_index) {
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index, int break_frame_index, bool print_result) {
   Obj *top_level_forms = parse(r->gc, source);
   Obj *current_form = top_level_forms;
   while(current_form->car) {
     eval_top_form(r, env, current_form->car, top_frame_index, break_frame_index);
     Obj *result = gc_stack_pop(r->gc);
-    if(result) {
+    if(print_result && result) {
       print_obj(result);
       printf("\n");
     }
