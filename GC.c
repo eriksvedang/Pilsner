@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #define LOG 0
 #define LOG_GC_COLLECT_RESULT 1
@@ -62,16 +63,28 @@ Obj *gc_make_cons(GC *gc, Obj *car, Obj *cdr) {
   return o;
 }
 
-Obj *gc_make_symbol(GC *gc, const char *name) {
+void set_name(Obj *o, const char *name) {
+  char *name_copy = malloc(sizeof(char) * strlen(name));
+  strcpy(name_copy, name);
+  o->name = name_copy;
+}
+
+Obj *gc_make_symbol_from_malloced_string(GC *gc, char *name) {
   Obj *o = gc_make_obj(gc, SYMBOL);
   o->name = name;
   return o;
 }
 
+Obj *gc_make_symbol(GC *gc, const char *name) {
+  Obj *o = gc_make_obj(gc, SYMBOL);
+  set_name(o, name);
+  return o;
+}
+
 Obj *gc_make_func(GC *gc, const char *name, void *f) {
   Obj *o = gc_make_obj(gc, FUNC);
-  o->name = name;
   o->func = f;
+  o->name = (char*)name; // names of funcs are static strings and will not need to be freed when Obj is GC:d
   return o;
 }
 
@@ -81,7 +94,7 @@ Obj *gc_make_number(GC *gc, double x) {
   return o;
 }
 
-Obj *gc_make_string(GC *gc, const char *text) {
+Obj *gc_make_string(GC *gc, char *text) {
   Obj *o = gc_make_obj(gc, STRING);
   o->name = text;
   return o;
@@ -93,6 +106,13 @@ Obj *gc_make_lambda(GC *gc, Obj *env, Obj *args, Obj *body) {
   o->car = envAndArgs;
   o->cdr = body;
   return o;
+}
+
+void gc_delete(Obj *o) {
+  if(o->type == SYMBOL || o->type == STRING) {
+    free(o->name);
+  }
+  free(o);
 }
 
 void mark(Obj *o) {
@@ -153,7 +173,7 @@ GCResult gc_collect(GC *gc) {
       #endif      
       Obj* unreached = *obj;
       *obj = unreached->next; // change the pointer in place, *THE MAGIC*
-      free(unreached);
+      gc_delete(unreached);
       result.freed++;
     }
   }

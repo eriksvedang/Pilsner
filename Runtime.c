@@ -225,7 +225,7 @@ void eval(Runtime *r) {
   printf("Env: ");
   print_obj(frame->env);
   printf("\n");
-#endif
+  #endif
 
   if(frame->mode == MODE_LAMBDA_RETURN) {
     frame_pop(r);
@@ -237,7 +237,7 @@ void eval(Runtime *r) {
   if(form->type == CONS) {
     if(form->car == NULL) {
       //printf("Found ()\n");
-      gc_stack_push(r->gc, r->nil); // if car is null it should be the magical nil value (empty list)
+      gc_stack_push(r->gc, r->nil); // if car is NULL it should be the magical nil value (empty list)
       frame_pop(r);
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "def") == 0) {

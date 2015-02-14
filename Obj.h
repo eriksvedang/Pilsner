@@ -17,7 +17,7 @@ typedef struct sObj {
   Type type;
   struct sObj *next;
   bool reachable;
-  const char *name; // used by symbols and strings for their content
+  char *name; // used by symbols and strings for their content
   
   union {
     // CONS & LAMBDA

@@ -29,7 +29,7 @@ void repl() {
   gc_collect(r->gc);
   runtime_delete(r);
 
-  //fgets(str, BUFFER_SIZE, stdin);
+  fgets(str, BUFFER_SIZE, stdin);
 }
 
 #endif

@@ -16,3 +16,8 @@
              (if (= 2 n)
                1
                (+ (fib (dec n)) (fib (- n 2)))))))
+
+(def ahaa (fn (_) (range 1 10000)))
+
+(def aha (fn (n) (map ahaa (range 1 n))))
+

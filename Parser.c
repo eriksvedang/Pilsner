@@ -60,10 +60,13 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
 	  source[p->pos] != '\0') {
       name[i++] = source[p->pos];
       p->pos++;
+      if(i >= 256) {
+	error("Can't have symbols longer than 256 chars");
+      }
     }
     name[i] = '\0';
     //printf("%s\n", name);
-    return gc_make_symbol(gc, name);
+    return gc_make_symbol_from_malloced_string(gc, name);
   }
   else if(source[p->pos] == '"') {
     char *text = malloc(sizeof(char) * 256); // TODO: free this when the Obj is freed

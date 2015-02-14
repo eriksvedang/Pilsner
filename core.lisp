@@ -1,5 +1,6 @@
 
 (def id (fn (x) x))
+(def comp (fn (f g) (fn (x) (f (g x)))))
 
 (def inc (fn (x) (+ x 1)))
 (def dec (fn (x) (- x 1)))
