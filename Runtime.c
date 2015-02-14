@@ -172,11 +172,9 @@ Runtime *runtime_new() {
   r->true_val = gc_make_symbol(r->gc, "true");
   r->top_frame = -1;
   r->mode = RUNTIME_MODE_RUN;
-  //r->print_top_level_result = true;
   gc_stack_push(r->gc, r->global_env); // root the global env so it won't get GC:d
   register_builtin_funcs(r);
   register_builtin_vars(r);
-  //runtime_inspect_env(r);
   return r;
 }
 
@@ -353,6 +351,19 @@ void eval(Runtime *r) {
 	    print_obj(f->cdr);
 	    printf("\n");
 	    #endif
+
+	    int lambda_arg_count = count(f->car->cdr);
+	    //printf("lambda_arg_count = %d\n", lambda_arg_count);
+	    if(lambda_arg_count != frame->arg_count) {
+	      printf("λ with %d arg(s) called with %d arg(s).\n", lambda_arg_count, frame->arg_count);
+	      // Remove the args on the stack
+	      for(int i = 0; i < frame->arg_count; i++) {
+		gc_stack_pop(r->gc);
+	      }
+	      frame_pop(r);
+	      gc_stack_push(r->gc, r->nil);
+	      return;
+	    }
 
 	    Obj *parent_env = f->car->car;
 	    assert(parent_env);

@@ -12,16 +12,16 @@
 #include "Tests.h"
 
 void tests() {
-  test_gc();
+  //test_gc();
   //test_printing();
   //test_parsing();
   //test_runtime();
-  test_local_environments();
+  //test_local_environments();
+  //test_str_allocs();
 }
 
 int main()
 {
-  //printf("Size of int: %lu\nSize of Obj:%lu", sizeof(int), sizeof(Obj));
   //tests();
   repl();
 }

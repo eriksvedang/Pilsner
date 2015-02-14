@@ -7,6 +7,6 @@ all: main.o
 	clang $(FILES) -g -o pilsner $(CFLAGS) $(LDFLAGS) $(LDLIBS)
 
 run:
-	./gcfool
+	./pilsner
 
 

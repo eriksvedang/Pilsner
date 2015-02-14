@@ -134,4 +134,22 @@ void test_local_environments() {
   runtime_delete(r);
 }
 
+void test_str_allocs() {
+
+  printf("sizeof(char) = %ld\n", sizeof(char));
+  
+  const char *a = "aha";
+  printf("sizeof(a) = %ld\n", sizeof(a));
+
+  const char *b = "booo";
+  printf("sizeof(b) = %ld\n", sizeof(b));
+
+  const char *c = "jo men så attehh....";
+  printf("sizeof(c) = %ld\n", sizeof(c));
+
+  const char *d = malloc(256);
+  printf("sizeof(d) = %ld\n", sizeof(d));
+  
+}
+
 #endif
