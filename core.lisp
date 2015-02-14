@@ -29,3 +29,9 @@
       x
       (reduce f (f x (first xs)) (rest xs)))))
 
+(def repeat
+     (fn (n item)
+	 (if (= 0 n)
+	     ()
+	   (cons item (repeat (dec n) item)))))
+
