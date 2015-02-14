@@ -118,4 +118,11 @@ bool eq(Obj *a, Obj *b) {
   }
 }
 
-
+int count(Obj *list) {
+  int i = 0;
+  while(list->cdr != NULL) {
+    i++;
+    list = list->cdr;
+  }
+  return i;
+}
