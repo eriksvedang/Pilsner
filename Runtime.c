@@ -469,7 +469,8 @@ void runtime_eval(Runtime *r, const char *source) {
 void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index, int break_frame_index, bool print_result) {
   Obj *top_level_forms = parse(r->gc, source);
   Obj *current_form = top_level_forms;
-  while(current_form->car) {
+  // WHEN DOES current_form BECOME NULL?
+  while(current_form && current_form->car) {
     eval_top_form(r, env, current_form->car, top_frame_index, break_frame_index);
     Obj *result = gc_stack_pop(r->gc);
     if(print_result && result) {
