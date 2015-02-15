@@ -9,6 +9,7 @@ Prio 1
 
 Todo
 ====
+* crashes when GC:ing in break mode
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
 * memory pool to avoid unnecessary amounts of alloc / free
 * compiled code
