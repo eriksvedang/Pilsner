@@ -475,15 +475,9 @@ void eval(Runtime *r) {
   }
 }
 
-static const int MAX_EXECUTIONS = 99999;
-
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
-  /* printf("Will eval top form: "); */
-  /* print_obj(form); */
-  /* printf("\n"); */
   frame_push(r, env, form, "eval_top_form");
-  //for(int i = 0; i < MAX_EXECUTIONS; i++) {
-  for(;;) {
+  while(1) {
     if(r->mode == RUNTIME_MODE_RUN) {
       eval(r);
       if(r->top_frame < top_frame_index) {

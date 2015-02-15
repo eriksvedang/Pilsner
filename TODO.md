@@ -1,5 +1,6 @@
 Prio 1
 ======
+* tail recursion
 * nicer stack trace in break mode
 * str function
 * apply function
@@ -7,6 +8,8 @@ Prio 1
 * real number constants (handle decimals)
 * errors should result in breaking at the stack, with possibility to fix issue
 * calling (break) on toplevel messes up value stack and is weird
+* not allowing cons to take a non-list as second argument
+* not doing string comparison for special form symbols
 
 Todo
 ====

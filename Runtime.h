@@ -4,7 +4,7 @@
 #include "GC.h"
 #include "Obj.h"
 
-#define MAX_ACTIVATION_FRAMES 256
+#define MAX_ACTIVATION_FRAMES 1024
 
 typedef enum {
   MODE_NORMAL,
