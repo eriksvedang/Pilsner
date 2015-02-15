@@ -14,7 +14,6 @@ void load(Runtime *r, const char *lib_path, const char *filename) {
 }
 
 void repl() {
-
   char *lib_path = getenv("PILSNER_LIB");
   if(!lib_path) {
     error("The environment variable PILNSER_LIB is not set.");
