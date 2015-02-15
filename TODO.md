@@ -6,6 +6,7 @@ Prio 1
 * macros
 * real number constants (handle decimals)
 * errors should result in breaking at the stack, with possibility to fix issue
+* calling (break) on toplevel messes up value stack and is weird
 
 Todo
 ====
