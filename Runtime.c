@@ -219,6 +219,7 @@ const char *frame_mode_to_str(FrameMode frame_mode) {
   else if(frame_mode == MODE_FUNC_CALL) return "MODE_FUNC_CALL";
   else if(frame_mode == MODE_LAMBDA_RETURN) return "MODE_LAMBDA_RETURN";
   else if(frame_mode == MODE_IMMEDIATE_RETURN) return "MODE_IMMEDIATE_RETURN";
+  else if(frame_mode == MODE_DO_BLOCK_RETURN) return "MODE_DO_BLOCK_RETURN";
   else return "UNKNOWN_FRAME_MODE";
 }
 
@@ -244,13 +245,35 @@ void eval(Runtime *r) {
     frame_pop(r);
   }
   else if(frame->mode == MODE_IMMEDIATE_RETURN) {
+    frame_pop(r);
+  }
+  else if(frame->mode == MODE_DO_BLOCK_RETURN) {
     // popping superfluous values from the stack after evaling a do-form
     //printf("Will pop %d superfluous values from stack: \n", frame->form_count - 1);
     //gc_stack_print(r->gc);
+    Obj *top_value = gc_stack_pop(r->gc);
     for(int i = 0; i < frame->form_count - 1; i++) {
       gc_stack_pop(r->gc);
     }
+    gc_stack_push(r->gc, top_value);
     frame_pop(r);
+  }
+  else if(form->type == NUMBER || form->type == STRING) {
+    gc_stack_push(r->gc, form);
+    frame_pop(r);
+  }
+  else if(form->type == SYMBOL) {
+    //printf("Looking up symbol %s\n", obj_to_str(form));
+    Obj *result = runtime_env_lookup(frame->env, form);
+    if(result) {
+      gc_stack_push(r->gc, result);
+      frame_pop(r);
+    }
+    else {
+      printf("Can't find a symbol named '%s'.\n", form->name);
+      gc_stack_push(r->gc, r->nil);
+      frame_pop(r);
+    }
   }
   else if(form->type == CONS) {
     if(form->car == NULL) {
@@ -305,16 +328,25 @@ void eval(Runtime *r) {
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
       Obj *subform = form->cdr;
+      const int MAX_NUMBER_OF_SUBFORMS = 1024;
+      Obj *subforms[MAX_NUMBER_OF_SUBFORMS];
+      int i = 0;
       while(subform && subform->car) {
-	/* printf("Pushing subform "); */
-	/* print_obj(subform->car); */
-	/* printf("\n"); */
-	frame_push(r, frame->env, subform->car, "do_subform");
+	if(i > MAX_NUMBER_OF_SUBFORMS) {
+	  error("Can't have more subforms in do statement.");
+	}
+	subforms[i++] = subform->car;
 	subform = subform->cdr;
 	frame->form_count++;
       }
-      //printf("Number of subforms: %d\n", frame->form_count);
-      frame->mode = MODE_IMMEDIATE_RETURN;
+      // Push in backwards order
+      i--;
+      for(; i >= 0; i--) {
+	/* printf("Pushing subform "); print_obj(subforms[i]); printf("\n"); */
+	frame_push(r, frame->env, subforms[i], "do_subform");
+      }
+      /* printf("Number of subforms: %d\n", frame->form_count); */
+      frame->mode = MODE_DO_BLOCK_RETURN;
     }
     else if(form->car->type == SYMBOL &&
 	    (strcmp(form->car->name, "fn") == 0 ||
@@ -423,23 +455,6 @@ void eval(Runtime *r) {
 	}
       }
     }
-  }
-  else if(form->type == SYMBOL) {
-    //printf("Looking up symbol %s\n", obj_to_str(form));
-    Obj *result = runtime_env_lookup(frame->env, form);
-    if(result) {
-      gc_stack_push(r->gc, result);
-      frame_pop(r);
-    }
-    else {
-      printf("Can't find a symbol named '%s'.\n", form->name);
-      gc_stack_push(r->gc, r->nil);
-      frame_pop(r);
-    }
-  }
-  else if(form->type == NUMBER || form->type == STRING) {
-    gc_stack_push(r->gc, form);
-    frame_pop(r);
   }
   else {
     printf("Can't eval this form:\n");
