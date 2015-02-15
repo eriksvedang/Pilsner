@@ -31,3 +31,7 @@
 		  (println "på")
 		  (println "dig"))))
 
+(def a 140)
+
+
+

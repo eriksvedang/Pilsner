@@ -1,0 +1,7 @@
+
+(def me "erik")
+
+me
+
+
+

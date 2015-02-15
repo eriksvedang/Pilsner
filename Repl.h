@@ -24,6 +24,11 @@ void repl() {
   load(r, lib_path, "core.lisp");
   load(r, lib_path, "misc.lisp");
 
+  printf("====================================================\n");
+  printf("|                WELCOME TO PILSNER                |\n");
+  printf("|               By Erik Svedäng 2015               |\n");
+  printf("====================================================\n");
+  
   const int MAX_INPUT_BUFFER_SIZE = 2048;
   char str[MAX_INPUT_BUFFER_SIZE];
   
@@ -40,7 +45,7 @@ void repl() {
   gc_collect(r->gc);
   runtime_delete(r);
 
-  fgets(str, MAX_INPUT_BUFFER_SIZE, stdin);
+  //fgets(str, MAX_INPUT_BUFFER_SIZE, stdin);
 }
 
 #endif
