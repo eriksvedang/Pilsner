@@ -34,8 +34,7 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search) {
 }
 
 void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
-  /* printf("Will register %s in env %p with value\n", key->name, env); */
-  /* print_obj(value); printf("\n"); */
+  /* printf("Will register %s in env %p with value\n", key->name, env); print_obj(value); printf("\n"); */
   Obj *pair = runtime_env_find_pair(env, key, false);
   if(pair) {
     pair->cdr = value;
@@ -98,11 +97,13 @@ Obj *runtime_print_stack(Runtime *r, Obj *args) {
 }
 
 void runtime_print_frames(Runtime *r) {
+  printf("\n\e[35m");
   printf("----------- FRAMES ----------- \n");
   for(int i = r->top_frame; i >= 0; i--) {
     printf("%d\t%s\n", i, r->frames[i].name);
   }
   printf("------------------------------ \n");
+  printf("\e[0m\n");
 }
 
 Obj *runtime_gc_collect(Runtime *r, Obj *args) {
@@ -163,9 +164,11 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "cons", &cons);
   register_func(r, "first", &first);
   register_func(r, "rest", &rest);
+  register_func(r, "list", &list);
   register_func(r, "nil?", &nil_p);
   register_func(r, "not", &not);
   register_func(r, "println", &println);
+  register_func(r, "help", &help);
   
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);
@@ -494,7 +497,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
     else if(r->mode == RUNTIME_MODE_BREAK) {
       runtime_print_frames(r);
       printf("Debug REPL, press return to continue execution.\n");
-      printf("> ");
+      printf("➜ ");
       const int BUFFER_SIZE = 256;
       char str[BUFFER_SIZE];
       fgets(str, BUFFER_SIZE, stdin);

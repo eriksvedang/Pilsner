@@ -8,7 +8,7 @@
 (def zip
   (fn (a b) (if (nil? a)
               ()
-              (cons (cons (first a) (first b))
+              (cons (list (first a) (first b))
                     (zip (rest a) (rest b))))))
 
 (def range

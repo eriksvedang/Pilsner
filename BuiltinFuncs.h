@@ -127,6 +127,10 @@ Obj *cons(Runtime *r, Obj *args) {
   //printf("Calling cons!\n");
   Obj *o = args->car;
   Obj *rest = args->cdr->car;
+  if(rest->type != CONS) {
+    printf("Can't cons %s onto object %s.\n", obj_to_str(o), obj_to_str(rest));
+    return r->nil;
+  }
   /* printf("Consing "); */
   /* print_obj(o); */
   /* printf(" onto "); */
@@ -154,6 +158,15 @@ Obj *rest(Runtime *r, Obj *args) {
   return args->car->cdr;
 }
 
+Obj *list(Runtime *r, Obj *args) {
+  if(args->type != CONS) {
+    printf("Can't call 'list' on non-list: ");
+    print_obj(args);
+    printf("\n");
+  }
+  return args;
+}
+
 Obj *nil_p(Runtime *r, Obj *args) {
   Obj *o = args->car;
   if(o->car == NULL && o->cdr == NULL) {
@@ -161,6 +174,19 @@ Obj *nil_p(Runtime *r, Obj *args) {
   } else {
     return r->nil;
   }
+}
+
+Obj *help(Runtime *r, Obj *args) {
+  printf("Useful functions\n");
+  printf("----------------\n");
+  printf("(quit)\n");
+  printf("(env)\n");
+  printf("(stack)\n");
+  printf("(first xs) (rest xs)\n");
+  printf("(def var value)\n");
+  printf("(fn (x) (* x x)\n");
+  printf("(if expr then else)\n");
+  return r->nil;
 }
 
 #endif

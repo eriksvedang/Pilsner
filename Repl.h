@@ -24,16 +24,17 @@ void repl() {
   load(r, lib_path, "core.lisp");
   load(r, lib_path, "misc.lisp");
 
-  printf("====================================================\n");
-  printf("|                WELCOME TO PILSNER                |\n");
-  printf("|               By Erik Svedäng 2015               |\n");
-  printf("====================================================\n");
+  /* printf("====================================================\n"); */
+  /* printf("|                WELCOME TO PILSNER                |\n"); */
+  /* printf("|               By Erik Svedäng 2015               |\n"); */
+  /* printf("====================================================\n"); */
+  printf("\e[32m~ Welcome to the Pilsner REPL ~\e[0m\n");
   
   const int MAX_INPUT_BUFFER_SIZE = 2048;
   char str[MAX_INPUT_BUFFER_SIZE];
   
   while(r->mode != RUNTIME_MODE_FINISHED) {
-    printf("> ");
+    printf("➜ ");
     fgets(str, MAX_INPUT_BUFFER_SIZE, stdin);
     runtime_eval(r, str);
   }
