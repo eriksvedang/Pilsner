@@ -8,13 +8,26 @@
 #include "Runtime.h"
 
 void repl() {
-  const int BUFFER_SIZE = 2048;
-  char str[BUFFER_SIZE];
+
+  char *lib_path = getenv("PILSNER_LIB");
+  if(lib_path) {
+    //printf("PILSNER_LIB=%s\n", lib_path);
+  } else {
+    error("The environment variable PILNSER_LIB is not set.");
+  } 
   
   Runtime *r = runtime_new();
 
-  runtime_eval(r, "(load \"core.lisp\")");
-  runtime_eval(r, "(load \"misc.lisp\")");
+  char full_path[1024];
+  
+  sprintf(full_path, "%s%s", lib_path, "core.lisp");
+  runtime_load_file(r, (const char *)full_path, true);
+
+  sprintf(full_path, "%s%s", lib_path, "misc.lisp");
+  runtime_load_file(r, (const char *)full_path, true);
+
+  const int BUFFER_SIZE = 2048;
+  char str[BUFFER_SIZE];
   
   while(r->mode != RUNTIME_MODE_FINISHED) {
     //runtime_print_frames(r);

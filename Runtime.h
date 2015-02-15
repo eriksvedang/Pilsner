@@ -48,6 +48,7 @@ Runtime *runtime_new();
 void runtime_delete(Runtime *r);
 
 void runtime_eval(Runtime *r, const char *source);
+bool runtime_load_file(Runtime *r, const char *filename, bool silent);
 void runtime_inspect_env(Runtime *r);
 void runtime_print_frames(Runtime *r);
 
