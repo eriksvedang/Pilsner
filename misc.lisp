@@ -31,7 +31,7 @@
 		  (println "på")
 		  (println "dig"))))
 
-(def a 140)
+(def t (fn () (map inc '(5 10 15))))
 
 
 

@@ -35,3 +35,10 @@
 	     ()
 	   (cons item (repeat (dec n) item)))))
 
+
+(def loop
+    (fn (i)
+	(if (= 0 i)
+	    nil
+	    (loop (dec i)))))
+
