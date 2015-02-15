@@ -1,18 +1,19 @@
 Prio 1
 ======
-* tail recursion
+* tail recursion optimization
 * nicer stack trace in break mode
 * str function
 * apply function
 * macros
 * real number constants (handle decimals)
 * errors should result in breaking at the stack, with possibility to fix issue
-* calling (break) on toplevel messes up value stack and is weird
 * not allowing cons to take a non-list as second argument
 * not doing string comparison for special form symbols
 
 Todo
 ====
+* docstrings
+* calling (break) on toplevel messes up value stack and is weird
 * crashes when GC:ing in break mode
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
 * memory pool to avoid unnecessary amounts of alloc / free
