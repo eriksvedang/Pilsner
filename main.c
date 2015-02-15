@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #include "GC.h"
 #include "Obj.h"
@@ -20,8 +21,8 @@ void tests() {
   //test_str_allocs();
 }
 
-int main()
-{
+int main(int argc, char *argv[]) {
+ 
   //tests();
   repl();
 }

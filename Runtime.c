@@ -110,10 +110,11 @@ Obj *runtime_gc_collect(Runtime *r, Obj *args) {
   return r->nil;
 }
 
-Obj *runtime_load(Runtime *r, Obj *args) {
-  const char *filename = args->car->name;
-  printf("Loading '%s' - ", filename);
-
+bool runtime_load_file(Runtime *r, const char *filename, bool silent) {
+  if(!silent) {
+    printf("Loading '%s' - ", filename);
+  }
+  
   char * buffer = 0;
   long length;
   FILE * f = fopen (filename, "rb");
@@ -128,16 +129,25 @@ Obj *runtime_load(Runtime *r, Obj *args) {
     }
     fclose (f);
   } else {
-    printf("Failed to open file.\n");
-    return r->nil;
+    printf("Failed to open file: %s\n", filename);
+    return false;
   }
 
   if (buffer) {
     runtime_eval_internal(r, r->global_env, buffer, r->top_frame + 1, r->top_frame + 1, false);
+    return true;
+  } else {
+    printf("Failed to open buffer from file: %s\n", filename);
+    return false;
+  }
+}
+
+Obj *runtime_load(Runtime *r, Obj *args) {
+  const char *filename = args->car->name;
+  if(runtime_load_file(r, filename, false)) {
     Obj *done = gc_make_symbol(r->gc, "DONE");
     return done;
   } else {
-    printf("Failed to open buffer.\n");
     return r->nil;
   }
 }
