@@ -8,7 +8,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define LOG_EVAL 0
+#define LOG_EVAL 1
 #define LOG_ENV 0
 #define LOG_LAMBDA_EVAL 0
 #define LOG_VALUE_STACK 0
@@ -161,6 +161,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "/", &divide);
   register_func(r, "<", &greater_than);
   register_func(r, ">", &less_than);
+  
   register_func(r, "cons", &cons);
   register_func(r, "first", &first);
   register_func(r, "rest", &rest);
@@ -168,7 +169,6 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "nil?", &nil_p);
   register_func(r, "not", &not);
   register_func(r, "println", &println);
-  register_func(r, "help", &help);
   
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);
@@ -176,6 +176,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "load", &runtime_load);
   register_func(r, "stack", &runtime_print_stack);
   register_func(r, "gc", &runtime_gc_collect);
+  register_func(r, "help", &help);
 }
 
 void register_builtin_vars(Runtime *r) {
@@ -205,12 +206,7 @@ void runtime_delete(Runtime *r) {
   free(r);
 }
 
-Frame *frame_push(Runtime *r, Obj *env, Obj *start_pos, const char *name) {
-  r->top_frame++;
-  if(r->top_frame >= MAX_ACTIVATION_FRAMES) {
-    printf("Can't push more frames, reached max limit: %d.\n", MAX_ACTIVATION_FRAMES);
-    exit(0);
-  }
+Frame *frame_init(Runtime *r, Obj *env, Obj *start_pos, const char *name) {
   Frame *frame = &r->frames[r->top_frame];
   frame->p = start_pos;
   frame->depth = r->top_frame;
@@ -222,13 +218,32 @@ Frame *frame_push(Runtime *r, Obj *env, Obj *start_pos, const char *name) {
   return frame;
 }
 
+Frame *frame_push(Runtime *r, Obj *env, Obj *start_pos, const char *name) {
+  r->top_frame++;
+  if(r->top_frame >= MAX_ACTIVATION_FRAMES) {
+    printf("Can't push more frames, reached max limit: %d.\n", MAX_ACTIVATION_FRAMES);
+    exit(0);
+  }
+  return frame_init(r, env, start_pos, name);
+}
+
 void frame_pop(Runtime *r) {
   r->top_frame--;
+}
+
+// Changes the current frame, just as if popping and then pushing a new one.
+Frame *frame_replace(Runtime *r, Obj *env, Obj *start_pos, const char *name) {
+  if(r->top_frame < 0) {
+    error("Can't replace top frame because there are no frames.\n");
+  }
+  return frame_init(r, env, start_pos, name);
 }
 
 const char *frame_mode_to_str(FrameMode frame_mode) {
   if(frame_mode == MODE_NORMAL) return "MODE_NORMAL";
   else if(frame_mode == MODE_DEF) return "MODE_DEF";
+  else if(frame_mode == MODE_IF_BRANCH) return "MODE_IF_BRANCH";
+  else if(frame_mode == MODE_IF_RETURN) return "MODE_IF_RETURN";
   else if(frame_mode == MODE_FUNC_CALL) return "MODE_FUNC_CALL";
   else if(frame_mode == MODE_LAMBDA_RETURN) return "MODE_LAMBDA_RETURN";
   else if(frame_mode == MODE_IMMEDIATE_RETURN) return "MODE_IMMEDIATE_RETURN";
@@ -309,7 +324,6 @@ void eval(Runtime *r) {
 	  //Obj *ok = gc_make_symbol(r->gc, "OKAY");
 	  //gc_stack_push(r->gc, ok);
 	  gc_stack_push(r->gc, key);
-	  //runtime_inspect_env(r);
 	} else {
 	  printf("Can't define %s to NULL.\n", obj_to_str(key));
 	  gc_stack_push(r->gc, r->nil);
@@ -498,7 +512,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
       runtime_print_frames(r);
       printf("Debug REPL, press return to continue execution.\n");
       printf("➜ ");
-      const int BUFFER_SIZE = 256;
+      const int BUFFER_SIZE = 2048;
       char str[BUFFER_SIZE];
       fgets(str, BUFFER_SIZE, stdin);
       r->mode = RUNTIME_MODE_RUN;
@@ -514,7 +528,6 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
       return;
     }
   }
-  printf("MAX EXECUTIONS REACHED, WILL INTERRUPT\n");
 }
 
 void runtime_eval(Runtime *r, const char *source) {
