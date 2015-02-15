@@ -17,6 +17,8 @@ void repl() {
   runtime_eval(r, "(load \"misc.lisp\")");
   
   while(r->mode != RUNTIME_MODE_FINISHED) {
+    //runtime_print_frames(r);
+    //gc_stack_print(r->gc);
     printf("> ");
     fgets(str, BUFFER_SIZE, stdin);
     runtime_eval(r, str);

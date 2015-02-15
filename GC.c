@@ -30,6 +30,7 @@ Obj *gc_stack_pop(GC *gc) {
 }
 
 void gc_stack_print(GC *gc) {
+  printf("------------\n");
   printf("Value stack:\n");
   for(int i = gc->stackSize - 1; i >= 0; i--) {
     printf("%d:\t", i);

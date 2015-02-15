@@ -5,6 +5,12 @@
 #include <assert.h>
 #include "Obj.h"
 
+Obj *println(Runtime *r, Obj *args) {
+  printf("%s", obj_to_str(args->car));
+  printf("\n");
+  return r->nil;
+}
+
 Obj *plus(Runtime *r, Obj *args) {
   double sum = 0.0;
   Obj *arg = args;

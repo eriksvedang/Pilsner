@@ -97,6 +97,14 @@ Obj *runtime_print_stack(Runtime *r, Obj *args) {
   return r->nil;
 }
 
+void runtime_print_frames(Runtime *r) {
+  printf("----------- FRAMES ----------- \n");
+  for(int i = r->top_frame; i >= 0; i--) {
+    printf("%d\t%s\n", i, r->frames[i].name);
+  }
+  printf("------------------------------ \n");
+}
+
 Obj *runtime_gc_collect(Runtime *r, Obj *args) {
   gc_collect(r->gc);
   return r->nil;
@@ -147,6 +155,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "rest", &rest);
   register_func(r, "nil?", &nil_p);
   register_func(r, "not", &not);
+  register_func(r, "println", &println);
   
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);
@@ -184,11 +193,17 @@ void runtime_delete(Runtime *r) {
 }
 
 Frame *frame_push(Runtime *r, Obj *env, Obj *start_pos, const char *name) {
-  Frame *frame = &r->frames[++r->top_frame];
+  r->top_frame++;
+  if(r->top_frame >= MAX_ACTIVATION_FRAMES) {
+    printf("Can't push more frames, reached max limit: %d.\n", MAX_ACTIVATION_FRAMES);
+    exit(0);
+  }
+  Frame *frame = &r->frames[r->top_frame];
   frame->p = start_pos;
   frame->depth = r->top_frame;
   frame->mode = MODE_NORMAL;
   frame->arg_count = 0;
+  frame->form_count = 0;
   frame->env = env;
   strcpy(frame->name, name);
   return frame;
@@ -229,10 +244,15 @@ void eval(Runtime *r) {
     frame_pop(r);
   }
   else if(frame->mode == MODE_IMMEDIATE_RETURN) {
+    // popping superfluous values from the stack after evaling a do-form
+    //printf("Will pop %d superfluous values from stack: \n", frame->form_count - 1);
+    //gc_stack_print(r->gc);
+    for(int i = 0; i < frame->form_count - 1; i++) {
+      gc_stack_pop(r->gc);
+    }
     frame_pop(r);
   }
-  
-  if(form->type == CONS) {
+  else if(form->type == CONS) {
     if(form->car == NULL) {
       //printf("Found ()\n");
       gc_stack_push(r->gc, r->nil); // if car is NULL it should be the magical nil value (empty list)
@@ -291,8 +311,10 @@ void eval(Runtime *r) {
 	/* printf("\n"); */
 	frame_push(r, frame->env, subform->car, "do_subform");
 	subform = subform->cdr;
+	frame->form_count++;
       }
-      frame->mode = MODE_IMMEDIATE_RETURN; // TODO: number of items on the value stack is incorrect now!
+      //printf("Number of subforms: %d\n", frame->form_count);
+      frame->mode = MODE_IMMEDIATE_RETURN;
     }
     else if(form->car->type == SYMBOL &&
 	    (strcmp(form->car->name, "fn") == 0 ||
@@ -355,7 +377,7 @@ void eval(Runtime *r) {
 	    int lambda_arg_count = count(f->car->cdr);
 	    //printf("lambda_arg_count = %d\n", lambda_arg_count);
 	    if(lambda_arg_count != frame->arg_count) {
-	      printf("λ with %d arg(s) called with %d arg(s).\n", lambda_arg_count, frame->arg_count);
+	      printf("ERROR! λ with %d arg(s) was called with %d arg(s).\n", lambda_arg_count, frame->arg_count);
 	      // Remove the args on the stack
 	      for(int i = 0; i < frame->arg_count; i++) {
 		gc_stack_pop(r->gc);
@@ -385,8 +407,12 @@ void eval(Runtime *r) {
 	      runtime_env_assoc(r, local_env, arg_symbol, arg_value);
 	      arg_symbol_cons = arg_symbol_cons->cdr;
 	    }
-	    
-	    frame_push(r, local_env, f->cdr, "eval_lambda_body");
+
+	    if(f->name) {
+	      frame_push(r, local_env, f->cdr, f->name);
+	    } else {
+	      frame_push(r, local_env, f->cdr, "eval_lambda_body");
+	    }
 	    frame->mode = MODE_LAMBDA_RETURN;
 	  }
 	}
@@ -447,11 +473,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
       }
     }
     else if(r->mode == RUNTIME_MODE_BREAK) {
-      printf("----------- FRAMES ----------- \n");
-      for(int i = r->top_frame; i >= 0; i--) {
-	printf("%d\t%s\n", i, r->frames[i].name);
-      }
-      printf("------------------------------ \n");
+      runtime_print_frames(r);
       printf("Debug REPL, press return to continue execution.\n");
       printf("> ");
       const int BUFFER_SIZE = 256;

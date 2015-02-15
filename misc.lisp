@@ -21,3 +21,9 @@
 
 (def aha (fn (n) (map ahaa (range 1 n))))
 
+(def bf (fn (x) (break)))
+
+(def p (fn () (do (println "hej")
+		  (println "på")
+		  (println "dig"))))
+
