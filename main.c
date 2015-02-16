@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "GC.h"
 #include "Obj.h"
@@ -21,8 +22,7 @@ void tests() {
   //test_str_allocs();
 }
 
-int main(int argc, char *argv[]) {
- 
+int main(int argc, char *argv[]) { 
   //tests();
   repl();
 }

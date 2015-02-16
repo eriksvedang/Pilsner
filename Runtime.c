@@ -8,7 +8,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define LOG_EVAL 1
+#define LOG_EVAL 0
 #define LOG_ENV 0
 #define LOG_LAMBDA_EVAL 0
 #define LOG_VALUE_STACK 0
@@ -169,6 +169,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "nil?", &nil_p);
   register_func(r, "not", &not);
   register_func(r, "println", &println);
+  register_func(r, "time", &get_time);
   
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);

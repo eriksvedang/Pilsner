@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <sys/time.h>
 #include "Obj.h"
 
 Obj *println(Runtime *r, Obj *args) {
@@ -187,6 +188,18 @@ Obj *help(Runtime *r, Obj *args) {
   printf("(fn (x) (* x x)\n");
   printf("(if expr then else)\n");
   return r->nil;
+}
+
+double current_timestamp() {
+    struct timeval te; 
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
+    //printf("milliseconds: %lld\n", milliseconds);
+    return ((double)milliseconds) / 1000.0;
+}
+
+Obj *get_time(Runtime *r, Obj *args) {
+  return gc_make_number(r->gc, (double)current_timestamp()); //  / CLOCKS_PER_SEC
 }
 
 #endif

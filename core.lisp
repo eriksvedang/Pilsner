@@ -42,3 +42,10 @@
 	    nil
 	    (loop (dec i)))))
 
+(def timing
+  (fn (f) (do (def t1 (time))
+              (f)
+              (def t2 (time))
+              (println "dt:")
+              (println (- t2 t1)))))
+
