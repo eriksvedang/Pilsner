@@ -182,6 +182,8 @@ void test_store_pointer_in_int_array() {
 void test_bytecode() {
   /* printf("sizeof(Code) = %lu\n", sizeof(Code)); */
   /* printf("sizeof(Obj*) = %lu\n", sizeof(Obj*)); */
+  /* printf("sizeof(Code*) = %lu\n", sizeof(Code*)); */
+  /* printf("sizeof(int) = %lu\n", sizeof(int)); */
   
   Runtime *r = runtime_new();
 
@@ -199,6 +201,8 @@ void test_bytecode() {
   code_write_push_constant(&writer, gc_make_number(r->gc, 100.0));
   code_write_push_constant(&writer, gc_make_number(r->gc, 200.0));
   code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "bleh"));
+  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "+"));
+  code_write_call(&writer, 2);
   code_write_end(&writer);
 
   code_print(writer.codes);

@@ -242,6 +242,19 @@ Frame *runtime_frame_replace(Runtime *r, Obj *env, Code *code, const char *name)
   return runtime_frame_init(r, env, code, name);
 }
 
+void call_func(Runtime *r, Obj *f, int arg_count) {
+  Obj *args = gc_make_cons(r->gc, NULL, NULL);
+  Obj *last_arg = args;
+  for(int i = 0; i < arg_count; i++) {
+    Obj *value = gc_stack_pop(r->gc);
+    last_arg->car = value;
+    Obj *new_arg = gc_make_cons(r->gc, NULL, NULL);
+    last_arg->cdr = new_arg;
+    last_arg = new_arg;
+  }
+  Obj *result = ((Obj*(*)(Runtime*,Obj*))f->func)(r, args);
+  gc_stack_push(r->gc, result);
+}
 
 Obj *read_next_code_as_obj(Frame *frame) {
   Code *cp = frame->p;
@@ -279,6 +292,23 @@ void runtime_step_eval(Runtime *r) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = gc_stack_pop(r->gc);
     runtime_env_assoc(r, frame->env, sym, value);
+  }
+  else if(code == CALL) {
+    //gc_stack_print(r->gc, false);
+    Obj *f = gc_stack_pop(r->gc);
+    int arg_count = 2;
+    printf("Calling f '%s', type = %s.\n", f->name, type_to_str(f->type));
+    // TODO: Use a C-array to pass args instead!
+    if(f->type == FUNC) {
+      call_func(r, f, arg_count);
+    }
+    else if(f->type == LAMBDA) {
+      error("Can't handle lambda yet");
+    }
+    else {
+      error("Can't call something that's not a lambda or func.\n");
+      exit(1);
+    }
   }
   else if(code == RETURN) {
     

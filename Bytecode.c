@@ -9,6 +9,7 @@ const char *code_to_str(Code code) {
   else if(code == RETURN) return "RETURN";
   else if(code == LOOKUP_AND_PUSH) return "LOOKUP_AND_PUSH";
   else if(code == DEFINE) return "DEFINE";
+  else if(code == CALL) return "CALL";
   else return "UNKNOWN_CODE";
 }
 
@@ -70,6 +71,11 @@ void code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
 void code_write_define(CodeWriter *writer, Obj *sym) {
   code_write(writer, DEFINE);
   obj_write(writer, sym);
+}
+
+void code_write_call(CodeWriter *writer, int arg_count) {
+  code_write(writer, CALL);
+  
 }
 
 void code_write_end(CodeWriter *writer) {
