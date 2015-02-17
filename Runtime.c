@@ -1,6 +1,7 @@
 #include "Runtime.h"
 #include "Parser.h"
 #include "BuiltinFuncs.h"
+#include "Compiler.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +15,9 @@
 #define LOG_VALUE_STACK 0
 #define LOG_FUNC_CALL 0
 
-void runtime_eval_internal(Runtime *r, Obj *env, const char *source, int top_frame_index, int break_frame_index, bool print_result);
+
+// , int top_frame_index, int break_frame_index,
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result);
 
 // The environments root is a cons cell where the car contains the a-list and the cdr contains the parent env.
 
@@ -248,15 +251,13 @@ Obj *fetch_args(Runtime *r, int arg_count) {
   Obj *last_arg = args;
   for(int i = 0; i < arg_count; i++) {
     Obj *value = gc_stack_pop(r->gc);
-    last_arg->car = value;
-    Obj *new_arg = gc_make_cons(r->gc, NULL, NULL);
-    last_arg->cdr = new_arg;
+    Obj *new_arg = gc_make_cons(r->gc, value, last_arg);
     last_arg = new_arg;
   }
-  printf("fetched %d args: ", arg_count);
-  print_obj(args);
+  printf("Fetched %d args: ", arg_count);
+  print_obj(last_arg);
   printf("\n");
-  return args;
+  return last_arg;
 }
 
 void call_func(Runtime *r, Obj *f, int arg_count) {
@@ -318,12 +319,7 @@ void runtime_step_eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
 
   Code code = *frame->p;
-  printf("%s> %s\n", frame->name, code_to_str(code));
-
-  if(code == END_OF_CODES) {
-    r->mode = RUNTIME_MODE_FINISHED;
-    return;
-  }
+  //printf("%s> %s\n", frame->name, code_to_str(code));
   
   frame->p++;
 
@@ -352,7 +348,7 @@ void runtime_step_eval(Runtime *r) {
   else if(code == CALL) {
     Obj *f = gc_stack_pop(r->gc);
     int arg_count = read_next_code_as_int(frame);
-    printf("Calling %s '%s' with %d args.\n", type_to_str(f->type), f->name ? f->name : "λ", arg_count);
+    //printf("Calling %s '%s' with %d args.\n", type_to_str(f->type), f->name ? f->name : "λ", arg_count);
     if(f->type == FUNC) {
       call_func(r, f, arg_count);
     }
@@ -366,7 +362,7 @@ void runtime_step_eval(Runtime *r) {
       exit(1);
     }
   }
-  else if(code == RETURN) {
+  else if(code == RETURN || code == END_OF_CODES) {
     runtime_frame_pop(r);
   }
   else {
@@ -377,7 +373,43 @@ void runtime_step_eval(Runtime *r) {
   //gc_stack_print(r->gc, false);
 }
 
-void runtime_eval(Runtime *r, const char *source) {
-  
+// , int top_frame_index, int break_frame_index
+
+void eval_top_form(Runtime *r, Obj *env, Obj *form) {
+  Code *bytecode = compile(r->gc, form);
+  runtime_frame_push(r, env, bytecode, "top-level");
+  while(1) {
+    if(r->mode == RUNTIME_MODE_RUN) {
+      runtime_step_eval(r);
+      if(r->top_frame < 0) {
+	return;
+      }
+    }
+    else if(r->mode == RUNTIME_MODE_FINISHED) {
+      printf("\n");
+      return;
+    }
+    else {
+      printf("Not implemented.\n");
+      exit(1);
+    }
+  }
 }
 
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result) {
+  Obj *top_level_forms = parse(r->gc, source);
+  Obj *current_form = top_level_forms;
+  while(current_form && current_form->car) {
+    eval_top_form(r, env, current_form->car);
+    Obj *result = gc_stack_pop(r->gc);
+    if(print_result && result) {
+      print_obj(result);
+      printf("\n");
+    }
+    current_form = current_form->cdr;
+  }
+}
+
+void runtime_eval(Runtime *r, const char *source) {
+  runtime_eval_internal(r, r->global_env, source, true);
+}

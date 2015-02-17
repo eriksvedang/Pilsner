@@ -267,7 +267,7 @@ void test_compiler() {
 
   Runtime *r = runtime_new();
 
-  Obj *forms = parse(r->gc, "(+ 10 20)");
+  Obj *forms = parse(r->gc, "(- 20 3)");
   Obj *form = forms->car;
   Code *code = compile(r->gc, form);
   code_print(code);

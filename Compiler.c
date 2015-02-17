@@ -5,10 +5,6 @@
 
 static CodeWriter writer;
 
-  /* code_write_lookup_and_push(&writer, gc_make_symbol(gc, "*")); */
-  /* code_write_call(&writer, 2); */
-  /* code_write_return(&writer); */
-
 void visit(GC *gc, Obj *form) {
   if(form->type == SYMBOL) {
     code_write_lookup_and_push(&writer, form);
