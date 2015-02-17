@@ -39,11 +39,12 @@ void code_print(Code *code_block) {
     code_block++;
     printf("\n");
   }
+  printf("%s\n", code_to_str(*code_block));
   printf("------------------\n");
 }
 
 CodeWriter *code_writer_init(CodeWriter *writer, int size) {
-  writer->codes = malloc(size);
+  writer->codes = malloc(size); // TODO: Remember to clean this up somewhere!
   writer->codes[0] = UNINITIALIZED;
   writer->size = size;
   writer->pos = 0;

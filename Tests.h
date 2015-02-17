@@ -8,6 +8,7 @@
 #include "Parser.h"
 #include "Runtime.h"
 #include "Bytecode.h"
+#include "Compiler.h"
 
 void test_gc() {
   GC gc;
@@ -253,6 +254,25 @@ void test_bytecode_with_lambda() {
   
   runtime_frame_push(r, r->global_env, writer.codes, "testframe");
 
+  while(r->mode == RUNTIME_MODE_RUN) {
+    runtime_step_eval(r);
+  }
+
+  gc_stack_print(r->gc, false);
+  runtime_delete(r);
+}
+
+void test_compiler() {
+  //compile_and_print("(+ 2 3)");
+
+  Runtime *r = runtime_new();
+
+  Obj *forms = parse(r->gc, "(+ 10 20)");
+  Obj *form = forms->car;
+  Code *code = compile(r->gc, form);
+  code_print(code);
+  runtime_frame_push(r, r->global_env, code, "top-level");
+  
   while(r->mode == RUNTIME_MODE_RUN) {
     runtime_step_eval(r);
   }
