@@ -19,6 +19,9 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
       visit(writer, gc, form->cdr->cdr->car);
       code_write_define(writer, form->cdr->car);
     }
+    else if(form->car->type == SYMBOL && strcmp(form->car->name, "quote") == 0) {
+      code_write_push_constant(writer, form->cdr->car);
+    }
     else if(form->car->type == SYMBOL && (strcmp(form->car->name, "fn") == 0 || strcmp(form->car->name, "λ") == 0)) {
       Obj *args = form->cdr->car;
       assert(args);
