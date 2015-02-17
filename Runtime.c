@@ -243,6 +243,7 @@ Frame *runtime_frame_replace(Runtime *r, Obj *env, Code *code, const char *name)
 }
 
 void call_func(Runtime *r, Obj *f, int arg_count) {
+  // TODO: Use a C-array to pass args instead!
   Obj *args = gc_make_cons(r->gc, NULL, NULL);
   Obj *last_arg = args;
   for(int i = 0; i < arg_count; i++) {
@@ -297,8 +298,7 @@ void runtime_step_eval(Runtime *r) {
     //gc_stack_print(r->gc, false);
     Obj *f = gc_stack_pop(r->gc);
     int arg_count = 2;
-    printf("Calling f '%s', type = %s.\n", f->name, type_to_str(f->type));
-    // TODO: Use a C-array to pass args instead!
+    printf("Calling %s '%s' with %d args.\n", type_to_str(f->type), f->name, arg_count);
     if(f->type == FUNC) {
       call_func(r, f, arg_count);
     }

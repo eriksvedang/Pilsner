@@ -188,7 +188,7 @@ void test_bytecode() {
   Runtime *r = runtime_new();
 
   //runtime_inspect_env(r);
-  runtime_print_frames(r);
+  //runtime_print_frames(r);
 
   runtime_env_assoc(r, r->global_env,
 		    gc_make_symbol(r->gc, "x"),
@@ -205,7 +205,7 @@ void test_bytecode() {
   code_write_call(&writer, 2);
   code_write_end(&writer);
 
-  code_print(writer.codes);
+  //code_print(writer.codes);
   
   runtime_frame_push(r, r->global_env, writer.codes, "testframe");
 
