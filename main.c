@@ -20,10 +20,11 @@ void tests() {
   //test_runtime();
   //test_local_environments();
   //test_str_allocs();
+  test_bytecode();
 }
 
 int main(int argc, char *argv[]) { 
-  //tests();
-  repl();
+  tests();
+  //repl();
 }
 

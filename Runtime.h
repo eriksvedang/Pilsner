@@ -3,28 +3,14 @@
 
 #include "GC.h"
 #include "Obj.h"
+#include "Bytecode.h"
 
-#define MAX_ACTIVATION_FRAMES 1024
-
-typedef enum {
-  MODE_NORMAL,
-  MODE_DEF,
-  MODE_FUNC_CALL,
-  MODE_LAMBDA_RETURN,
-  MODE_IMMEDIATE_RETURN,
-  MODE_DO_BLOCK_RETURN,
-  MODE_IF_BRANCH,
-  MODE_IF_RETURN,
-} FrameMode;
+#define MAX_FRAMES 1024
 
 typedef struct {
-  int depth;
-  Obj *p; // the program counter
-  FrameMode mode;
-  int arg_count; // this is used when entering MODE_FUNC_CALL
-  int form_count; // this is used when evaling do-forms
   char name[128];
   Obj *env;
+  Code *p;
 } Frame;
 
 typedef enum {
@@ -38,18 +24,21 @@ typedef struct {
   Obj *global_env;
   Obj *nil;
   Obj *true_val;
-  Frame frames[MAX_ACTIVATION_FRAMES];
+  Frame frames[MAX_FRAMES];
   int top_frame;
   RuntimeMode mode;
-  //bool print_top_level_result;
 } Runtime;
 
 Runtime *runtime_new();
 void runtime_delete(Runtime *r);
 
 void runtime_eval(Runtime *r, const char *source);
+void runtime_step_eval(Runtime *r);
 bool runtime_load_file(Runtime *r, const char *filename, bool silent);
 void runtime_inspect_env(Runtime *r);
+
+Frame *runtime_frame_push(Runtime *r, Obj *env, Code *code, const char *name);
+void runtime_frame_pop(Runtime *r);
 void runtime_print_frames(Runtime *r);
 
 void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value);

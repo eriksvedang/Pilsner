@@ -7,6 +7,7 @@
 #include "Tests.h"
 #include "Parser.h"
 #include "Runtime.h"
+#include "Bytecode.h"
 
 void test_gc() {
   GC gc;
@@ -135,7 +136,6 @@ void test_local_environments() {
 }
 
 void test_str_allocs() {
-
   printf("sizeof(char) = %ld\n", sizeof(char));
   
   const char *a = "aha";
@@ -148,8 +148,61 @@ void test_str_allocs() {
   printf("sizeof(c) = %ld\n", sizeof(c));
 
   const char *d = malloc(256);
-  printf("sizeof(d) = %ld\n", sizeof(d));
+  printf("sizeof(d) = %ld\n", sizeof(d));  
+}
+
+void test_store_pointer_in_int_array() {
+  Obj *o = malloc(sizeof(Obj));
+  o->name = "foo";
   
+  int a[4];
+  a[0] = 10;
+  a[1] = 20;
+  a[2] = 30;
+  a[3] = 40;
+
+  printf("o = %p\n", o);
+
+  // The Obj* takes up two slots in the array
+  Obj **p = (Obj**)&a[1];
+  *p = o;
+
+  for (int i = 0; i < 4; i++) {
+    printf("%d: %d\n", i, a[i]);
+  }
+
+  // Treat the [1] position as an Obj* instead of an int
+  int *ap = &a[1];
+  Obj **oo = (Obj**)ap;
+  printf("oo = %p\n", *oo);
+  
+  printf("name = %s\n", (*oo)->name);
+}
+
+void test_bytecode() {
+  /* printf("sizeof(Code) = %lu\n", sizeof(Code)); */
+  /* printf("sizeof(Obj*) = %lu\n", sizeof(Obj*)); */
+  
+  Runtime *r = runtime_new();
+
+  //runtime_inspect_env(r);
+  runtime_print_frames(r);
+
+  CodeWriter writer;
+  code_writer_init(&writer, 1024);
+  code_write_return(&writer);
+  code_write_return(&writer);
+  code_write_push_constant(&writer, gc_make_number(r->gc, 42.0));
+  //code_write_push_constant(&writer, gc_make_number(r->gc, 100.0));
+  code_write_end(&writer);
+  
+  runtime_frame_push(r, r->global_env, writer.codes, "testframe");
+
+  while(r->mode == RUNTIME_MODE_RUN) {
+    runtime_step_eval(r);
+  }
+
+  runtime_delete(r);
 }
 
 #endif
