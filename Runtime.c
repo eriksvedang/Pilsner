@@ -225,7 +225,7 @@ Frame *runtime_frame_push(Runtime *r, Obj *env, Code *code, const char *name) {
   r->top_frame++;
   if(r->top_frame >= MAX_FRAMES) {
     printf("Can't push more stack frames, reached max limit: %d.\n", MAX_FRAMES);
-    exit(0);
+    exit(1);
   }
   return runtime_frame_init(r, env, code, name);
 }
@@ -242,7 +242,7 @@ Frame *runtime_frame_replace(Runtime *r, Obj *env, Code *code, const char *name)
   return runtime_frame_init(r, env, code, name);
 }
 
-void call_func(Runtime *r, Obj *f, int arg_count) {
+Obj *fetch_args(Runtime *r, int arg_count) {
   // TODO: Use a C-array to pass args instead!
   Obj *args = gc_make_cons(r->gc, NULL, NULL);
   Obj *last_arg = args;
@@ -253,8 +253,47 @@ void call_func(Runtime *r, Obj *f, int arg_count) {
     last_arg->cdr = new_arg;
     last_arg = new_arg;
   }
+  printf("fetched %d args: ", arg_count);
+  print_obj(args);
+  printf("\n");
+  return args;
+}
+
+void call_func(Runtime *r, Obj *f, int arg_count) {
+  Obj *args = fetch_args(r, arg_count);
   Obj *result = ((Obj*(*)(Runtime*,Obj*))f->func)(r, args);
   gc_stack_push(r->gc, result);
+}
+
+void call_lambda(Runtime *r, Obj *f, int arg_count) {
+  Obj *args = fetch_args(r, arg_count);
+
+  Obj *parent_env = f->car->car;
+  assert(parent_env);
+  Obj *local_env = runtime_env_make_local(r, parent_env);
+
+  Obj *arg_symbol_cons = f->car->cdr;
+  Obj *arg_value_cons = args;
+  
+  while(arg_symbol_cons && arg_symbol_cons->car &&
+	arg_value_cons  && arg_value_cons->car) {
+    Obj *arg_symbol = arg_symbol_cons->car;
+    if(arg_symbol->type != SYMBOL) {
+      printf("Must bind symbols as args, found: ");
+      print_obj(arg_symbol); printf("\n");
+    }
+    Obj *arg_value = arg_value_cons->car;
+    printf("Binding arg_symbol '%s' to value ", arg_symbol->name);
+    print_obj(arg_value);
+    printf("\n");
+    runtime_env_assoc(r, local_env, arg_symbol, arg_value);
+    arg_symbol_cons = arg_symbol_cons->cdr;
+    arg_value_cons = arg_value_cons->cdr;
+  }
+  
+  Obj *bytecode = f->cdr->cdr;
+  assert(bytecode->type == BYTECODE);
+  runtime_frame_push(r, local_env, (Code*)bytecode->code, "call_lambda");
 }
 
 Obj *read_next_code_as_obj(Frame *frame) {
@@ -279,7 +318,7 @@ void runtime_step_eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
 
   Code code = *frame->p;
-  printf("> %s\n", code_to_str(code));
+  printf("%s> %s\n", frame->name, code_to_str(code));
 
   if(code == END_OF_CODES) {
     r->mode = RUNTIME_MODE_FINISHED;
@@ -303,28 +342,39 @@ void runtime_step_eval(Runtime *r) {
     Obj *value = gc_stack_pop(r->gc);
     runtime_env_assoc(r, frame->env, sym, value);
   }
+  else if(code == PUSH_LAMBDA) {
+    Obj *args = read_next_code_as_obj(frame);
+    Obj *body = read_next_code_as_obj(frame);
+    Code *bytecode = (Code*)read_next_code_as_obj(frame);
+    Obj *lambda = gc_make_lambda(r->gc, frame->env, args, body, bytecode);
+    gc_stack_push(r->gc, lambda);
+  }
   else if(code == CALL) {
-    //gc_stack_print(r->gc, false);
     Obj *f = gc_stack_pop(r->gc);
     int arg_count = read_next_code_as_int(frame);
-    printf("Calling %s '%s' with %d args.\n", type_to_str(f->type), f->name, arg_count);
+    printf("Calling %s '%s' with %d args.\n", type_to_str(f->type), f->name ? f->name : "λ", arg_count);
     if(f->type == FUNC) {
       call_func(r, f, arg_count);
     }
     else if(f->type == LAMBDA) {
-      error("Can't handle lambda yet");
+      call_lambda(r, f, arg_count);
     }
     else {
-      error("Can't call something that's not a lambda or func.\n");
+      printf("Can't call something that's not a lambda or func:\n");
+      print_obj(f);
+      printf("\n");
       exit(1);
     }
   }
   else if(code == RETURN) {
-    
+    runtime_frame_pop(r);
   }
   else {
     printf("Can't understand code %s\n", code_to_str(code));
   }
+
+  //runtime_print_frames(r);
+  //gc_stack_print(r->gc, false);
 }
 
 void runtime_eval(Runtime *r, const char *source) {

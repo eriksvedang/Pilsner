@@ -219,4 +219,46 @@ void test_bytecode() {
   runtime_delete(r);
 }
 
+void test_bytecode_with_lambda() {
+  Runtime *r = runtime_new();
+  
+  CodeWriter writer;
+
+  // Write code for lambda: (fn (dront) (* dront dront))
+  code_writer_init(&writer, 1024);
+  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "dront"));
+  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "dront"));
+  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "*"));
+  code_write_call(&writer, 2);
+  code_write_return(&writer);
+  code_write_end(&writer);
+
+  //code_print(writer.codes);
+  Code *lambda_code = writer.codes;
+
+  Obj *forms = parse(r->gc, "(fn (dront) (* dront dront))");
+  Obj *form = forms->car;
+  Obj *args = form->cdr->car;
+  Obj *body = form->cdr->cdr->car;
+  /* printf("Args: "); print_obj(args); printf("\n"); */
+  /* printf("Body: "); print_obj(body); printf("\n"); */
+
+  // Write code for main: ((fn (dront) (* dront dront)) 5)
+  code_writer_init(&writer, 1024);
+  code_write_push_constant(&writer, gc_make_number(r->gc, 5.0));
+  code_write_push_lambda(&writer, args, body, lambda_code);
+  code_write_call(&writer, 1); // one arg
+  code_write_end(&writer);
+  //code_print(writer.codes);
+  
+  runtime_frame_push(r, r->global_env, writer.codes, "testframe");
+
+  while(r->mode == RUNTIME_MODE_RUN) {
+    runtime_step_eval(r);
+  }
+
+  gc_stack_print(r->gc, false);
+  runtime_delete(r);
+}
+
 #endif

@@ -11,6 +11,7 @@ typedef enum {
   LOOKUP_AND_PUSH = 5,
   DEFINE = 6,
   CALL = 7,
+  PUSH_LAMBDA = 8,
   END_OF_CODES = 666,
 } Code;
 
@@ -31,5 +32,6 @@ void code_write_define(CodeWriter *writer, Obj *sym);
 void code_write_call(CodeWriter *writer, int arg_count);
 void code_write_end(CodeWriter *writer);
 void code_write_return(CodeWriter *writer);
+void code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code);
 
 #endif

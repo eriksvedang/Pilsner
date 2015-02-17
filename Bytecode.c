@@ -10,6 +10,7 @@ const char *code_to_str(Code code) {
   else if(code == LOOKUP_AND_PUSH) return "LOOKUP_AND_PUSH";
   else if(code == DEFINE) return "DEFINE";
   else if(code == CALL) return "CALL";
+  else if(code == PUSH_LAMBDA) return "PUSH_LAMBDA";
   else return "UNKNOWN_CODE";
 }
 
@@ -30,6 +31,10 @@ void code_print(Code *code_block) {
     else if(*code_block == CALL) {
       printf(" <int>");
       code_block++;
+    }
+    else if(*code_block == PUSH_LAMBDA) {
+      printf(" <args> <body> <code>");
+      code_block += 6;
     }
     code_block++;
     printf("\n");
@@ -90,6 +95,13 @@ void code_write_define(CodeWriter *writer, Obj *sym) {
   }
   code_write(writer, DEFINE);
   obj_write(writer, sym);
+}
+
+void code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code) {
+  code_write(writer, PUSH_LAMBDA);
+  obj_write(writer, args);
+  obj_write(writer, body);
+  obj_write(writer, (Obj*)code); // pointers take up the same amount of space
 }
 
 void code_write_call(CodeWriter *writer, int arg_count) {
