@@ -266,6 +266,15 @@ Obj *read_next_code_as_obj(Frame *frame) {
   return o;
 }
 
+int read_next_code_as_int(Frame *frame) {
+  Code *cp = frame->p;
+  int *ip = (int*)cp;
+  int i = *ip;
+  //printf("read i = %d\n", i);
+  frame->p++;
+  return i;
+}
+
 void runtime_step_eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
 
@@ -297,7 +306,7 @@ void runtime_step_eval(Runtime *r) {
   else if(code == CALL) {
     //gc_stack_print(r->gc, false);
     Obj *f = gc_stack_pop(r->gc);
-    int arg_count = 2;
+    int arg_count = read_next_code_as_int(frame);
     printf("Calling %s '%s' with %d args.\n", type_to_str(f->type), f->name, arg_count);
     if(f->type == FUNC) {
       call_func(r, f, arg_count);

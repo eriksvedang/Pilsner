@@ -202,7 +202,7 @@ void test_bytecode() {
   code_write_push_constant(&writer, gc_make_number(r->gc, 200.0));
   code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "bleh"));
   code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "+"));
-  code_write_call(&writer, 2);
+  code_write_call(&writer, 3);
   code_write_end(&writer);
 
   //code_print(writer.codes);

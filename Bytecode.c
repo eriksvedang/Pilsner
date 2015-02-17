@@ -27,6 +27,10 @@ void code_print(Code *code_block) {
       printf(" <obj>");
       code_block += 2;
     }
+    else if(*code_block == CALL) {
+      printf(" <int>");
+      code_block++;
+    }
     code_block++;
     printf("\n");
   }
@@ -58,6 +62,15 @@ void obj_write(CodeWriter *writer, Obj *o) {
   writer->pos += 2;
 }
 
+void int_write(CodeWriter *writer, int i) {
+  if(writer->pos >= writer->size) {
+    error("Can't write int, code block is full.");
+  }
+  int *ip = (int*)&(writer->codes[writer->pos]);
+  *ip = i;
+  writer->pos++;
+}
+
 void code_write_push_constant(CodeWriter *writer, Obj *o) {
   code_write(writer, PUSH_CONSTANT);
   obj_write(writer, o);
@@ -75,7 +88,7 @@ void code_write_define(CodeWriter *writer, Obj *sym) {
 
 void code_write_call(CodeWriter *writer, int arg_count) {
   code_write(writer, CALL);
-  
+  int_write(writer, arg_count);
 }
 
 void code_write_end(CodeWriter *writer) {
