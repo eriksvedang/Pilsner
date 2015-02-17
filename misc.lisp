@@ -33,5 +33,5 @@
 
 (def t (fn () (map inc '(5 10 15))))
 
-
+(println "misc.lisp was loaded!")
 

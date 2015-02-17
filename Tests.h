@@ -212,7 +212,7 @@ void test_bytecode() {
   
   runtime_frame_push(r, r->global_env, writer.codes, "testframe");
 
-  while(r->mode == RUNTIME_MODE_RUN) {
+  while(r->top_frame >= 0) {
     runtime_step_eval(r);
   }
 
@@ -254,7 +254,7 @@ void test_bytecode_with_lambda() {
   
   runtime_frame_push(r, r->global_env, writer.codes, "testframe");
 
-  while(r->mode == RUNTIME_MODE_RUN) {
+  while(r->top_frame >= 0) {
     runtime_step_eval(r);
   }
 
@@ -263,7 +263,10 @@ void test_bytecode_with_lambda() {
 }
 
 void test_compiler() {
+  compile_and_print("(def a 10)");
   //compile_and_print("(+ 2 3)");
+  //compile_and_print("(fn (x y) (* x x y))");
+  return;
 
   Runtime *r = runtime_new();
 
@@ -273,7 +276,7 @@ void test_compiler() {
   code_print(code);
   runtime_frame_push(r, r->global_env, code, "top-level");
   
-  while(r->mode == RUNTIME_MODE_RUN) {
+  while(r->top_frame >= 0) {
     runtime_step_eval(r);
   }
 

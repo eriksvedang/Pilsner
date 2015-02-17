@@ -144,7 +144,8 @@ bool runtime_load_file(Runtime *r, const char *filename, bool silent) {
   }
 
   if (buffer) {
-    //runtime_eval(r, r->global_env, buffer, r->top_frame + 1, r->top_frame + 1, false);
+    //runtime_eval(r, buffer);
+    printf("Loading of files not implemented yet.\n");
     return true;
   } else {
     printf("Failed to open buffer from file: %s\n", filename);
@@ -254,9 +255,9 @@ Obj *fetch_args(Runtime *r, int arg_count) {
     Obj *new_arg = gc_make_cons(r->gc, value, last_arg);
     last_arg = new_arg;
   }
-  printf("Fetched %d args: ", arg_count);
-  print_obj(last_arg);
-  printf("\n");
+  /* printf("Fetched %d args: ", arg_count); */
+  /* print_obj(last_arg); */
+  /* printf("\n"); */
   return last_arg;
 }
 
@@ -323,7 +324,10 @@ void runtime_step_eval(Runtime *r) {
   
   frame->p++;
 
-  if(code == PUSH_CONSTANT) {
+  if(code == RETURN || code == END_OF_CODES) {
+    runtime_frame_pop(r);
+  }
+  else if(code == PUSH_CONSTANT) {
     Obj *o = read_next_code_as_obj(frame);
     gc_stack_push(r->gc, o);
     //printf("Constant: %s\n", obj_to_str(o));
@@ -331,12 +335,18 @@ void runtime_step_eval(Runtime *r) {
   else if(code == LOOKUP_AND_PUSH) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = runtime_env_lookup(frame->env, sym);
-    gc_stack_push(r->gc, value);
+    if(value) {
+      gc_stack_push(r->gc, value);
+    } else {
+      printf("Can't find value %s in environment.\n", sym->name);
+      gc_stack_push(r->gc, r->nil);
+    }
   }
   else if(code == DEFINE) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = gc_stack_pop(r->gc);
     runtime_env_assoc(r, frame->env, sym, value);
+    gc_stack_push(r->gc, sym);
   }
   else if(code == PUSH_LAMBDA) {
     Obj *args = read_next_code_as_obj(frame);
@@ -361,9 +371,6 @@ void runtime_step_eval(Runtime *r) {
       printf("\n");
       exit(1);
     }
-  }
-  else if(code == RETURN || code == END_OF_CODES) {
-    runtime_frame_pop(r);
   }
   else {
     printf("Can't understand code %s\n", code_to_str(code));

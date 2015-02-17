@@ -25,7 +25,11 @@ void code_print(Code *code_block) {
   while(*code_block != END_OF_CODES) {
     printf("%s", code_to_str(*code_block));
     if(pushes_obj(*code_block)) {
-      printf(" <obj>");
+      printf(" ");
+      /* Code *cp = code_block; */
+      /* Obj **oo = (Obj**)cp; */
+      /* Obj *o = *oo; */
+      /* print_obj(o); */
       code_block += 2;
     }
     else if(*code_block == CALL) {
