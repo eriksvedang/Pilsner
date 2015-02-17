@@ -22,6 +22,12 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "quote") == 0) {
       code_write_push_constant(writer, form->cdr->car);
     }
+    else if(form->car->type == SYMBOL && strcmp(form->car->name, "if") == 0) {
+      Obj *expression = form->cdr->car;
+      Obj *true_branch = form->cdr->cdr->car;
+      Obj *false_branch = form->cdr->cdr->cdr->car;
+      visit(writer, gc, expression);      
+    }
     else if(form->car->type == SYMBOL && (strcmp(form->car->name, "fn") == 0 || strcmp(form->car->name, "λ") == 0)) {
       Obj *args = form->cdr->car;
       assert(args);

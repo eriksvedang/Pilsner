@@ -324,6 +324,14 @@ void runtime_step_eval(Runtime *r) {
   if(code == RETURN || code == END_OF_CODES) {
     runtime_frame_pop(r);
   }
+  else if(code == IF) {
+    Obj *value = gc_stack_pop(r->gc);
+    if(eq(value, r->nil)) {
+      frame->p += 4;
+    } else {
+      frame->p += 2;
+    }
+  }
   else if(code == JUMP) {
     int jump_length = read_next_code_as_int(frame);
     frame->p += jump_length;
