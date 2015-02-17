@@ -29,13 +29,13 @@ void repl() {
   /* printf("|                WELCOME TO PILSNER                |\n"); */
   /* printf("|               By Erik Svedäng 2015               |\n"); */
   /* printf("====================================================\n"); */
-  printf("\e[32m~ Welcome to the Pilsner REPL ~\e[0m\n");
+  printf("\e[33m~ Welcome to the Pilsner REPL ~\e[0m\n");
   
   const int MAX_INPUT_BUFFER_SIZE = 2048;
   char str[MAX_INPUT_BUFFER_SIZE];
   
   while(r->mode != RUNTIME_MODE_FINISHED) {
-    printf("➜ ");
+    printf("\e[32m➜\e[0m ");
     fgets(str, MAX_INPUT_BUFFER_SIZE, stdin);
     runtime_eval(r, str);
   }

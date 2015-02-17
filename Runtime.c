@@ -142,7 +142,7 @@ bool runtime_load_file(Runtime *r, const char *filename, bool silent) {
   }
 
   if (buffer) {
-    runtime_eval_internal(r, r->global_env, buffer, true, r->top_frame + 1, -1);
+    runtime_eval_internal(r, r->global_env, buffer, false, r->top_frame + 1, -1);
     return true;
   } else {
     printf("Failed to open buffer from file: %s\n", filename);
