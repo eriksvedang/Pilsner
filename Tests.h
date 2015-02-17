@@ -188,15 +188,15 @@ void test_bytecode() {
   //runtime_inspect_env(r);
   runtime_print_frames(r);
 
-  Obj *c42 = gc_make_number(r->gc, 42.0);
-  //printf("c42: %s, %p\n", obj_to_str(c42), c42);
+  runtime_env_assoc(r, r->global_env,
+		    gc_make_symbol(r->gc, "x"),
+		    gc_make_number(r->gc, 12345));
   
   CodeWriter writer;
   code_writer_init(&writer, 1024);
-  code_write_return(&writer);
-  code_write_return(&writer);
-  code_write_push_constant(&writer, c42);
-  code_write_return(&writer);
+  code_write_push_constant(&writer, gc_make_number(r->gc, 42.0));
+  code_write_push_constant(&writer, gc_make_number(r->gc, 100.0));
+  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "x"));
   code_write_end(&writer);
 
   /* for (int i = 0; i < 10; i++) { */
@@ -209,7 +209,7 @@ void test_bytecode() {
     runtime_step_eval(r);
   }
 
-  gc_stack_print(r->gc);
+  gc_stack_print(r->gc, false);
   runtime_delete(r);
 }
 

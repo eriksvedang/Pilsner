@@ -29,12 +29,16 @@ Obj *gc_stack_pop(GC *gc) {
   return o;
 }
 
-void gc_stack_print(GC *gc) {
+void gc_stack_print(GC *gc, bool show_bottom_frame) {
   printf("------------\n");
   printf("Value stack:\n");
   for(int i = gc->stackSize - 1; i >= 0; i--) {
     printf("%d:\t", i);
-    print_obj(gc->stack[i]);
+    if(!show_bottom_frame && i == 0) {
+      printf("...");
+    } else {
+      print_obj(gc->stack[i]);
+    }
     printf("\n");
   }
   printf("------------\n");

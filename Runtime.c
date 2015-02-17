@@ -92,7 +92,7 @@ Obj *runtime_env(Runtime *r, Obj *args) {
 }
 
 Obj *runtime_print_stack(Runtime *r, Obj *args) {
-  gc_stack_print(r->gc);
+  gc_stack_print(r->gc, false);
   return r->nil;
 }
 
@@ -242,6 +242,16 @@ Frame *runtime_frame_replace(Runtime *r, Obj *env, Code *code, const char *name)
   return runtime_frame_init(r, env, code, name);
 }
 
+
+Obj *read_next_code_as_obj(Frame *frame) {
+  Code *cp = frame->p;
+  Obj **oo = (Obj**)cp;
+  Obj *o = *oo;
+  //printf("read o = %p\n", o);
+  frame->p += 2;
+  return o;
+}
+
 void runtime_step_eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
 
@@ -256,14 +266,14 @@ void runtime_step_eval(Runtime *r) {
   frame->p++;
 
   if(code == PUSH_CONSTANT) {
-    // Treat the current instruction as an Obj* instead
-    Code *cp = frame->p;
-    Obj **oo = (Obj**)cp;
-    Obj *o = *oo;
-    //printf("o = %p\n", o);
-    frame->p += 2;
+    Obj *o = read_next_code_as_obj(frame);
     gc_stack_push(r->gc, o);
     printf("Constant: %s\n", obj_to_str(o));
+  }
+  else if(code == LOOKUP_AND_PUSH) {
+    Obj *sym = read_next_code_as_obj(frame);
+    Obj *value = runtime_env_lookup(frame->env, sym);
+    gc_stack_push(r->gc, value);
   }
   else if(code == RETURN) {
     

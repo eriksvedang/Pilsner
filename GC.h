@@ -22,7 +22,7 @@ GCResult gc_collect(GC *gc);
 // Stack
 void gc_stack_push(GC *gc, Obj *o);
 Obj *gc_stack_pop(GC *gc);
-void gc_stack_print(GC *gc);
+void gc_stack_print(GC *gc, bool show_bottom_frame);
 
 // Make objects
 Obj *gc_make_cons(GC *gc, Obj *car, Obj *cdr);

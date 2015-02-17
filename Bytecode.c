@@ -7,6 +7,7 @@ const char *code_to_str(Code code) {
   else if(code == PUSH_CONSTANT) return "PUSH_CONSTANT";
   else if(code == UNINITIALIZED) return "UNINITIALIZED";
   else if(code == RETURN) return "RETURN";
+  else if(code == LOOKUP_AND_PUSH) return "LOOKUP_AND_PUSH";
   else return "UNKNOWN_CODE";
 }
 
@@ -38,6 +39,11 @@ void obj_write(CodeWriter *writer, Obj *o) {
 void code_write_push_constant(CodeWriter *writer, Obj *o) {
   code_write(writer, PUSH_CONSTANT);
   obj_write(writer, o);
+}
+
+void code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
+  code_write(writer, LOOKUP_AND_PUSH);
+  obj_write(writer, sym);
 }
 
 void code_write_end(CodeWriter *writer) {
