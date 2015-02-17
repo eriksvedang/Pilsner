@@ -15,9 +15,7 @@
 #define LOG_VALUE_STACK 0
 #define LOG_FUNC_CALL 0
 
-
-// , int top_frame_index, int break_frame_index,
-void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result);
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index);
 
 // The environments root is a cons cell where the car contains the a-list and the cdr contains the parent env.
 
@@ -144,8 +142,7 @@ bool runtime_load_file(Runtime *r, const char *filename, bool silent) {
   }
 
   if (buffer) {
-    //runtime_eval(r, buffer);
-    printf("Loading of files not implemented yet.\n");
+    runtime_eval_internal(r, r->global_env, buffer, true, r->top_frame + 1, -1);
     return true;
   } else {
     printf("Failed to open buffer from file: %s\n", filename);
@@ -380,15 +377,13 @@ void runtime_step_eval(Runtime *r) {
   //gc_stack_print(r->gc, false);
 }
 
-// , int top_frame_index, int break_frame_index
-
-void eval_top_form(Runtime *r, Obj *env, Obj *form) {
+void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
   Code *bytecode = compile(r->gc, form);
   runtime_frame_push(r, env, bytecode, "top-level");
   while(1) {
     if(r->mode == RUNTIME_MODE_RUN) {
       runtime_step_eval(r);
-      if(r->top_frame < 0) {
+      if(r->top_frame < top_frame_index) {
 	return;
       }
     }
@@ -403,11 +398,11 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form) {
   }
 }
 
-void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result) {
+void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index) {
   Obj *top_level_forms = parse(r->gc, source);
   Obj *current_form = top_level_forms;
   while(current_form && current_form->car) {
-    eval_top_form(r, env, current_form->car);
+    eval_top_form(r, env, current_form->car, top_frame_index, break_frame_index);
     Obj *result = gc_stack_pop(r->gc);
     if(print_result && result) {
       print_obj(result);
@@ -418,5 +413,6 @@ void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_
 }
 
 void runtime_eval(Runtime *r, const char *source) {
-  runtime_eval_internal(r, r->global_env, source, true);
+  runtime_eval_internal(r, r->global_env, source, true, 0, -1);
 }
+

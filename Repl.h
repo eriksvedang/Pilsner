@@ -21,8 +21,9 @@ void repl() {
   
   Runtime *r = runtime_new();
 
-  load(r, lib_path, "core.lisp");
-  load(r, lib_path, "misc.lisp");
+  load(r, lib_path, "minimal.lisp");
+  //load(r, lib_path, "core.lisp");
+  //load(r, lib_path, "misc.lisp");
 
   /* printf("====================================================\n"); */
   /* printf("|                WELCOME TO PILSNER                |\n"); */

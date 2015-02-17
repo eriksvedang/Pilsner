@@ -25,10 +25,10 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
       Obj *body = form->cdr->cdr->car;
       assert(body);
       Code *bytecode = compile(gc, body);
-      printf("Compiled code for lambda ");
-      print_obj(form);
-      printf("\n");
-      code_print(bytecode);
+      /* printf("Compiled code for lambda "); */
+      /* print_obj(form); */
+      /* printf("\n"); */
+      /* code_print(bytecode); */
       code_write_push_lambda(writer, args, body, bytecode);
     }
     else {
