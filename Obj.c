@@ -10,6 +10,7 @@ const char *type_to_str(Type type) {
   else if(type == STRING) return "STRING";
   else if(type == NUMBER) return "NUMBER";
   else if(type == LAMBDA) return "LAMBDA";
+  else if(type == BYTECODE) return "BYTECODE";
   else return "UNKNOWN";
 }
 
@@ -43,6 +44,9 @@ const char *obj_to_str(Obj *o) {
   }
   else if(o->type == LAMBDA) {
     return "λ";
+  }
+  else if(o->type == BYTECODE) {
+    return "BYTECODE";
   }
   else {
     error("Can't print unknown type.");
@@ -94,6 +98,9 @@ void print_obj(Obj *o) {
   }
   else if(o->type == LAMBDA) {
     printf("λ");
+  }
+  else if(o->type == BYTECODE) {
+    printf("BYTECODE");
   }
 }
 

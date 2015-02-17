@@ -4,6 +4,8 @@
 #include "Error.h"
 #include <stdbool.h>
 
+enum eCode;
+
 typedef enum {
   CONS,
   SYMBOL,
@@ -11,6 +13,7 @@ typedef enum {
   NUMBER,
   STRING,
   LAMBDA,
+  BYTECODE,
 } Type;
 
 typedef struct sObj {
@@ -29,6 +32,8 @@ typedef struct sObj {
     void *func;
     // NUMBER
     double number;
+    // BYTECODE
+    enum eCode *code;
   };
 } Obj;
 

@@ -105,11 +105,18 @@ Obj *gc_make_string(GC *gc, char *text) {
   return o;
 }
 
-Obj *gc_make_lambda(GC *gc, Obj *env, Obj *args, Obj *body) {
+Obj *gc_make_bytecode(GC *gc, Code *code) {
+  Obj *o = gc_make_obj(gc, BYTECODE);
+  o->code = (enum eCode*)code;
+  return o;
+}
+
+Obj *gc_make_lambda(GC *gc, Obj *env, Obj *args, Obj *body, Code *code) {
   Obj *o = gc_make_obj(gc, LAMBDA);
   Obj *envAndArgs = gc_make_cons(gc, env, args);
+  Obj *bodyAndCode = gc_make_cons(gc, body, gc_make_bytecode(gc, code));
   o->car = envAndArgs;
-  o->cdr = body;
+  o->cdr = bodyAndCode;
   return o;
 }
 

@@ -77,11 +77,17 @@ void code_write_push_constant(CodeWriter *writer, Obj *o) {
 }
 
 void code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
+  if(sym->type != SYMBOL) {
+    error("Can't write LOOKUP_AND_PUSH with non-symbol");
+  }
   code_write(writer, LOOKUP_AND_PUSH);
   obj_write(writer, sym);
 }
 
 void code_write_define(CodeWriter *writer, Obj *sym) {
+  if(sym->type != SYMBOL) {
+    error("Can't write DEFINE with non-symbol");
+  }
   code_write(writer, DEFINE);
   obj_write(writer, sym);
 }
