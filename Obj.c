@@ -45,7 +45,7 @@ const char *obj_to_str(Obj *o) {
     return "λ";
   }
   else {
-    error("Uknown type.");
+    error("Can't print unknown type.");
     return NULL;
   }
 }

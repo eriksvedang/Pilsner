@@ -4,6 +4,6 @@
 #include <stdlib.h>
 
 void error(const char *message) {
-  printf("ERROR: %s", message);
+  printf("ERROR: %s\n", message);
   exit(1);
 }

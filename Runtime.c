@@ -257,10 +257,12 @@ void runtime_step_eval(Runtime *r) {
 
   if(code == PUSH_CONSTANT) {
     // Treat the current instruction as an Obj* instead
-    Code **codep = &frame->p;
-    Obj **op = (Obj**)codep;
-    Obj *o = *op;
+    Code *cp = frame->p;
+    Obj **oo = (Obj**)cp;
+    Obj *o = *oo;
+    //printf("o = %p\n", o);
     frame->p += 2;
+    gc_stack_push(r->gc, o);
     printf("Constant: %s\n", obj_to_str(o));
   }
   else if(code == RETURN) {

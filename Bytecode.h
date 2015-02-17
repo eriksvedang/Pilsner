@@ -5,10 +5,10 @@
 #include "Obj.h"
 
 typedef enum {
-  END_OF_CODES,
-  RETURN,
-  PUSH_CONSTANT,
-  UNINITIALIZED,
+  UNINITIALIZED = 0,
+  END_OF_CODES = 666,
+  RETURN = 3,
+  PUSH_CONSTANT = 4,
 } Code;
 
 typedef struct {

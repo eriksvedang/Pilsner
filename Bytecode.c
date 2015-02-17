@@ -30,13 +30,9 @@ void obj_write(CodeWriter *writer, Obj *o) {
   if(writer->pos >= writer->size) {
     error("Can't write Obj*, code block is full.");
   }
-  /* Code *c = &writer->codes[writer->pos]; */
-  /* Obj **co = (Obj**)c; */
-  /* *co = o; */
-  /* writer->pos += 2; */
-
   Obj **p = (Obj**)&(writer->codes[writer->pos]);
   *p = o;
+  writer->pos += 2;
 }
 
 void code_write_push_constant(CodeWriter *writer, Obj *o) {
