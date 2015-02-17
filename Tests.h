@@ -220,6 +220,31 @@ void test_bytecode() {
   runtime_delete(r);
 }
 
+void test_bytecode_jump() {
+  Runtime *r = runtime_new();
+
+  CodeWriter writer;
+  code_writer_init(&writer, 1024);
+  code_write_push_constant(&writer, gc_make_number(r->gc, 10));
+  code_write_jump(&writer, 6);
+  code_write_push_constant(&writer, gc_make_number(r->gc, 20));
+  code_write_push_constant(&writer, gc_make_number(r->gc, 30));
+  code_write_push_constant(&writer, gc_make_number(r->gc, 40));
+  code_write_push_constant(&writer, gc_make_number(r->gc, 50));
+  code_write_end(&writer);
+
+  //code_print(writer.codes);
+  
+  runtime_frame_push(r, r->global_env, writer.codes, "testframe");
+
+  while(r->top_frame >= 0) {
+    runtime_step_eval(r);
+  }
+
+  gc_stack_print(r->gc, false);
+  runtime_delete(r);
+}
+
 void test_bytecode_with_lambda() {
   Runtime *r = runtime_new();
   

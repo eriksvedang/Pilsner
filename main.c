@@ -21,8 +21,9 @@ void tests() {
   //test_local_environments();
   //test_str_allocs();
   //test_bytecode();
+  test_bytecode_jump();
   //test_bytecode_with_lambda();
-  test_compiler();
+  //test_compiler();
 }
 
 int main(int argc, char *argv[]) { 

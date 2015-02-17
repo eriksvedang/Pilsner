@@ -317,12 +317,16 @@ void runtime_step_eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
 
   Code code = *frame->p;
-  //printf("%s> %s\n", frame->name, code_to_str(code));
+  printf("%s> %s\n", frame->name, code_to_str(code));
   
   frame->p++;
 
   if(code == RETURN || code == END_OF_CODES) {
     runtime_frame_pop(r);
+  }
+  else if(code == JUMP) {
+    int jump_length = read_next_code_as_int(frame);
+    frame->p += jump_length;
   }
   else if(code == PUSH_CONSTANT) {
     Obj *o = read_next_code_as_obj(frame);
@@ -370,7 +374,7 @@ void runtime_step_eval(Runtime *r) {
     }
   }
   else {
-    printf("Can't understand code %s\n", code_to_str(code));
+    printf("runtime_step_eval can't understand code %s\n", code_to_str(code));
   }
 
   //runtime_print_frames(r);

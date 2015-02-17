@@ -11,6 +11,8 @@ const char *code_to_str(Code code) {
   else if(code == DEFINE) return "DEFINE";
   else if(code == CALL) return "CALL";
   else if(code == PUSH_LAMBDA) return "PUSH_LAMBDA";
+  else if(code == JUMP) return "JUMP";
+  else if(code == IF) return "IF";
   else return "UNKNOWN_CODE";
 }
 
@@ -33,6 +35,10 @@ void code_print(Code *code_block) {
       code_block += 2;
     }
     else if(*code_block == CALL) {
+      printf(" <int>");
+      code_block++;
+    }
+    else if(*code_block == JUMP) {
       printf(" <int>");
       code_block++;
     }
@@ -81,43 +87,61 @@ void int_write(CodeWriter *writer, int i) {
   writer->pos++;
 }
 
-void code_write_push_constant(CodeWriter *writer, Obj *o) {
+int code_write_push_constant(CodeWriter *writer, Obj *o) {
   code_write(writer, PUSH_CONSTANT);
   obj_write(writer, o);
+  return 3;
 }
 
-void code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
+int code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
   if(sym->type != SYMBOL) {
     error("Can't write LOOKUP_AND_PUSH with non-symbol");
   }
   code_write(writer, LOOKUP_AND_PUSH);
   obj_write(writer, sym);
+  return 3;
 }
 
-void code_write_define(CodeWriter *writer, Obj *sym) {
+int code_write_define(CodeWriter *writer, Obj *sym) {
   if(sym->type != SYMBOL) {
     error("Can't write DEFINE with non-symbol");
   }
   code_write(writer, DEFINE);
   obj_write(writer, sym);
+  return 3;
 }
 
-void code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code) {
+int code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code) {
   code_write(writer, PUSH_LAMBDA);
   obj_write(writer, args);
   obj_write(writer, body);
   obj_write(writer, (Obj*)code); // pointers take up the same amount of space
+  return 7;
 }
 
-void code_write_call(CodeWriter *writer, int arg_count) {
+int code_write_call(CodeWriter *writer, int arg_count) {
   code_write(writer, CALL);
   int_write(writer, arg_count);
+  return 2;
 }
 
-void code_write_end(CodeWriter *writer) {
+int code_write_jump(CodeWriter *writer, int jump_length) {
+  code_write(writer, JUMP);
+  int_write(writer, jump_length);
+  return 2;
+}
+
+int code_write_if(CodeWriter *writer) {
+  code_write(writer, IF);
+  return 1;
+}
+
+int code_write_end(CodeWriter *writer) {
   code_write(writer, END_OF_CODES);
+  return 1;
 }
 
-void code_write_return(CodeWriter *writer) {
+int code_write_return(CodeWriter *writer) {
   code_write(writer, RETURN);
+  return 1;
 }
