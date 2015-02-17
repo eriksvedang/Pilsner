@@ -256,7 +256,7 @@ void runtime_step_eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
 
   Code code = *frame->p;
-  printf("code: %s\n", code_to_str(code));
+  printf("> %s\n", code_to_str(code));
 
   if(code == END_OF_CODES) {
     r->mode = RUNTIME_MODE_FINISHED;
@@ -268,12 +268,17 @@ void runtime_step_eval(Runtime *r) {
   if(code == PUSH_CONSTANT) {
     Obj *o = read_next_code_as_obj(frame);
     gc_stack_push(r->gc, o);
-    printf("Constant: %s\n", obj_to_str(o));
+    //printf("Constant: %s\n", obj_to_str(o));
   }
   else if(code == LOOKUP_AND_PUSH) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = runtime_env_lookup(frame->env, sym);
     gc_stack_push(r->gc, value);
+  }
+  else if(code == DEFINE) {
+    Obj *sym = read_next_code_as_obj(frame);
+    Obj *value = gc_stack_pop(r->gc);
+    runtime_env_assoc(r, frame->env, sym, value);
   }
   else if(code == RETURN) {
     

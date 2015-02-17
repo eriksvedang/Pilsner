@@ -195,13 +195,13 @@ void test_bytecode() {
   CodeWriter writer;
   code_writer_init(&writer, 1024);
   code_write_push_constant(&writer, gc_make_number(r->gc, 42.0));
+  code_write_define(&writer, gc_make_symbol(r->gc, "bleh")); // bleh = 42
   code_write_push_constant(&writer, gc_make_number(r->gc, 100.0));
-  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "x"));
+  code_write_push_constant(&writer, gc_make_number(r->gc, 200.0));
+  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "bleh"));
   code_write_end(&writer);
 
-  /* for (int i = 0; i < 10; i++) { */
-  /*   printf("%d: %d\n", i, writer.codes[i]); */
-  /* } */
+  code_print(writer.codes);
   
   runtime_frame_push(r, r->global_env, writer.codes, "testframe");
 

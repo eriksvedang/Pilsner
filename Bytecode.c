@@ -8,7 +8,28 @@ const char *code_to_str(Code code) {
   else if(code == UNINITIALIZED) return "UNINITIALIZED";
   else if(code == RETURN) return "RETURN";
   else if(code == LOOKUP_AND_PUSH) return "LOOKUP_AND_PUSH";
+  else if(code == DEFINE) return "DEFINE";
   else return "UNKNOWN_CODE";
+}
+
+bool pushes_obj(Code code) {
+  return (code == PUSH_CONSTANT ||
+	  code == LOOKUP_AND_PUSH ||
+	  code == DEFINE);
+}
+
+void code_print(Code *code_block) {
+  printf("--- CODE BLOCK ---\n");
+  while(*code_block != END_OF_CODES) {
+    printf("%s", code_to_str(*code_block));
+    if(pushes_obj(*code_block)) {
+      printf(" <obj>");
+      code_block += 2;
+    }
+    code_block++;
+    printf("\n");
+  }
+  printf("------------------\n");
 }
 
 CodeWriter *code_writer_init(CodeWriter *writer, int size) {
@@ -43,6 +64,11 @@ void code_write_push_constant(CodeWriter *writer, Obj *o) {
 
 void code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
   code_write(writer, LOOKUP_AND_PUSH);
+  obj_write(writer, sym);
+}
+
+void code_write_define(CodeWriter *writer, Obj *sym) {
+  code_write(writer, DEFINE);
   obj_write(writer, sym);
 }
 
