@@ -19,10 +19,10 @@ void repl() {
     error("The environment variable PILNSER_LIB is not set.");
   }
     
-  Runtime *r = runtime_new(false);
+  Runtime *r = runtime_new(true);
 
-  /* load(r, lib_path, "core.lisp"); */
-  /* load(r, lib_path, "misc.lisp"); */
+  load(r, lib_path, "core.lisp");
+  load(r, lib_path, "misc.lisp");
   
   printf("\e[33m~ Welcome to the Pilsner REPL ~\e[0m\n");
 

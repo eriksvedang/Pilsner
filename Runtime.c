@@ -9,11 +9,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define LOG_EVAL 1
-#define LOG_ENV 0
-#define LOG_LAMBDA_EVAL 0
-#define LOG_VALUE_STACK 0
-#define LOG_FUNC_CALL 0
+#define LOG_EVAL 0
 
 void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index);
 
@@ -332,10 +328,12 @@ void runtime_step_eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
 
   Code code = *frame->p;
-  
+
+  #if LOG_EVAL
   printf("%s> ", frame->name);
   code_print_single(frame->p);
   printf("\n");
+  #endif
   
   frame->p++;
 
@@ -408,9 +406,11 @@ void runtime_step_eval(Runtime *r) {
     printf("runtime_step_eval can't understand code %s\n", code_to_str(code));
   }
 
+  #if LOG_EVAL
   //runtime_print_frames(r);
   //gc_stack_print(r->gc, false);
   printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
+  #endif
 }
 
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
