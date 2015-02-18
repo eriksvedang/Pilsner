@@ -359,7 +359,7 @@ void runtime_step_eval(Runtime *r) {
     if(value) {
       gc_stack_push(r->gc, value);
     } else {
-      printf("Can't find value %s in environment.\n", sym->name);
+      printf("Can't find value '%s' in environment.\n", sym->name);
       gc_stack_push(r->gc, r->nil);
     }
   }
@@ -390,10 +390,10 @@ void runtime_step_eval(Runtime *r) {
       call_lambda(r, f, arg_count);
     }
     else {
-      printf("Can't call something that's not a lambda or func:\n");
+      printf("Can't call something that's not a lambda or func: ");
       print_obj(f);
       printf("\n");
-      exit(1);
+      gc_stack_push(r->gc, r->nil);
     }
   }
   else {
