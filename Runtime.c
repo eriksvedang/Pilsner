@@ -185,6 +185,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "stack", &runtime_print_stack);
   register_func(r, "gc", &runtime_gc_collect);
   register_func(r, "help", &help);
+  register_func(r, "print-code", &print_code);
 }
 
 void register_builtin_vars(Runtime *r) {
