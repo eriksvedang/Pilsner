@@ -21,17 +21,15 @@
 
 (def aha (fn (n) (map ahaa (range 1 n))))
 
-(def bf (fn (x) (do (println (* x x))
-		    (break)
-		    (println (* x x x))
-		    (break)
-		    (println (+ x 100)))))
+;; (def bf (fn (x) (do (println (* x x))
+;; 		    (break)
+;; 		    (println (* x x x))
+;; 		    (break)
+;; 		    (println (+ x 100)))))
 
-(def p (fn () (do (println "hej")
-		  (println "på")
-		  (println "dig"))))
+;; (def p (fn () (do (println "hej")
+;; 		  (println "på")
+;; 		  (println "dig"))))
 
 (def t (fn () (map inc '(5 10 15))))
-
-(println "misc.lisp was loaded!")
 

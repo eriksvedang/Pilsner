@@ -265,6 +265,14 @@ void call_func(Runtime *r, Obj *f, int arg_count) {
 }
 
 void call_lambda(Runtime *r, Obj *f, int arg_count) {
+
+  int proper_arg_count = count(GET_ARGS(f));
+  if(proper_arg_count != arg_count) {
+    printf("Can't call function %s with %d args (should be %d).\n", obj_to_str(f), arg_count, proper_arg_count);
+    gc_stack_push(r->gc, r->nil);
+    return;
+  }
+  
   Obj *args = fetch_args(r, arg_count);
 
   Obj *parent_env = f->car->car;
@@ -282,9 +290,9 @@ void call_lambda(Runtime *r, Obj *f, int arg_count) {
       print_obj(arg_symbol); printf("\n");
     }
     Obj *arg_value = arg_value_cons->car;
-    printf("Binding arg_symbol '%s' to value ", arg_symbol->name);
-    print_obj(arg_value);
-    printf("\n");
+    /* printf("Binding arg_symbol '%s' to value ", arg_symbol->name); */
+    /* print_obj(arg_value); */
+    /* printf("\n"); */
     runtime_env_assoc(r, local_env, arg_symbol, arg_value);
     arg_symbol_cons = arg_symbol_cons->cdr;
     arg_value_cons = arg_value_cons->cdr;
@@ -396,7 +404,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
 
   int code_length = 0;
   Code *bytecode = compile(r->gc, form, &code_length);
-  code_print(bytecode);
+  //code_print(bytecode);
   
   runtime_frame_push(r, env, bytecode, "top-level");
   while(1) {

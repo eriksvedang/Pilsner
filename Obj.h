@@ -47,5 +47,8 @@ void print_obj(Obj *o);
 
 bool eq(Obj *a, Obj *b);
 int count(Obj *list);
+
+#define GET_ENV(o) (o->car->car)
+#define GET_ARGS(o) (o->car->cdr)
   
 #endif

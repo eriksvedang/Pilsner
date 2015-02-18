@@ -41,7 +41,7 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
 	return;
       }
       
-      visit(writer, gc, expression);
+      visit(writer, gc, expression); // the result from this will be the branching value
 
       int true_code_length;
       Code *true_bytecode = compile(gc, true_branch, &true_code_length);
@@ -67,6 +67,8 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
       //code_write_push_constant(writer, gc_make_string(gc, "TRUE CODE GOES HERE"));
       memcpy(&writer->codes[writer->pos], true_bytecode, sizeof(Code*) * true_code_length);
       writer->pos += true_code_length;
+
+      // TODO: free the memory from the temporary blocks made with compile!
     }
     else if(form->car->type == SYMBOL && (strcmp(form->car->name, "fn") == 0 || strcmp(form->car->name, "λ") == 0)) {
       Obj *args = form->cdr->car;
@@ -82,21 +84,17 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
       code_write_push_lambda(writer, args, body, bytecode);
     }
     else {
+      // TODO: look up function here already and check arg count etc (catches some errors much earlier)
       Obj *f = form->car;
       Obj *arg = form->cdr;
-      int f_arg_count = count(arg);
       int caller_arg_count = 0;
       while(arg && arg->car) {
 	visit(writer, gc, arg->car);
 	caller_arg_count++;
 	arg = arg->cdr;
       }
-      if(f_arg_count != caller_arg_count) {
-	printf("Can't call function %s with %d args.", obj_to_str(f), caller_arg_count);
-      } else {
-	visit(writer, gc, f);
-	code_write_call(writer, caller_arg_count);
-      }
+      visit(writer, gc, f);
+      code_write_call(writer, caller_arg_count);
     }
   }
   else {
