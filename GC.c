@@ -8,6 +8,10 @@
 #define LOG_GC_COLLECT_RESULT 1
 #define LOG_PUSH_AND_POP 0
 
+#if GLOBAL_OBJ_COUNT
+int g_obj_count = 0;
+#endif
+
 void gc_stack_push(GC *gc, Obj *o) {
   if(gc->stackSize >= STACK_MAX) error("Stack overflow.");
   gc->stack[gc->stackSize++] = o;
@@ -56,6 +60,10 @@ Obj *gc_make_obj(GC *gc, Type type) {
   // Put new object first in the linked list containing all objects:
   o->next = gc->firstObj; 
   gc->firstObj = o;
+
+  #if GLOBAL_OBJ_COUNT
+  g_obj_count++;
+  #endif
   
   return o;
 }
@@ -124,6 +132,9 @@ void gc_delete(Obj *o) {
     free(o->name);
   }
   free(o);
+  #if GLOBAL_OBJ_COUNT
+  g_obj_count--;
+  #endif
 }
 
 void mark(Obj *o) {
@@ -191,6 +202,11 @@ GCResult gc_collect(GC *gc) {
 
   #if LOG_GC_COLLECT_RESULT
   printf("Sweep done, %d objects freed and %d object still alive.\n", result.freed, result.alive);
+  Obj *first = gc->firstObj;
+  while(first) {
+    print_obj(first); printf("\n");
+    first = first->next;
+  }
   #endif
 
   return result;

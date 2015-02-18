@@ -5,6 +5,11 @@
 #include "Bytecode.h"
 
 #define STACK_MAX 512
+#define GLOBAL_OBJ_COUNT 1
+
+#if GLOBAL_OBJ_COUNT
+int g_obj_count;
+#endif
 
 typedef struct {
   Obj *stack[STACK_MAX];

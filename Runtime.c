@@ -180,12 +180,15 @@ void register_builtin_funcs(Runtime *r) {
   
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);
-  register_func(r, "env", &runtime_env);
   register_func(r, "load", &runtime_load);
-  register_func(r, "stack", &runtime_print_stack);
-  register_func(r, "gc", &runtime_gc_collect);
   register_func(r, "help", &help);
   register_func(r, "print-code", &print_code);
+}
+
+void register_basics(Runtime *r) {
+  register_func(r, "gc", &runtime_gc_collect);
+  register_func(r, "env", &runtime_env);
+  register_func(r, "stack", &runtime_print_stack);
 }
 
 void register_builtin_vars(Runtime *r) {
@@ -194,7 +197,7 @@ void register_builtin_vars(Runtime *r) {
   register_var(r, "true", r->true_val);
 }
 
-Runtime *runtime_new() {
+Runtime *runtime_new(bool builtins) {
   GC *gc = malloc(sizeof(GC)); // TODO: call gc_new() instead
   gc_init(gc);
   Runtime *r = malloc(sizeof(Runtime));
@@ -205,8 +208,11 @@ Runtime *runtime_new() {
   r->top_frame = -1;
   r->mode = RUNTIME_MODE_RUN;
   gc_stack_push(r->gc, r->global_env); // root the global env so it won't get GC:d
-  register_builtin_funcs(r);
-  register_builtin_vars(r);
+  register_basics(r);
+  if(builtins) {
+    register_builtin_funcs(r);
+    register_builtin_vars(r);
+  }
   return r;
 }
 
@@ -327,11 +333,13 @@ void runtime_step_eval(Runtime *r) {
 
   Code code = *frame->p;
   
-  /* printf("%s> ", frame->name); */
-  /* code_print_single(frame->p); */
-  /* printf("\n"); */
+  printf("%s> ", frame->name);
+  code_print_single(frame->p);
+  printf("\n");
   
   frame->p++;
+
+  int old_obj_count = g_obj_count;
 
   if(code == RETURN || code == END_OF_CODES) {
     runtime_frame_pop(r);
@@ -402,6 +410,7 @@ void runtime_step_eval(Runtime *r) {
 
   //runtime_print_frames(r);
   //gc_stack_print(r->gc, false);
+  printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
 }
 
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {

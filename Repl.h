@@ -17,20 +17,15 @@ void repl() {
   char *lib_path = getenv("PILSNER_LIB");
   if(!lib_path) {
     error("The environment variable PILNSER_LIB is not set.");
-  } 
+  }
+    
+  Runtime *r = runtime_new(false);
+
+  /* load(r, lib_path, "core.lisp"); */
+  /* load(r, lib_path, "misc.lisp"); */
   
-  Runtime *r = runtime_new();
-
-  load(r, lib_path, "minimal.lisp");
-  load(r, lib_path, "core.lisp");
-  load(r, lib_path, "misc.lisp");
-
-  /* printf("====================================================\n"); */
-  /* printf("|                WELCOME TO PILSNER                |\n"); */
-  /* printf("|               By Erik Svedäng 2015               |\n"); */
-  /* printf("====================================================\n"); */
   printf("\e[33m~ Welcome to the Pilsner REPL ~\e[0m\n");
-  
+
   const int MAX_INPUT_BUFFER_SIZE = 2048;
   char str[MAX_INPUT_BUFFER_SIZE];
   

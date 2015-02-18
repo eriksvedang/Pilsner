@@ -90,7 +90,7 @@ void test_parsing() {
 }
 
 void test_runtime() {
-  Runtime *r = runtime_new();
+  Runtime *r = runtime_new(true);
   //runtime_eval(r, "(def a (quote b)) a bleh (bleh)");
   //runtime_eval(r, "(bleh) (print-sym (quote apa)) (print-two-syms (quote erik) (quote svedang))");
   //runtime_eval(r, "(+ 2 3)");
@@ -101,7 +101,7 @@ void test_runtime() {
 }
 
 void test_local_environments() {
-  Runtime *r = runtime_new();
+  Runtime *r = runtime_new(true);
 
   print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "+"))); printf("\n");
   print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "grgdgdger"))); printf("\n");
@@ -186,7 +186,7 @@ void test_bytecode() {
   /* printf("sizeof(Code*) = %lu\n", sizeof(Code*)); */
   /* printf("sizeof(int) = %lu\n", sizeof(int)); */
   
-  Runtime *r = runtime_new();
+  Runtime *r = runtime_new(true);
 
   //runtime_inspect_env(r);
   //runtime_print_frames(r);
@@ -221,7 +221,7 @@ void test_bytecode() {
 }
 
 void test_bytecode_jump() {
-  Runtime *r = runtime_new();
+  Runtime *r = runtime_new(true);
 
   CodeWriter writer;
   code_writer_init(&writer, 1024);
@@ -249,7 +249,7 @@ void test_bytecode_jump() {
 
 void test_bytecode_if() {
 
-  Runtime *r = runtime_new();
+  Runtime *r = runtime_new(true);
 
   int code_length = 0;
   Code *c = compile(r->gc, parse(r->gc, "(if 1 1337 404)")->car, &code_length);
@@ -298,7 +298,7 @@ void test_bytecode_if() {
 
 
 void test_bytecode_with_lambda() {
-  Runtime *r = runtime_new();
+  Runtime *r = runtime_new(true);
   
   CodeWriter writer;
 
@@ -345,7 +345,7 @@ void test_compiler() {
   //compile_and_print("(fn (x y) (* x x y))");
   return;
 
-  Runtime *r = runtime_new();
+  Runtime *r = runtime_new(true);
 
   Obj *forms = parse(r->gc, "(- 20 3)");
   Obj *form = forms->car;

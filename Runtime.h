@@ -29,7 +29,7 @@ typedef struct {
   RuntimeMode mode;
 } Runtime;
 
-Runtime *runtime_new();
+Runtime *runtime_new(bool builtins);
 void runtime_delete(Runtime *r);
 
 void runtime_eval(Runtime *r, const char *source);
