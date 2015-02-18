@@ -8,7 +8,7 @@ const char *code_to_str(Code code) {
   else if(code == RETURN)           return "RETURN  ";
   else if(code == LOOKUP_AND_PUSH)  return "LOOKUP  ";
   else if(code == DEFINE)           return "DEFINE  ";
-  else if(code == CALL)             return "CALL    ";
+  else if(code == CALL)             return "CALL!   ";
   else if(code == PUSH_LAMBDA)      return "LAMBDA  ";
   else if(code == JUMP)             return "JUMP -> ";
   else if(code == IF)               return "IF      ";
