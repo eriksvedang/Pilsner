@@ -14,6 +14,7 @@ typedef enum {
   PUSH_LAMBDA = 8,
   JUMP = 9,
   IF = 10,
+  POP_AND_DISCARD = 11,
   END_OF_CODES = 666,
 } Code;
 
@@ -39,5 +40,6 @@ int code_write_return(CodeWriter *writer);
 int code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code);
 int code_write_jump(CodeWriter *writer, int jump_length);
 int code_write_if(CodeWriter *writer);
+int code_write_pop(CodeWriter *writer);
 
 #endif

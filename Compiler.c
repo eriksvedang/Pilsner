@@ -22,6 +22,16 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "quote") == 0) {
       code_write_push_constant(writer, form->cdr->car);
     }
+    else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
+      Obj *subform = form->cdr;
+      while(subform && subform->car) {
+	visit(writer, gc, subform->car);
+	if(subform->cdr && subform->cdr->car != NULL) {
+	  code_write_pop(writer); // pop value if form is not the last one
+	}
+	subform = subform->cdr;
+      }
+    }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "if") == 0) {
       Obj *expression = form->cdr->car;
       if(!expression) {

@@ -362,6 +362,9 @@ void runtime_step_eval(Runtime *r) {
       gc_stack_push(r->gc, r->nil);
     }
   }
+  else if(code == POP_AND_DISCARD) {
+    gc_stack_pop(r->gc);
+  }
   else if(code == DEFINE) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = gc_stack_pop(r->gc);

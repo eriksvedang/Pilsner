@@ -12,6 +12,7 @@ const char *code_to_str(Code code) {
   else if(code == PUSH_LAMBDA)      return "LAMBDA  ";
   else if(code == JUMP)             return "JUMP -> ";
   else if(code == IF)               return "IF      ";
+  else if(code == POP_AND_DISCARD)  return "POP     ";
   else if(code == UNINITIALIZED) return "UNINITIALIZED";
   else return "UNKNOWN_CODE";
 }
@@ -155,5 +156,10 @@ int code_write_end(CodeWriter *writer) {
 
 int code_write_return(CodeWriter *writer) {
   code_write(writer, RETURN);
+  return 1;
+}
+
+int code_write_pop(CodeWriter *writer) {
+  code_write(writer, POP_AND_DISCARD);
   return 1;
 }
