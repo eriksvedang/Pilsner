@@ -251,28 +251,32 @@ void test_bytecode_if() {
 
   Runtime *r = runtime_new();
 
-  Code *c = compile(r->gc, parse(r->gc, "(inc 10)")->car);
+  int code_length = 0;
+  Code *c = compile(r->gc, parse(r->gc, "(if 1 1337 404)")->car, &code_length);
   code_print(c);
-  // return;
+  printf("Code length: %d\n", code_length);
+  //return;
+
+  printf("\n\n ************************************************ \n\n");
+
+  // The following code works and is what we want to produce above
     
   CodeWriter writer;
   code_writer_init(&writer, 1024);
 
-  code_write_push_constant(&writer, r->nil); // <-- false
-  //code_write_push_constant(&writer, gc_make_number(r->gc, 1)); // <-- true
+  //code_write_push_constant(&writer, r->nil); // <-- false
+  code_write_push_constant(&writer, gc_make_number(r->gc, 1)); // <-- true
 
-  int length_of_false_block = 8;
-  int length_of_true_block = 6;
+  int length_of_false_block = 5;
+  int length_of_true_block = 3;
   
   code_write_if(&writer);
   code_write_jump(&writer, length_of_false_block); // this one leads to the true branch
   // false branch
-  code_write_push_constant(&writer, gc_make_number(r->gc, 44123));
-  code_write_push_constant(&writer, gc_make_number(r->gc, 40001));
+  code_write_push_constant(&writer, gc_make_number(r->gc, 404));
   code_write_jump(&writer, length_of_true_block);
   // true branch
-  code_write_push_constant(&writer, gc_make_number(r->gc, 7331));
-  code_write_push_constant(&writer, gc_make_number(r->gc, 7333));
+  code_write_push_constant(&writer, gc_make_number(r->gc, 1337));
   // merge
   code_write_push_constant(&writer, gc_make_string(r->gc, "BRANCHES MERGE HERE"));
   code_write_end(&writer);
@@ -345,7 +349,8 @@ void test_compiler() {
 
   Obj *forms = parse(r->gc, "(- 20 3)");
   Obj *form = forms->car;
-  Code *code = compile(r->gc, form);
+  int len;
+  Code *code = compile(r->gc, form, &len);
   code_print(code);
   runtime_frame_push(r, r->global_env, code, "top-level");
   

@@ -28,7 +28,7 @@ void tests() {
 }
 
 int main(int argc, char *argv[]) { 
-  tests();
-  //repl();
+  //tests();
+  repl();
 }
 
