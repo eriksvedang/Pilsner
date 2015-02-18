@@ -317,7 +317,9 @@ void runtime_step_eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
 
   Code code = *frame->p;
-  printf("%s> %s\n", frame->name, code_to_str(code));
+  printf("%s> ", frame->name);
+  code_print_single(frame->p);
+  printf("\n");
   
   frame->p++;
 
@@ -327,9 +329,11 @@ void runtime_step_eval(Runtime *r) {
   else if(code == IF) {
     Obj *value = gc_stack_pop(r->gc);
     if(eq(value, r->nil)) {
-      frame->p += 4;
-    } else {
+      printf("Jumping to false branch\n");
       frame->p += 2;
+    } else {
+      printf("Jumping to true branch\n");
+      //frame->p += 4;
     }
   }
   else if(code == JUMP) {
@@ -391,6 +395,7 @@ void runtime_step_eval(Runtime *r) {
 
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
   Code *bytecode = compile(r->gc, form);
+  //code_print(bytecode);
   runtime_frame_push(r, env, bytecode, "top-level");
   while(1) {
     if(r->mode == RUNTIME_MODE_RUN) {

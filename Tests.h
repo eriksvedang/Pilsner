@@ -245,6 +245,54 @@ void test_bytecode_jump() {
   runtime_delete(r);
 }
 
+
+
+void test_bytecode_if() {
+
+  Runtime *r = runtime_new();
+
+  Code *c = compile(r->gc, parse(r->gc, "(inc 10)")->car);
+  code_print(c);
+  // return;
+    
+  CodeWriter writer;
+  code_writer_init(&writer, 1024);
+
+  code_write_push_constant(&writer, r->nil); // <-- false
+  //code_write_push_constant(&writer, gc_make_number(r->gc, 1)); // <-- true
+
+  int length_of_false_block = 8;
+  int length_of_true_block = 6;
+  
+  code_write_if(&writer);
+  code_write_jump(&writer, length_of_false_block); // this one leads to the true branch
+  // false branch
+  code_write_push_constant(&writer, gc_make_number(r->gc, 44123));
+  code_write_push_constant(&writer, gc_make_number(r->gc, 40001));
+  code_write_jump(&writer, length_of_true_block);
+  // true branch
+  code_write_push_constant(&writer, gc_make_number(r->gc, 7331));
+  code_write_push_constant(&writer, gc_make_number(r->gc, 7333));
+  // merge
+  code_write_push_constant(&writer, gc_make_string(r->gc, "BRANCHES MERGE HERE"));
+  code_write_end(&writer);
+
+  code_print(writer.codes);
+  printf("\n");
+  
+  runtime_frame_push(r, r->global_env, writer.codes, "top-level");
+
+  while(r->top_frame >= 0) {
+    runtime_step_eval(r);
+  }
+
+  printf("\n");
+  gc_stack_print(r->gc, false);
+  runtime_delete(r);
+}
+
+
+
 void test_bytecode_with_lambda() {
   Runtime *r = runtime_new();
   

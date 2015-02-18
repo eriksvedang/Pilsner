@@ -30,10 +30,9 @@ Obj *gc_stack_pop(GC *gc) {
 }
 
 void gc_stack_print(GC *gc, bool show_bottom_frame) {
-  printf("------------\n");
-  printf("Value stack:\n");
+  printf("--- VALUE STACK ---\n");
   for(int i = gc->stackSize - 1; i >= 0; i--) {
-    printf("%d:\t", i);
+    printf("%d: \t", i);
     if(!show_bottom_frame && i == 0) {
       printf("...");
     } else {
@@ -41,7 +40,7 @@ void gc_stack_print(GC *gc, bool show_bottom_frame) {
     }
     printf("\n");
   }
-  printf("------------\n");
+  printf("-------------------\n");
 }
 
 Obj *gc_make_obj(GC *gc, Type type) {

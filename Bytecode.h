@@ -24,6 +24,7 @@ typedef struct {
 } CodeWriter;
 
 const char *code_to_str(Code code);
+Code *code_print_single(Code *code);
 void code_print(Code *code_block);
 
 CodeWriter *code_writer_init(CodeWriter *writer, int size);

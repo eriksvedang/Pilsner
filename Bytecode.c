@@ -3,16 +3,16 @@
 #include <stdio.h>
 
 const char *code_to_str(Code code) {
-  if(code == END_OF_CODES) return "END_OF_CODES";
-  else if(code == PUSH_CONSTANT) return "PUSH_CONSTANT";
+  if(code == END_OF_CODES)          return "END     ";
+  else if(code == PUSH_CONSTANT)    return "PUSH    ";
+  else if(code == RETURN)           return "RETURN  ";
+  else if(code == LOOKUP_AND_PUSH)  return "LOOKUP  ";
+  else if(code == DEFINE)           return "DEFINE  ";
+  else if(code == CALL)             return "CALL    ";
+  else if(code == PUSH_LAMBDA)      return "LAMBDA  ";
+  else if(code == JUMP)             return "JUMP -> ";
+  else if(code == IF)               return "IF      ";
   else if(code == UNINITIALIZED) return "UNINITIALIZED";
-  else if(code == RETURN) return "RETURN";
-  else if(code == LOOKUP_AND_PUSH) return "LOOKUP_AND_PUSH";
-  else if(code == DEFINE) return "DEFINE";
-  else if(code == CALL) return "CALL";
-  else if(code == PUSH_LAMBDA) return "PUSH_LAMBDA";
-  else if(code == JUMP) return "JUMP";
-  else if(code == IF) return "IF";
   else return "UNKNOWN_CODE";
 }
 
@@ -22,31 +22,43 @@ bool pushes_obj(Code code) {
 	  code == DEFINE);
 }
 
+void print_code_as_obj(Code *code) {
+  Code *cp = code;
+  Obj **oo = (Obj**)cp;
+  Obj *o = *oo;
+  print_obj(o);
+}
+
+Code *code_print_single(Code *code) {
+  printf("%s", code_to_str(*code));
+  if(pushes_obj(*code)) {
+    code += 1;
+    printf(" ");
+    print_code_as_obj(code);
+    code += 2;
+  }
+  else if(*code == CALL || *code == JUMP) {
+    code += 1;
+    Code *cp = code;
+    int *ip = (int*)cp;
+    int i = *ip;
+    printf(" %d", i);
+    code += 1;
+  }
+  else if(*code == PUSH_LAMBDA) {
+    printf(" <args> <body> <code>");
+    code += 7;
+  }
+  else {
+    code++;
+  }
+  return code;
+}
+
 void code_print(Code *code_block) {
   printf("--- CODE BLOCK ---\n");
   while(*code_block != END_OF_CODES) {
-    printf("%s", code_to_str(*code_block));
-    if(pushes_obj(*code_block)) {
-      printf(" ");
-      /* Code *cp = code_block; */
-      /* Obj **oo = (Obj**)cp; */
-      /* Obj *o = *oo; */
-      /* print_obj(o); */
-      code_block += 2;
-    }
-    else if(*code_block == CALL) {
-      printf(" <int>");
-      code_block++;
-    }
-    else if(*code_block == JUMP) {
-      printf(" <int>");
-      code_block++;
-    }
-    else if(*code_block == PUSH_LAMBDA) {
-      printf(" <args> <body> <code>");
-      code_block += 6;
-    }
-    code_block++;
+    code_block = code_print_single(code_block);
     printf("\n");
   }
   printf("%s\n", code_to_str(*code_block));
