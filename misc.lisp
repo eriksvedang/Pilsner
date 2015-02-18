@@ -33,3 +33,8 @@
 
 (def t (fn () (map inc '(5 10 15))))
 
+
+; (load "tests.lisp")
+
+
+
