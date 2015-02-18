@@ -50,5 +50,7 @@ int count(Obj *list);
 
 #define GET_ENV(o) (o->car->car)
 #define GET_ARGS(o) (o->car->cdr)
+#define GET_BODY(o) (o->cdr->car)
+#define GET_CODE(o) (o->cdr->cdr->code)
   
 #endif

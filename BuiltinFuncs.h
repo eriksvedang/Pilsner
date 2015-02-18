@@ -177,6 +177,16 @@ Obj *nil_p(Runtime *r, Obj *args) {
   }
 }
 
+Obj *print_code(Runtime *r, Obj *args) {
+  if(args->car->type != LAMBDA) {
+    printf("Can't call 'print-code' on non-lambda.\n");
+  }
+  else {
+    code_print((Code*)GET_CODE(args->car));
+  }
+  return r->nil;
+}
+
 Obj *help(Runtime *r, Obj *args) {
   printf("Useful functions\n");
   printf("----------------\n");
