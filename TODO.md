@@ -1,14 +1,19 @@
 Prio 1
 ======
+* store calling args in C-array to avoid creating excessive CONS-cells
+* pool of Obj:s instead of malloc/free
+* Code:s for common math operators
+* make break-mode work again, without bugs
 * tail recursion optimization
-* nicer stack trace in break mode
+
+Prio 2
+======
 * str function
 * apply function
 * macros
 * real number constants (handle decimals)
 * errors should result in breaking at the stack, with possibility to fix issue
 * not allowing cons to take a non-list as second argument
-* not doing string comparison for special form symbols
 
 Todo
 ====
@@ -27,6 +32,7 @@ Todo
 * rest arg syntax
 * better repl interaction, with keypresses, history, colors, etc
 * run gc when "low" on memory
+* not doing string comparison for special form symbols
 
 Done
 ====

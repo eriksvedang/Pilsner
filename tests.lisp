@@ -14,3 +14,8 @@
 ;; Takes about 11 sec
 ;; NOW: 4.148
 
+;; ➜ (range 1 10)
+;; + 272 Obj:s
+
+
+

@@ -202,11 +202,11 @@ GCResult gc_collect(GC *gc) {
 
   #if LOG_GC_COLLECT_RESULT
   printf("Sweep done, %d objects freed and %d object still alive.\n", result.freed, result.alive);
-  Obj *first = gc->firstObj;
-  while(first) {
-    print_obj(first); printf("\n");
-    first = first->next;
-  }
+  /* Obj *first = gc->firstObj; */
+  /* while(first) { */
+  /*   print_obj(first); printf("\n"); */
+  /*   first = first->next; */
+  /* } */
   #endif
 
   return result;

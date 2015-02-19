@@ -13,7 +13,8 @@
 
 void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index);
 
-// The environments root is a cons cell where the car contains the a-list and the cdr contains the parent env.
+// The environments root is a cons cell where the car
+// contains the a-list and the cdr contains the parent env.
 
 Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search) {
   Obj *current = env->car; // get the a-list for this env
@@ -73,28 +74,27 @@ void register_func(Runtime *r, const char *name, void *f) {
   runtime_env_assoc(r, r->global_env, function_name, function_ptr);
 }
 
-Obj *runtime_break(Runtime *r, Obj *args) {
+Obj *runtime_break(Runtime *r, Obj *args[], int arg_count) {
   r->mode = RUNTIME_MODE_BREAK;
   return r->nil;
 }
 
-Obj *runtime_quit(Runtime *r, Obj *args) {
+Obj *runtime_quit(Runtime *r, Obj *args[], int arg_count) {
   r->mode = RUNTIME_MODE_FINISHED;
   return r->nil;
 }
 
-Obj *runtime_env(Runtime *r, Obj *args) {
+Obj *runtime_env(Runtime *r, Obj *args[], int arg_count) {
   runtime_inspect_env(r);
   return r->nil;
 }
 
-Obj *runtime_print_stack(Runtime *r, Obj *args) {
+Obj *runtime_print_stack(Runtime *r, Obj *args[], int arg_count) {
   gc_stack_print(r->gc, false);
   return r->nil;
 }
 
 void runtime_inspect_env(Runtime *r) {
-  //printf("Global env: ");
   print_obj(r->global_env);
   printf("\n");
 }
@@ -109,7 +109,7 @@ void runtime_print_frames(Runtime *r) {
   //printf("\e[0m\n");
 }
 
-Obj *runtime_gc_collect(Runtime *r, Obj *args) {
+Obj *runtime_gc_collect(Runtime *r, Obj *args[], int arg_count) {
   gc_collect(r->gc);
   return r->nil;
 }
@@ -146,8 +146,8 @@ bool runtime_load_file(Runtime *r, const char *filename, bool silent) {
   }
 }
 
-Obj *runtime_load(Runtime *r, Obj *args) {
-  const char *filename = args->car->name;
+Obj *runtime_load(Runtime *r, Obj *args[], int arg_count) {
+  const char *filename = args[0]->name;
   if(runtime_load_file(r, filename, false)) {
     Obj *done = gc_make_symbol(r->gc, "DONE");
     return done;
@@ -157,8 +157,8 @@ Obj *runtime_load(Runtime *r, Obj *args) {
 }
 
 void register_builtin_funcs(Runtime *r) {
-  register_func(r, "=", &equal);
   register_func(r, "+", &plus);
+  register_func(r, "=", &equal);
   register_func(r, "-", &minus);
   register_func(r, "*", &multiply);
   register_func(r, "/", &divide);
@@ -176,12 +176,12 @@ void register_builtin_funcs(Runtime *r) {
   
   register_func(r, "break", &runtime_break);
   register_func(r, "quit", &runtime_quit);
-  register_func(r, "load", &runtime_load);
   register_func(r, "help", &help);
   register_func(r, "print-code", &print_code);
 }
 
 void register_basics(Runtime *r) {
+  register_func(r, "load", &runtime_load);
   register_func(r, "gc", &runtime_gc_collect);
   register_func(r, "env", &runtime_env);
   register_func(r, "stack", &runtime_print_stack);
@@ -255,15 +255,15 @@ Obj *fetch_args(Runtime *r, int arg_count) {
     Obj *new_arg = gc_make_cons(r->gc, value, last_arg);
     last_arg = new_arg;
   }
-  /* printf("Fetched %d args: ", arg_count); */
-  /* print_obj(last_arg); */
-  /* printf("\n"); */
   return last_arg;
 }
 
 void call_func(Runtime *r, Obj *f, int arg_count) {
-  Obj *args = fetch_args(r, arg_count);
-  Obj *result = ((Obj*(*)(Runtime*,Obj*))f->func)(r, args);
+  Obj *args[arg_count];
+  for(int i = arg_count - 1; i >= 0; i--) {
+    args[i] = gc_stack_pop(r->gc);
+  }
+  Obj *result = ((Obj*(*)(Runtime*,Obj**,int))f->func)(r, args, arg_count);
   gc_stack_push(r->gc, result);
 }
 
@@ -333,11 +333,10 @@ void runtime_step_eval(Runtime *r) {
   printf("%s> ", frame->name);
   code_print_single(frame->p);
   printf("\n");
+  int old_obj_count = g_obj_count;
   #endif
   
   frame->p++;
-
-  int old_obj_count = g_obj_count;
 
   if(code == RETURN || code == END_OF_CODES) {
     runtime_frame_pop(r);
@@ -418,24 +417,27 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
   int code_length = 0;
   Code *bytecode = compile(r->gc, form, &code_length);
   //code_print(bytecode);
+  int old_obj_count = g_obj_count;
   
   runtime_frame_push(r, env, bytecode, "top-level");
   while(1) {
     if(r->mode == RUNTIME_MODE_RUN) {
       runtime_step_eval(r);
       if(r->top_frame < top_frame_index) {
-	return;
+	break;
       }
     }
     else if(r->mode == RUNTIME_MODE_FINISHED) {
       printf("\n");
-      return;
+      break;
     }
     else {
       printf("Not implemented.\n");
       exit(1);
     }
   }
+
+  printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
 }
 
 void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index) {
