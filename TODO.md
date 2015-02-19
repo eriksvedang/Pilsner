@@ -1,7 +1,6 @@
 Prio 1
 ======
 * pool of Obj:s instead of malloc/free
-* Code:s for common math operators
 * make break-mode work again, without bugs
 * tail recursion optimization
 
@@ -35,6 +34,7 @@ Todo
 
 Done
 ====
+* Code:s for common math operators
 * store calling args in C-array to avoid creating excessive CONS-cells
 * proper freeing of strings and the gc
 * loading of files from disk
