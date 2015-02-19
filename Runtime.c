@@ -371,6 +371,26 @@ void runtime_step_eval(Runtime *r) {
   else if(code == POP_AND_DISCARD) {
     gc_stack_pop(r->gc);
   }
+  else if(code == ADD) {
+    double a = gc_stack_pop(r->gc)->number;
+    double b = gc_stack_pop(r->gc)->number;
+    gc_stack_push(r->gc, gc_make_number(r->gc, a + b));
+  }
+  else if(code == SUB) {
+    double a = gc_stack_pop(r->gc)->number;
+    double b = gc_stack_pop(r->gc)->number;
+    gc_stack_push(r->gc, gc_make_number(r->gc, b - a));
+  }
+  else if(code == MUL) {
+    double a = gc_stack_pop(r->gc)->number;
+    double b = gc_stack_pop(r->gc)->number;
+    gc_stack_push(r->gc, gc_make_number(r->gc, a * b));
+  }
+  else if(code == DIV) {
+    double a = gc_stack_pop(r->gc)->number;
+    double b = gc_stack_pop(r->gc)->number;
+    gc_stack_push(r->gc, gc_make_number(r->gc, b / a));
+  }
   else if(code == DEFINE) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = gc_stack_pop(r->gc);
@@ -416,7 +436,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
 
   int code_length = 0;
   Code *bytecode = compile(r->gc, form, &code_length);
-  //code_print(bytecode);
+  //  code_print(bytecode);
   int old_obj_count = g_obj_count;
   
   runtime_frame_push(r, env, bytecode, "top-level");

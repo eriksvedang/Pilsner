@@ -1,6 +1,5 @@
 Prio 1
 ======
-* store calling args in C-array to avoid creating excessive CONS-cells
 * pool of Obj:s instead of malloc/free
 * Code:s for common math operators
 * make break-mode work again, without bugs
@@ -36,6 +35,7 @@ Todo
 
 Done
 ====
+* store calling args in C-array to avoid creating excessive CONS-cells
 * proper freeing of strings and the gc
 * loading of files from disk
 * comments

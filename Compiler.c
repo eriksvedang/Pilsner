@@ -13,7 +13,8 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
   }
   else if(form->type == CONS) {
     if(form->car == NULL || form->cdr == NULL) {
-      code_write_push_constant(writer, form); // TODO: push special nil value instead or use a specific op for this
+      // TODO: push special nil value instead or use a specific op for this
+      code_write_push_constant(writer, form);
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "def") == 0) {
       visit(writer, gc, form->cdr->cdr->car);
@@ -21,6 +22,34 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "quote") == 0) {
       code_write_push_constant(writer, form->cdr->car);
+    }
+    else if(form->car->type == SYMBOL &&
+	    strcmp(form->car->name, "+") == 0 &&
+	    count(form->cdr) == 2) {
+      visit(writer, gc, form->cdr->car);
+      visit(writer, gc, form->cdr->cdr->car);
+      code_write_code(writer, ADD);
+    }
+    else if(form->car->type == SYMBOL &&
+	    strcmp(form->car->name, "-") == 0 &&
+	    count(form->cdr) == 2) {
+      visit(writer, gc, form->cdr->car);
+      visit(writer, gc, form->cdr->cdr->car);
+      code_write_code(writer, SUB);
+    }
+    else if(form->car->type == SYMBOL &&
+	    strcmp(form->car->name, "*") == 0 &&
+	    count(form->cdr) == 2) {
+      visit(writer, gc, form->cdr->car);
+      visit(writer, gc, form->cdr->cdr->car);
+      code_write_code(writer, MUL);
+    }
+    else if(form->car->type == SYMBOL &&
+	    strcmp(form->car->name, "/") == 0 &&
+	    count(form->cdr) == 2) {
+      visit(writer, gc, form->cdr->car);
+      visit(writer, gc, form->cdr->cdr->car);
+      code_write_code(writer, DIV);
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
       Obj *subform = form->cdr;

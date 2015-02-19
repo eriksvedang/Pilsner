@@ -15,7 +15,7 @@
              1
              (if (= 2 n)
                1
-               (+ (fib (dec n)) (fib (- n 2)))))))
+               (+ (fib (- n 1)) (fib (- n 2)))))))
 
 (def ahaa (fn (_) (range 1 10000)))
 
