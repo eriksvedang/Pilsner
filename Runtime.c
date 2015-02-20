@@ -440,7 +440,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
 
   int code_length = 0;
   Code *bytecode = compile(r, form, &code_length);
-  //  code_print(bytecode);
+  code_print(bytecode);
   int old_obj_count = g_obj_count;
   
   runtime_frame_push(r, env, bytecode, "top-level");

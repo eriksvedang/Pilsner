@@ -21,8 +21,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form) {
   }
   else if(form->type == CONS) {
     if(form->car == NULL || form->cdr == NULL) {
-      // TODO: push special nil value instead or use a specific op for this
-      code_write_push_constant(writer, form);
+      code_write_push_constant(writer, r->nil);
     }
     else if(is_symbol(form, "def")) {
       visit(writer, r, form->cdr->cdr->car);
@@ -61,7 +60,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form) {
 	subform = subform->cdr;
       }
     }
-    else if(form->car->type == SYMBOL && strcmp(form->car->name, "if") == 0) {
+    else if(is_symbol(form, "if")) {
       Obj *expression = form->cdr->car;
       if(!expression) {
 	printf("No expression in if-statement.\n");
