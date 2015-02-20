@@ -17,6 +17,7 @@ const char *code_to_str(Code code) {
   else if(code == MUL)              return "MUL     ";
   else if(code == SUB)              return "SUB     ";
   else if(code == DIV)              return "DIV     ";
+  else if(code == DIRECT_LOOKUP_VAR)return "DIRECT  ";
   else if(code == UNINITIALIZED) return "UNINITIALIZED";
   else return "UNKNOWN_CODE";
 }
@@ -112,7 +113,7 @@ int code_write_push_constant(CodeWriter *writer, Obj *o) {
 
 int code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
   if(sym->type != SYMBOL) {
-    error("Can't write LOOKUP_AND_PUSH with non-symbol");
+    error("Can't write LOOKUP_AND_PUSH with non-symbol.");
   }
   code_write(writer, LOOKUP_AND_PUSH);
   obj_write(writer, sym);
@@ -121,10 +122,22 @@ int code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
 
 int code_write_define(CodeWriter *writer, Obj *sym) {
   if(sym->type != SYMBOL) {
-    error("Can't write DEFINE with non-symbol");
+    error("Can't write DEFINE with non-symbol.");
   }
   code_write(writer, DEFINE);
   obj_write(writer, sym);
+  return 3;
+}
+
+int code_write_direct_lookup_var(CodeWriter *writer, Obj *binding_pair) {
+  if(binding_pair->type != CONS) {
+    error("Can't write DIRECT_LOOKUP_VAR with non-cons.");
+  }
+  else if(binding_pair->car->type != SYMBOL) {
+    error("Can't write DIRECT_LOOKUP_VAR with binding pair that hasn't got symbol in car.");
+  }
+  code_write(writer, DIRECT_LOOKUP_VAR);
+  obj_write(writer, binding_pair);
   return 3;
 }
 

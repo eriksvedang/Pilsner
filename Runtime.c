@@ -358,6 +358,10 @@ void runtime_step_eval(Runtime *r) {
     gc_stack_push(r->gc, o);
     //printf("Constant: %s\n", obj_to_str(o));
   }
+  else if(code == DIRECT_LOOKUP_VAR) {
+    Obj *binding_pair = read_next_code_as_obj(frame);
+    gc_stack_push(r->gc, binding_pair->cdr); // the value is stored in the cdr of the binding pair
+  }
   else if(code == LOOKUP_AND_PUSH) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = runtime_env_lookup(frame->env, sym);

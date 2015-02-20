@@ -84,30 +84,28 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form) {
 
       int true_code_length;
       Code *true_bytecode = compile(r, true_branch, &true_code_length);
-      //printf("True branch length: %d\n", true_code_length);
 
       int false_code_length;
       Code *false_bytecode = compile(r, false_branch, &false_code_length);
-      //printf("False branch length: %d\n", false_code_length);
 
       code_write_if(writer); // this code will jump forward one step if value on the stack is true, otherwise it will jump two steps
       
-      // Subtract one from the legnth for the end statement that shouldn't go into the code.
-      // Add two for the following jump that leads to the merging point.
+      // Subtract one from the length for the END_OF_CODE statement that shouldn't go into the code.
+      // Add two for the following jump instruction that leads to the merging point.
       false_code_length--;
       code_write_jump(writer, false_code_length + 2);
-      //code_write_push_constant(writer, gc_make_string(gc, "FALSE CODE GOES HERE"));
       memcpy(&writer->codes[writer->pos], false_bytecode, sizeof(Code*) * false_code_length);
       writer->pos += false_code_length;
 
-      // Only subtract one for the end statement of the branch, no extra statement to count for.
+      // Only subtract one for the END_OF_CODE statement of the branch, no extra statement to count for.
       true_code_length--;
       code_write_jump(writer, true_code_length);
-      //code_write_push_constant(writer, gc_make_string(gc, "TRUE CODE GOES HERE"));
       memcpy(&writer->codes[writer->pos], true_bytecode, sizeof(Code*) * true_code_length);
       writer->pos += true_code_length;
 
-      // TODO: free the memory from the temporary blocks made with compile!
+      // Free the memory from the temporary blocks made with compile
+      free(true_bytecode);
+      free(false_bytecode);
     }
     else if(form->car->type == SYMBOL && (strcmp(form->car->name, "fn") == 0 || strcmp(form->car->name, "λ") == 0)) {
       Obj *args = form->cdr->car;
@@ -123,7 +121,6 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form) {
       code_write_push_lambda(writer, args, body, bytecode);
     }
     else {
-      // TODO: look up function here already and check arg count etc (catches some errors much earlier)
       Obj *f = form->car;
       Obj *arg = form->cdr;
       int caller_arg_count = 0;
