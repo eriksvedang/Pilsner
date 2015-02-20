@@ -1,8 +1,9 @@
 Prio 1
 ======
-* pool of Obj:s instead of malloc/free
 * make break-mode work again, without bugs
+* write some C-macros for common access patterns
 * tail recursion optimization
+* pool of Obj:s instead of malloc/free
 
 Prio 2
 ======

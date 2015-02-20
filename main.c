@@ -22,7 +22,7 @@ void tests() {
   //test_str_allocs();
   //test_bytecode();
   //test_bytecode_jump();
-  test_bytecode_if();
+  //test_bytecode_if();
   //test_bytecode_with_lambda();
   //test_compiler();
 }

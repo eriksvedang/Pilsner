@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
-void visit(CodeWriter *writer, GC *gc, Obj *form) {
+void visit(CodeWriter *writer, Runtime *r, Obj *form) {
   if(form->type == SYMBOL) {
     code_write_lookup_and_push(writer, form);
   }
@@ -17,7 +17,7 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
       code_write_push_constant(writer, form);
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "def") == 0) {
-      visit(writer, gc, form->cdr->cdr->car);
+      visit(writer, r, form->cdr->cdr->car);
       code_write_define(writer, form->cdr->car);
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "quote") == 0) {
@@ -26,35 +26,35 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
     else if(form->car->type == SYMBOL &&
 	    strcmp(form->car->name, "+") == 0 &&
 	    count(form->cdr) == 2) {
-      visit(writer, gc, form->cdr->car);
-      visit(writer, gc, form->cdr->cdr->car);
+      visit(writer, r, form->cdr->car);
+      visit(writer, r, form->cdr->cdr->car);
       code_write_code(writer, ADD);
     }
     else if(form->car->type == SYMBOL &&
 	    strcmp(form->car->name, "-") == 0 &&
 	    count(form->cdr) == 2) {
-      visit(writer, gc, form->cdr->car);
-      visit(writer, gc, form->cdr->cdr->car);
+      visit(writer, r, form->cdr->car);
+      visit(writer, r, form->cdr->cdr->car);
       code_write_code(writer, SUB);
     }
     else if(form->car->type == SYMBOL &&
 	    strcmp(form->car->name, "*") == 0 &&
 	    count(form->cdr) == 2) {
-      visit(writer, gc, form->cdr->car);
-      visit(writer, gc, form->cdr->cdr->car);
+      visit(writer, r, form->cdr->car);
+      visit(writer, r, form->cdr->cdr->car);
       code_write_code(writer, MUL);
     }
     else if(form->car->type == SYMBOL &&
 	    strcmp(form->car->name, "/") == 0 &&
 	    count(form->cdr) == 2) {
-      visit(writer, gc, form->cdr->car);
-      visit(writer, gc, form->cdr->cdr->car);
+      visit(writer, r, form->cdr->car);
+      visit(writer, r, form->cdr->cdr->car);
       code_write_code(writer, DIV);
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
       Obj *subform = form->cdr;
       while(subform && subform->car) {
-	visit(writer, gc, subform->car);
+	visit(writer, r, subform->car);
 	if(subform->cdr && subform->cdr->car != NULL) {
 	  code_write_pop(writer); // pop value if form is not the last one
 	}
@@ -80,14 +80,14 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
 	return;
       }
       
-      visit(writer, gc, expression); // the result from this will be the branching value
+      visit(writer, r, expression); // the result from this will be the branching value
 
       int true_code_length;
-      Code *true_bytecode = compile(gc, true_branch, &true_code_length);
+      Code *true_bytecode = compile(r, true_branch, &true_code_length);
       //printf("True branch length: %d\n", true_code_length);
 
       int false_code_length;
-      Code *false_bytecode = compile(gc, false_branch, &false_code_length);
+      Code *false_bytecode = compile(r, false_branch, &false_code_length);
       //printf("False branch length: %d\n", false_code_length);
 
       code_write_if(writer); // this code will jump forward one step if value on the stack is true, otherwise it will jump two steps
@@ -115,7 +115,7 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
       Obj *body = form->cdr->cdr->car;
       assert(body);
       int code_length = 0;
-      Code *bytecode = compile(gc, body, &code_length);
+      Code *bytecode = compile(r, body, &code_length);
       /* printf("Compiled code for lambda "); */
       /* print_obj(form); */
       /* printf("\n"); */
@@ -128,11 +128,11 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
       Obj *arg = form->cdr;
       int caller_arg_count = 0;
       while(arg && arg->car) {
-	visit(writer, gc, arg->car);
+	visit(writer, r, arg->car);
 	caller_arg_count++;
 	arg = arg->cdr;
       }
-      visit(writer, gc, f);
+      visit(writer, r, f);
       code_write_call(writer, caller_arg_count);
     }
   }
@@ -144,24 +144,23 @@ void visit(CodeWriter *writer, GC *gc, Obj *form) {
   }
 }
 
-Code *compile(GC *gc, Obj *form, int *OUT_code_length) {
+Code *compile(Runtime *r, Obj *form, int *OUT_code_length) {
   CodeWriter writer;
   code_writer_init(&writer, 1024);
-  visit(&writer, gc, form);
+  visit(&writer, r, form);
   code_write_end(&writer);
   *OUT_code_length = writer.pos;
   return writer.codes;
 }
 
 void compile_and_print(const char *source) {
-  GC gc;
-  gc_init(&gc);
-  Obj *forms = parse(&gc, source);
+  Runtime *r = runtime_new(true);
+  Obj *forms = parse(r->gc, source);
   Obj *form_cons = forms;
   while(form_cons && form_cons->car) {
     Obj *form = form_cons->car;
     int code_length = 0;
-    Code *code = compile(&gc, form, &code_length);
+    Code *code = compile(r, form, &code_length);
     printf("Generating code for ");
     print_obj(form);
     printf("\n");
@@ -169,5 +168,6 @@ void compile_and_print(const char *source) {
     printf("Length: %d\n", code_length);
     form_cons = form_cons->cdr;
   }
+  runtime_delete(r);
 }
 

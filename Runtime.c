@@ -435,7 +435,7 @@ void runtime_step_eval(Runtime *r) {
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
 
   int code_length = 0;
-  Code *bytecode = compile(r->gc, form, &code_length);
+  Code *bytecode = compile(r, form, &code_length);
   //  code_print(bytecode);
   int old_obj_count = g_obj_count;
   
