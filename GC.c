@@ -99,8 +99,8 @@ Obj *gc_make_symbol(GC *gc, const char *name) {
 
 Obj *gc_make_func(GC *gc, const char *name, void *f) {
   Obj *o = gc_make_obj(gc, FUNC);
+  o->func_name = (char*)name; // names of funcs are static strings and will not need to be freed when Obj is GC:d
   o->func = f;
-  o->name = (char*)name; // names of funcs are static strings and will not need to be freed when Obj is GC:d
   return o;
 }
 

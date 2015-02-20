@@ -17,10 +17,7 @@ typedef enum {
 } Type;
 
 typedef struct sObj {
-  Type type;
   struct sObj *next;
-  bool reachable;
-  char *name; // used by symbols and strings for their content
   
   union {
     // CONS & LAMBDA
@@ -29,12 +26,22 @@ typedef struct sObj {
       struct sObj *cdr;
     };
     // FUNC
-    void *func;
+    struct {
+      void *func;
+      char *func_name;
+    };
     // NUMBER
     double number;
     // BYTECODE
     enum eCode *code;
+
+    char *name; // used by symbols and strings for their content
   };
+
+  // Put smaller types last to decrease size of the struct
+  Type type;
+  bool reachable;
+  
 } Obj;
 
 //typedef Obj (*Func)(Obj *args);

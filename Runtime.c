@@ -427,7 +427,6 @@ void runtime_step_eval(Runtime *r) {
   else if(code == CALL) {
     Obj *f = gc_stack_pop(r->gc);
     int arg_count = read_next_code_as_int(frame);
-    //printf("Calling %s '%s' with %d args.\n", type_to_str(f->type), f->name ? f->name : "λ", arg_count);
     if(f->type == FUNC) {
       call_func(r, f, arg_count);
     }

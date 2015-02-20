@@ -22,10 +22,13 @@
 
 ;; (timing (fn () (fib 31)))
 ;; With direct lookup of global variabels: 2.485
+;; Memory: 1023 MB
+;; With better struct packing: 689MB
 
 ;; ➜ (range 1 10)
 ;; + 272 Obj:s
 ;; With args as C-array: 179 Obj:s
+
 
 
 

@@ -27,7 +27,8 @@ void tests() {
   //test_compiler();
 }
 
-int main(int argc, char *argv[]) { 
+int main(int argc, char *argv[]) {
+  //printf("Obj size: %lu\n", sizeof(Obj));
   //tests();
   repl();
 }
