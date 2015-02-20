@@ -54,8 +54,7 @@ Code *code_print_single(Code *code) {
   }
   else if(*code == PUSH_LAMBDA) {
     printf(" <args> <body> <code>");
-    code += 5;
-    code += 2;
+    code += 7;
   }
   else {
     code++;
