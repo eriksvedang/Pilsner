@@ -19,9 +19,13 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form) {
     if(found_in_local_env) {
       code_write_lookup_and_push(writer, form); // This is a local, can't look it up with C-pointer
     }
-    else {
+    else if(binding_pair) {
       assert(binding_pair);
       code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
+    }
+    else {
+      printf("Warning: Can't find binding called '%s'.\n", form->name);
+      code_write_lookup_and_push(writer, form); // Not found at all!
     }
   }
   else if(form->type == NUMBER || form->type == STRING) {

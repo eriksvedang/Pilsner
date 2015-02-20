@@ -3,9 +3,11 @@
 
 #include "Obj.h"
 #include "Bytecode.h"
+#include "Pool.h"
 
 #define STACK_MAX 512
 #define GLOBAL_OBJ_COUNT 1
+#define USE_MEMORY_POOL 0
 
 #if GLOBAL_OBJ_COUNT
 int g_obj_count;
@@ -15,6 +17,9 @@ typedef struct {
   Obj *stack[STACK_MAX];
   int stackSize;
   Obj *firstObj; // linked list of all objects
+  #if USE_MEMORY_POOL
+  Pool *pool;
+  #endif
 } GC;
 
 typedef struct {

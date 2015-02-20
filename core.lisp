@@ -42,10 +42,11 @@
 	    nil
 	    (loop (dec i)))))
 
+;; Use local let bindings instead!!!
 (def timing
-  (fn (f) (do (def t1 (time))
+  (fn (f) (do (def start-time (time))
               (f)
-              (def t2 (time))
+              (def end-time (time))
               (println "dt:")
-              (println (- t2 t1)))))
+              (println (- end-time start-time)))))
 

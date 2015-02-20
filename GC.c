@@ -48,7 +48,11 @@ void gc_stack_print(GC *gc, bool show_bottom_frame) {
 }
 
 Obj *gc_make_obj(GC *gc, Type type) {
+  #if USE_MEMORY_POOL
+  Obj *o = pool_obj_get(gc->pool);
+  #else
   Obj *o = malloc(sizeof(Obj));
+  #endif
   o->reachable = false;
   o->type = type;
   o->name = NULL;
@@ -127,11 +131,17 @@ Obj *gc_make_lambda(GC *gc, Obj *env, Obj *args, Obj *body, Code *code) {
   return o;
 }
 
-void gc_delete(Obj *o) {
+void gc_delete(GC *gc, Obj *o) {
   if(o->type == SYMBOL || o->type == STRING) {
     free(o->name);
   }
+  
+  #if USE_MEMORY_POOL
+  pool_obj_return(gc->pool, o);
+  #else
   free(o);
+  #endif
+  
   #if GLOBAL_OBJ_COUNT
   g_obj_count--;
   #endif
@@ -162,6 +172,9 @@ void mark(Obj *o) {
 void gc_init(GC *gc) {
   gc->stackSize = 0;
   gc->firstObj = NULL;
+  #if USE_MEMORY_POOL
+  gc->pool = pool_new(0);
+  #endif
 }
 
 GCResult gc_collect(GC *gc) {
@@ -195,7 +208,7 @@ GCResult gc_collect(GC *gc) {
       #endif      
       Obj* unreached = *obj;
       *obj = unreached->next; // change the pointer in place, *THE MAGIC*
-      gc_delete(unreached);
+      gc_delete(gc, unreached);
       result.freed++;
     }
   }
