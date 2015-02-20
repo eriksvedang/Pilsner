@@ -17,15 +17,12 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form) {
     bool found_in_local_env = false;
     Obj *binding_pair = runtime_env_find_pair(env, form, true, &found_in_local_env);
     if(found_in_local_env) {
-      //printf("%s found in local\n", obj_to_str(form));
-      code_write_lookup_and_push(writer, form);
+      code_write_lookup_and_push(writer, form); // This is a local, can't look it up with C-pointer
     }
     else {
       assert(binding_pair);
-      //printf("%s only found in global\n", obj_to_str(form));
-      code_write_direct_lookup_var(writer, binding_pair);
+      code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
     }
-    //code_write_lookup_and_push(writer, form);
   }
   else if(form->type == NUMBER || form->type == STRING) {
     code_write_push_constant(writer, form);

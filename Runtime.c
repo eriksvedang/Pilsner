@@ -414,7 +414,7 @@ void runtime_step_eval(Runtime *r) {
   else if(code == DEFINE) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = gc_stack_pop(r->gc);
-    runtime_env_assoc(r, frame->env, sym, value);
+    runtime_env_assoc(r, r->global_env, sym, value);
     gc_stack_push(r->gc, sym);
   }
   else if(code == PUSH_LAMBDA) {
