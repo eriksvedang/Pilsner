@@ -18,6 +18,7 @@ const char *code_to_str(Code code) {
   else if(code == SUB)              return "SUB     ";
   else if(code == DIV)              return "DIV     ";
   else if(code == DIRECT_LOOKUP_VAR)return "DIRECT  ";
+  else if(code == TAIL_CALL)        return "TAILCALL";
   else if(code == UNINITIALIZED) return "UNINITIALIZED";
   else return "UNKNOWN_CODE";
 }
@@ -152,6 +153,12 @@ int code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code)
 
 int code_write_call(CodeWriter *writer, int arg_count) {
   code_write(writer, CALL);
+  int_write(writer, arg_count);
+  return 2;
+}
+
+int code_write_tail_call(CodeWriter *writer, int arg_count) {
+  code_write(writer, TAIL_CALL);
   int_write(writer, arg_count);
   return 2;
 }

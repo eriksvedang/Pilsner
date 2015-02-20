@@ -301,8 +301,7 @@ Obj *bind_args_in_new_env(Runtime *r, Obj *parent_env, Obj *arg_symbols, Obj *ar
   return local_env;
 }
 
-void call_lambda(Runtime *r, Obj *f, int arg_count) {
-
+void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
   int proper_arg_count = count(GET_ARGS(f));
   if(proper_arg_count != arg_count) {
     printf("Can't call function %s with %d args (should be %d).\n", obj_to_str(f), arg_count, proper_arg_count);
@@ -318,7 +317,12 @@ void call_lambda(Runtime *r, Obj *f, int arg_count) {
   
   Obj *bytecode = f->cdr->cdr;
   assert(bytecode->type == BYTECODE);
-  runtime_frame_push(r, local_env, (Code*)bytecode->code, "call_lambda");
+
+  if(tail_call) {
+    runtime_frame_replace(r, local_env, (Code*)bytecode->code, "tail_call_lambda");
+  } else {
+    runtime_frame_push(r, local_env, (Code*)bytecode->code, "call_lambda");
+  }
 }
 
 Obj *read_next_code_as_obj(Frame *frame) {
@@ -423,14 +427,14 @@ void runtime_step_eval(Runtime *r) {
     Obj *lambda = gc_make_lambda(r->gc, frame->env, args, body, bytecode);
     gc_stack_push(r->gc, lambda);
   }
-  else if(code == CALL) {
+  else if(code == CALL || code == TAIL_CALL) {
     Obj *f = gc_stack_pop(r->gc);
     int arg_count = read_next_code_as_int(frame);
     if(f->type == FUNC) {
       call_func(r, f, arg_count);
     }
     else if(f->type == LAMBDA) {
-      call_lambda(r, f, arg_count);
+      call_lambda(r, f, arg_count, (code == TAIL_CALL));
     }
     else {
       printf("Can't call something that's not a lambda or func: ");
@@ -454,7 +458,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
 
   int code_length = 0;
   Code *bytecode = compile(r, env, form, &code_length);
-  //code_print(bytecode);
+  code_print(bytecode);
   int old_obj_count = g_obj_count;
   
   runtime_frame_push(r, env, bytecode, "top-level");

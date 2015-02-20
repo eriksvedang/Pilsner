@@ -12,7 +12,11 @@ bool is_binary_call(Obj *form, const char *name) {
   return is_symbol(form, name) && count(form->cdr) == 2;
 }
 
-void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form) {
+void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_position) {
+  printf("Visiting %s ", tail_position ? "tail position" : "");
+  print_obj(form);
+  printf("\n");
+  
   if(form->type == SYMBOL) {
     bool found_in_local_env = false;
     Obj *binding_pair = runtime_env_find_pair(env, form, true, &found_in_local_env);
@@ -40,37 +44,38 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form) {
       Obj *symbol = form->cdr->car;
       Obj *value = form->cdr->cdr->car;
       runtime_env_assoc(r, r->global_env, symbol, r->nil);
-      visit(writer, r, env, value);
+      visit(writer, r, env, value, tail_position);
       code_write_define(writer, symbol);
     }
     else if(is_symbol(form, "quote")) {
       code_write_push_constant(writer, form->cdr->car);
     }
     else if(is_binary_call(form, "+")) {
-      visit(writer, r, env, form->cdr->car);
-      visit(writer, r, env, form->cdr->cdr->car);
+      visit(writer, r, env, form->cdr->car, false);
+      visit(writer, r, env, form->cdr->cdr->car, false);
       code_write_code(writer, ADD);
     }
     else if(is_binary_call(form, "-")) {
-      visit(writer, r, env, form->cdr->car);
-      visit(writer, r, env, form->cdr->cdr->car);
+      visit(writer, r, env, form->cdr->car, false);
+      visit(writer, r, env, form->cdr->cdr->car, false);
       code_write_code(writer, SUB);
     }
     else if(is_binary_call(form, "*")) {
-      visit(writer, r, env, form->cdr->car);
-      visit(writer, r, env, form->cdr->cdr->car);
+      visit(writer, r, env, form->cdr->car, false);
+      visit(writer, r, env, form->cdr->cdr->car, false);
       code_write_code(writer, MUL);
     }
     else if(is_binary_call(form, "/")) {
-      visit(writer, r, env, form->cdr->car);
-      visit(writer, r, env, form->cdr->cdr->car);
+      visit(writer, r, env, form->cdr->car, false);
+      visit(writer, r, env, form->cdr->cdr->car, false);
       code_write_code(writer, DIV);
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
       Obj *subform = form->cdr;
       while(subform && subform->car) {
-	visit(writer, r, env, subform->car);
-	if(subform->cdr && subform->cdr->car != NULL) {
+	bool last_form = subform->cdr == NULL || subform->cdr->car == NULL;
+	visit(writer, r, env, subform->car, last_form);
+	if(!last_form) {
 	  code_write_pop(writer); // pop value if form is not the last one
 	}
 	subform = subform->cdr;
@@ -95,7 +100,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form) {
 	return;
       }
       
-      visit(writer, r, env, expression); // the result from this will be the branching value
+      visit(writer, r, env, expression, false); // the result from this will be the branching value
 
       int true_code_length;
       Code *true_bytecode = compile(r, env, true_branch, &true_code_length);
@@ -147,12 +152,17 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form) {
       Obj *arg = form->cdr;
       int caller_arg_count = 0;
       while(arg && arg->car) {
-	visit(writer, r, env, arg->car);
+	visit(writer, r, env, arg->car, false);
 	caller_arg_count++;
 	arg = arg->cdr;
       }
-      visit(writer, r, env, f);
-      code_write_call(writer, caller_arg_count);
+      visit(writer, r, env, f, false);
+
+      if(tail_position) {
+	code_write_tail_call(writer, caller_arg_count);
+      } else {
+	code_write_call(writer, caller_arg_count);
+      }
     }
   }
   else {
@@ -166,7 +176,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form) {
 Code *compile(Runtime *r, Obj *env, Obj *form, int *OUT_code_length) {
   CodeWriter writer;
   code_writer_init(&writer, 1024);
-  visit(&writer, r, env, form);
+  visit(&writer, r, env, form, true);
   code_write_end(&writer);
   *OUT_code_length = writer.pos;
   return writer.codes;
