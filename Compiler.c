@@ -4,6 +4,14 @@
 #include <string.h>
 #include <assert.h>
 
+bool is_symbol(Obj *form, const char *name) {
+  return form->car->type == SYMBOL && strcmp(form->car->name, name) == 0;
+}
+
+bool is_binary_call(Obj *form, const char *name) {
+  return is_symbol(form, name) && count(form) == 2;
+}
+
 void visit(CodeWriter *writer, Runtime *r, Obj *form) {
   if(form->type == SYMBOL) {
     code_write_lookup_and_push(writer, form);
@@ -16,37 +24,29 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form) {
       // TODO: push special nil value instead or use a specific op for this
       code_write_push_constant(writer, form);
     }
-    else if(form->car->type == SYMBOL && strcmp(form->car->name, "def") == 0) {
+    else if(is_symbol(form, "def")) {
       visit(writer, r, form->cdr->cdr->car);
       code_write_define(writer, form->cdr->car);
     }
-    else if(form->car->type == SYMBOL && strcmp(form->car->name, "quote") == 0) {
+    else if(is_symbol(form, "quote")) {
       code_write_push_constant(writer, form->cdr->car);
     }
-    else if(form->car->type == SYMBOL &&
-	    strcmp(form->car->name, "+") == 0 &&
-	    count(form->cdr) == 2) {
+    else if(is_binary_call(form, "+")) {
       visit(writer, r, form->cdr->car);
       visit(writer, r, form->cdr->cdr->car);
       code_write_code(writer, ADD);
     }
-    else if(form->car->type == SYMBOL &&
-	    strcmp(form->car->name, "-") == 0 &&
-	    count(form->cdr) == 2) {
+    else if(is_binary_call(form, "-")) {
       visit(writer, r, form->cdr->car);
       visit(writer, r, form->cdr->cdr->car);
       code_write_code(writer, SUB);
     }
-    else if(form->car->type == SYMBOL &&
-	    strcmp(form->car->name, "*") == 0 &&
-	    count(form->cdr) == 2) {
+    else if(is_binary_call(form, "*")) {
       visit(writer, r, form->cdr->car);
       visit(writer, r, form->cdr->cdr->car);
       code_write_code(writer, MUL);
     }
-    else if(form->car->type == SYMBOL &&
-	    strcmp(form->car->name, "/") == 0 &&
-	    count(form->cdr) == 2) {
+    else if(is_binary_call(form, "/")) {
       visit(writer, r, form->cdr->car);
       visit(writer, r, form->cdr->cdr->car);
       code_write_code(writer, DIV);
