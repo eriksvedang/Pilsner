@@ -34,7 +34,19 @@
 (def t (fn () (map inc '(5 10 15))))
 
 
-; (load "tests.lisp")
+(load "tests.lisp")
 
+;; (println "")
+;; (println "SHADE")
+;; (println "")
+;; (def glob 123)
+;; (def shade (fn (glob) (* glob glob))) ;; should shadow global variable 'glob'
+;; (print-code shade)
 
+;; (println "")
+;; (println "NOSHADE")
+;; (println "")
+;; (def blub 321)
+;; (def noshade (fn () (* blub blub)))
+;; (print-code noshade)
 

@@ -47,5 +47,6 @@ int code_write_jump(CodeWriter *writer, int jump_length);
 int code_write_if(CodeWriter *writer);
 int code_write_pop(CodeWriter *writer);
 int code_write_code(CodeWriter *writer, Code code);
+int code_write_direct_lookup_var(CodeWriter *writer, Obj *binding_pair);
 
 #endif

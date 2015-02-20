@@ -25,7 +25,8 @@ const char *code_to_str(Code code) {
 bool pushes_obj(Code code) {
   return (code == PUSH_CONSTANT ||
 	  code == LOOKUP_AND_PUSH ||
-	  code == DEFINE);
+	  code == DEFINE ||
+	  code == DIRECT_LOOKUP_VAR);
 }
 
 void print_code_as_obj(Code *code) {
@@ -53,7 +54,8 @@ Code *code_print_single(Code *code) {
   }
   else if(*code == PUSH_LAMBDA) {
     printf(" <args> <body> <code>");
-    code += 7;
+    code += 5;
+    code += 2;
   }
   else {
     code++;

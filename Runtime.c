@@ -11,21 +11,28 @@
 
 #define LOG_EVAL 0
 
+#define HAS_PARENT_ENV(env) (env->cdr != NULL)
+
 void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index);
 
 // The environments root is a cons cell where the car
 // contains the a-list and the cdr contains the parent env.
 
-Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search) {
+Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search, bool *OUT_found_in_local_env) {
+  //printf("Looking for pair for %s in env %p (is global: %d)\n", obj_to_str(key), env, !HAS_PARENT_ENV(env));
   Obj *current = env->car; // get the a-list for this env
   while(current->car) {
     if(eq(current->car->car, key)) {
+      //printf("Found!\n");
+      if(OUT_found_in_local_env) {
+	*OUT_found_in_local_env = HAS_PARENT_ENV(env);
+      }
       return current->car;
     }
     current = current->cdr;
   }
-  if(allow_parent_search && env->cdr) {
-    return runtime_env_find_pair(env->cdr, key, true);
+  if(allow_parent_search && HAS_PARENT_ENV(env)) {
+    return runtime_env_find_pair(env->cdr, key, true, OUT_found_in_local_env);
   } else {
     return NULL;
   }
@@ -33,7 +40,7 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search) {
 
 void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
   /* printf("Will register %s in env %p with value\n", key->name, env); print_obj(value); printf("\n"); */
-  Obj *pair = runtime_env_find_pair(env, key, false);
+  Obj *pair = runtime_env_find_pair(env, key, false, NULL);
   if(pair) {
     pair->cdr = value;
   }
@@ -45,7 +52,7 @@ void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
 }
 
 Obj *runtime_env_lookup(Obj *env, Obj *key) {
-  Obj *pair = runtime_env_find_pair(env, key, true);
+  Obj *pair = runtime_env_find_pair(env, key, true, NULL);
   if(pair) {
     return pair->cdr;
   }
@@ -267,23 +274,12 @@ void call_func(Runtime *r, Obj *f, int arg_count) {
   gc_stack_push(r->gc, result);
 }
 
-void call_lambda(Runtime *r, Obj *f, int arg_count) {
-
-  int proper_arg_count = count(GET_ARGS(f));
-  if(proper_arg_count != arg_count) {
-    printf("Can't call function %s with %d args (should be %d).\n", obj_to_str(f), arg_count, proper_arg_count);
-    gc_stack_push(r->gc, r->nil);
-    return;
-  }
+Obj *bind_args_in_new_env(Runtime *r, Obj *parent_env, Obj *arg_symbols, Obj *arg_values, int arg_count) {
   
-  Obj *args = fetch_args(r, arg_count);
-
-  Obj *parent_env = f->car->car;
-  assert(parent_env);
   Obj *local_env = runtime_env_make_local(r, parent_env);
 
-  Obj *arg_symbol_cons = f->car->cdr;
-  Obj *arg_value_cons = args;
+  Obj *arg_symbol_cons = arg_symbols;
+  Obj *arg_value_cons = arg_values;
   
   while(arg_symbol_cons && arg_symbol_cons->car &&
 	arg_value_cons  && arg_value_cons->car) {
@@ -293,13 +289,33 @@ void call_lambda(Runtime *r, Obj *f, int arg_count) {
       print_obj(arg_symbol); printf("\n");
     }
     Obj *arg_value = arg_value_cons->car;
+
     /* printf("Binding arg_symbol '%s' to value ", arg_symbol->name); */
     /* print_obj(arg_value); */
     /* printf("\n"); */
+
     runtime_env_assoc(r, local_env, arg_symbol, arg_value);
     arg_symbol_cons = arg_symbol_cons->cdr;
     arg_value_cons = arg_value_cons->cdr;
   }
+
+  return local_env;
+}
+
+void call_lambda(Runtime *r, Obj *f, int arg_count) {
+
+  int proper_arg_count = count(GET_ARGS(f));
+  if(proper_arg_count != arg_count) {
+    printf("Can't call function %s with %d args (should be %d).\n", obj_to_str(f), arg_count, proper_arg_count);
+    gc_stack_push(r->gc, r->nil);
+    return;
+  }
+
+  Obj *parent_env = f->car->car;
+  assert(parent_env);
+  Obj *arg_symbols = f->car->cdr;
+  Obj *arg_values = fetch_args(r, arg_count);
+  Obj *local_env = bind_args_in_new_env(r, parent_env, arg_symbols, arg_values, arg_count);
   
   Obj *bytecode = f->cdr->cdr;
   assert(bytecode->type == BYTECODE);
@@ -439,8 +455,8 @@ void runtime_step_eval(Runtime *r) {
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
 
   int code_length = 0;
-  Code *bytecode = compile(r, form, &code_length);
-  code_print(bytecode);
+  Code *bytecode = compile(r, env, form, &code_length);
+  //code_print(bytecode);
   int old_obj_count = g_obj_count;
   
   runtime_frame_push(r, env, bytecode, "top-level");
@@ -461,7 +477,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
     }
   }
 
-  printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
+  //printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
 }
 
 void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index) {
