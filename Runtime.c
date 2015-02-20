@@ -201,8 +201,7 @@ void register_builtin_vars(Runtime *r) {
 }
 
 Runtime *runtime_new(bool builtins) {
-  GC *gc = malloc(sizeof(GC)); // TODO: call gc_new() instead
-  gc_init(gc);
+  GC *gc = gc_new();
   Runtime *r = malloc(sizeof(Runtime));
   r->gc = gc;
   r->global_env = runtime_env_make_local(r, NULL);
@@ -220,7 +219,7 @@ Runtime *runtime_new(bool builtins) {
 }
 
 void runtime_delete(Runtime *r) {
-  free(r->gc); // TODO: call gc_delete() instead
+  gc_delete(r->gc);
   free(r);
 }
 

@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <assert.h>
 
 #define LOG 0
 #define LOG_GC_COLLECT_RESULT 1
@@ -131,7 +132,7 @@ Obj *gc_make_lambda(GC *gc, Obj *env, Obj *args, Obj *body, Code *code) {
   return o;
 }
 
-void gc_delete(GC *gc, Obj *o) {
+void gc_obj_free(GC *gc, Obj *o) {
   if(o->type == SYMBOL || o->type == STRING) {
     free(o->name);
   }
@@ -169,12 +170,16 @@ void mark(Obj *o) {
   }
 }
 
-void gc_init(GC *gc) {
+GC *gc_new() {
+  GC *gc = malloc(sizeof(GC));
   gc->stackSize = 0;
   gc->firstObj = NULL;
-  #if USE_MEMORY_POOL
+
+#if USE_MEMORY_POOL
   gc->pool = pool_new(0);
-  #endif
+#endif
+
+  return gc;
 }
 
 GCResult gc_collect(GC *gc) {
@@ -208,7 +213,7 @@ GCResult gc_collect(GC *gc) {
       #endif      
       Obj* unreached = *obj;
       *obj = unreached->next; // change the pointer in place, *THE MAGIC*
-      gc_delete(gc, unreached);
+      gc_obj_free(gc, unreached);
       result.freed++;
     }
   }
@@ -223,5 +228,18 @@ GCResult gc_collect(GC *gc) {
   #endif
 
   return result;
+}
+
+void gc_delete(GC *gc) {
+  while(gc->stackSize >= 0) {
+    gc_stack_pop(gc);
+  }
+  gc_collect(gc);
+
+  #if GLOBAL_OBJ_COUNT
+  assert(g_obj_count == 0);
+  #endif
+  
+  free(gc);
 }
 

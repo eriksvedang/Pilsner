@@ -13,22 +13,7 @@
 #include "Runtime.h"
 #include "Tests.h"
 
-void tests() {
-  //test_gc();
-  //test_printing();
-  //test_parsing();
-  //test_runtime();
-  //test_local_environments();
-  //test_str_allocs();
-  //test_bytecode();
-  //test_bytecode_jump();
-  //test_bytecode_if();
-  //test_bytecode_with_lambda();
-  //test_compiler();
-}
-
 int main(int argc, char *argv[]) {
-  //printf("Obj size: %lu\n", sizeof(Obj));
   //tests();
   repl();
 }

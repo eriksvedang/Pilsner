@@ -27,7 +27,8 @@ typedef struct {
   int freed;
 } GCResult;
 
-void gc_init(GC *gc);
+GC *gc_new();
+void gc_delete(GC *gc);
 GCResult gc_collect(GC *gc);
 
 // Stack

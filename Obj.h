@@ -55,9 +55,16 @@ void print_obj(Obj *o);
 bool eq(Obj *a, Obj *b);
 int count(Obj *list);
 
-#define GET_ENV(o) (o->car->car)
-#define GET_ARGS(o) (o->car->cdr)
-#define GET_BODY(o) (o->cdr->car)
-#define GET_CODE(o) (o->cdr->cdr->code)
-  
+// Cons cell helpers
+#define FIRST(o)  ((o)->car)
+#define SECOND(o) ((o)->cdr->car)
+#define THIRD(o)  ((o)->cdr->cdr->car)
+#define REST(o)   ((o)->cdr)
+
+// Lambda helpers
+#define GET_ENV(o)  ((o)->car->car)
+#define GET_ARGS(o) ((o)->car->cdr)
+#define GET_BODY(o) ((o)->cdr->car)
+#define GET_CODE(o) ((o)->cdr->cdr->code)
+
 #endif

@@ -11,18 +11,17 @@
 #include "Compiler.h"
 
 void test_gc() {
-  GC gc;
-  gc_init(&gc);
+  GC *gc = gc_new();
 
-  Obj *sym1 = gc_make_symbol(&gc, "sym1");
-  Obj *sym2 = gc_make_symbol(&gc, "sym2");
-  Obj *sym3 = gc_make_symbol(&gc, "sym3");
-  Obj *sym4 = gc_make_symbol(&gc, "sym4");
+  Obj *sym1 = gc_make_symbol(gc, "sym1");
+  Obj *sym2 = gc_make_symbol(gc, "sym2");
+  Obj *sym3 = gc_make_symbol(gc, "sym3");
+  Obj *sym4 = gc_make_symbol(gc, "sym4");
   
-  Obj *cell1 = gc_make_cons(&gc, NULL, NULL);
-  Obj *cell2 = gc_make_cons(&gc, NULL, NULL);
-  Obj *cell3 = gc_make_cons(&gc, NULL, NULL);
-  Obj *cell4 = gc_make_cons(&gc, NULL, NULL);
+  Obj *cell1 = gc_make_cons(gc, NULL, NULL);
+  Obj *cell2 = gc_make_cons(gc, NULL, NULL);
+  Obj *cell3 = gc_make_cons(gc, NULL, NULL);
+  Obj *cell4 = gc_make_cons(gc, NULL, NULL);
 
   cell1->car = sym1;
   cell1->cdr = cell2;
@@ -32,34 +31,35 @@ void test_gc() {
   cell3->car = cell4;
   cell4->cdr = cell3;
 
-  gc_stack_push(&gc, cell1);
+  gc_stack_push(gc, cell1);
 
-  GCResult r1 = gc_collect(&gc);
+  GCResult r1 = gc_collect(gc);
   assert(r1.alive == 4);
   assert(r1.freed == 4);
 	 
-  GCResult r2 = gc_collect(&gc);
+  GCResult r2 = gc_collect(gc);
   assert(r2.alive == 4);
   assert(r2.freed == 0);
 
-  gc_stack_pop(&gc);
+  gc_stack_pop(gc);
   
-  GCResult r3 = gc_collect(&gc);
+  GCResult r3 = gc_collect(gc);
   assert(r3.alive == 0);
   assert(r3.freed == 4);
+
+  gc_delete(gc);
 }
 
 void test_printing() {
-  GC gc;
-  gc_init(&gc);
-
-  Obj *cell1 = gc_make_cons(&gc, NULL, NULL);
-  Obj *sym1 = gc_make_symbol(&gc, "sym1");
-  Obj *cell2 = gc_make_cons(&gc, sym1, cell1);
-  Obj *sym2 = gc_make_symbol(&gc, "sym2");
-  Obj *cell3 = gc_make_cons(&gc, sym2, cell2);
-  Obj *sym3 = gc_make_symbol(&gc, "sym3");
-  Obj *cell4 = gc_make_cons(&gc, sym3, cell3);
+  GC *gc = gc_new();
+  
+  Obj *cell1 = gc_make_cons(gc, NULL, NULL);
+  Obj *sym1 = gc_make_symbol(gc, "sym1");
+  Obj *cell2 = gc_make_cons(gc, sym1, cell1);
+  Obj *sym2 = gc_make_symbol(gc, "sym2");
+  Obj *cell3 = gc_make_cons(gc, sym2, cell2);
+  Obj *sym3 = gc_make_symbol(gc, "sym3");
+  Obj *cell4 = gc_make_cons(gc, sym3, cell3);
   
   print_obj(cell1); printf("\n");
   print_obj(cell2); printf("\n");
@@ -67,9 +67,9 @@ void test_printing() {
   print_obj(cell4); printf("\n");
 
   // Add a list in the middle of the list
-  Obj *cell5 = gc_make_cons(&gc, NULL, NULL);
-  Obj *cell6 = gc_make_cons(&gc, gc_make_symbol(&gc, "sym10"), cell5);
-  Obj *cell7 = gc_make_cons(&gc, gc_make_symbol(&gc, "sym20"), cell6);
+  Obj *cell5 = gc_make_cons(gc, NULL, NULL);
+  Obj *cell6 = gc_make_cons(gc, gc_make_symbol(gc, "sym10"), cell5);
+  Obj *cell7 = gc_make_cons(gc, gc_make_symbol(gc, "sym20"), cell6);
   cell3->car = cell7;
   print_obj(cell4); printf("\n");
 
@@ -78,15 +78,15 @@ void test_printing() {
   cell1->cdr = NULL;
   print_obj(cell1); printf("\n");
 
-  gc_collect(&gc);
+  gc_collect(gc);
+  gc_delete(gc);
 }
 
 void test_parsing() {
-  GC gc;
-  gc_init(&gc);
-  
-  Obj *forms = parse(&gc, "() a b c (d e) ((f g h () ()) (() i j) (k (() l ()) m))");
+  GC *gc = gc_new();  
+  Obj *forms = parse(gc, "() a b c (d e) ((f g h () ()) (() i j) (k (() l ()) m))");
   print_obj(forms);
+  gc_delete(gc);
 }
 
 void test_runtime() {
@@ -360,6 +360,24 @@ void test_compiler() {
 
   gc_stack_print(r->gc, false);
   runtime_delete(r);
+}
+
+void test_sizes() {
+  printf("Obj size: %lu\n", sizeof(Obj));
+}
+
+void tests() {
+  test_gc();
+  //test_printing();
+  //test_parsing();
+  //test_runtime();
+  //test_local_environments();
+  //test_str_allocs();
+  //test_bytecode();
+  //test_bytecode_jump();
+  //test_bytecode_if();
+  //test_bytecode_with_lambda();
+  //test_compiler();
 }
 
 #endif
