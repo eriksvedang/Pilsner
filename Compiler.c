@@ -13,9 +13,9 @@ bool is_binary_call(Obj *form, const char *name) {
 }
 
 void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_position) {
-  printf("Visiting %s ", tail_position ? "tail position" : "");
-  print_obj(form);
-  printf("\n");
+  /* printf("Visiting %s ", tail_position ? "tail position" : ""); */
+  /* print_obj(form); */
+  /* printf("\n"); */
   
   if(form->type == SYMBOL) {
     bool found_in_local_env = false;
@@ -103,10 +103,10 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       visit(writer, r, env, expression, false); // the result from this will be the branching value
 
       int true_code_length;
-      Code *true_bytecode = compile(r, env, true_branch, &true_code_length);
+      Code *true_bytecode = compile(r, env, tail_position, true_branch, &true_code_length);
 
       int false_code_length;
-      Code *false_bytecode = compile(r, env, false_branch, &false_code_length);
+      Code *false_bytecode = compile(r, env, tail_position, false_branch, &false_code_length);
 
       code_write_if(writer); // this code will jump forward one step if value on the stack is true, otherwise it will jump two steps
       
@@ -140,7 +140,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       Obj *compile_time_local_env = bind_args_in_new_env(r, env, arg_symbols, arg_values, arg_count);
       
       int code_length = 0;
-      Code *bytecode = compile(r, compile_time_local_env/* r->global_env */, body, &code_length);
+      Code *bytecode = compile(r, compile_time_local_env, true, body, &code_length);
       /* printf("Compiled code for lambda "); */
       /* print_obj(form); */
       /* printf("\n"); */
@@ -173,10 +173,10 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
   }
 }
 
-Code *compile(Runtime *r, Obj *env, Obj *form, int *OUT_code_length) {
+Code *compile(Runtime *r, Obj *env, bool tail_position, Obj *form, int *OUT_code_length) {
   CodeWriter writer;
   code_writer_init(&writer, 1024);
-  visit(&writer, r, env, form, true);
+  visit(&writer, r, env, form, tail_position);
   code_write_end(&writer);
   *OUT_code_length = writer.pos;
   return writer.codes;
@@ -189,7 +189,7 @@ void compile_and_print(const char *source) {
   while(form_cons && form_cons->car) {
     Obj *form = form_cons->car;
     int code_length = 0;
-    Code *code = compile(r, r->global_env, form, &code_length);
+    Code *code = compile(r, r->global_env, false, form, &code_length);
     printf("Generating code for ");
     print_obj(form);
     printf("\n");

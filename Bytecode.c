@@ -45,7 +45,7 @@ Code *code_print_single(Code *code) {
     print_code_as_obj(code);
     code += 2;
   }
-  else if(*code == CALL || *code == JUMP) {
+  else if(*code == CALL || *code == TAIL_CALL || *code == JUMP) {
     code += 1;
     Code *cp = code;
     int *ip = (int*)cp;

@@ -50,3 +50,22 @@
 ;; (def noshade (fn () (* blub blub)))
 ;; (print-code noshade)
 
+
+(def iter
+    (fn (i)
+	(do (println i)
+	    (stack)
+	    (iter (inc i)))))
+
+
+(def iter-n
+    (fn (n f)
+	(do (f n)
+	    (if (< 2 n)
+		(iter-n (dec n) f)
+		'done))))
+
+(def not-iter
+
+
+

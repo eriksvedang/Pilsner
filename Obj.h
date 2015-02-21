@@ -28,15 +28,15 @@ typedef struct sObj {
     // FUNC
     struct {
       void *func;
-      char *func_name;
+      //char *func_name;
     };
     // NUMBER
     double number;
     // BYTECODE
     enum eCode *code;
-
-    char *name; // used by symbols and strings for their content
   };
+
+  char *name; // used by symbols and strings for their content
 
   // Put smaller types last to decrease size of the struct
   Type type;

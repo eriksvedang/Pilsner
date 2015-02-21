@@ -9,7 +9,13 @@
 #include <string.h>
 #include <ctype.h>
 
+#define TAIL_CALLS_ENABLED 1
+
 #define LOG_EVAL 0
+#define LOG_OBJ_COUNT 0
+#define LOG_BYTECODE 0
+#define LOG_FRAMES 0
+#define LOG_VALUE_STACK 0
 
 #define HAS_PARENT_ENV(env) (env->cdr != NULL)
 
@@ -318,11 +324,15 @@ void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
   Obj *bytecode = f->cdr->cdr;
   assert(bytecode->type == BYTECODE);
 
+#if TAIL_CALLS_ENABLED  
   if(tail_call) {
     runtime_frame_replace(r, local_env, (Code*)bytecode->code, "tail_call_lambda");
   } else {
     runtime_frame_push(r, local_env, (Code*)bytecode->code, "call_lambda");
   }
+#else
+  runtime_frame_push(r, local_env, (Code*)bytecode->code, "call_lambda");
+#endif
 }
 
 Obj *read_next_code_as_obj(Frame *frame) {
@@ -447,18 +457,26 @@ void runtime_step_eval(Runtime *r) {
     printf("runtime_step_eval can't understand code %s\n", code_to_str(code));
   }
 
-  #if LOG_EVAL
-  //runtime_print_frames(r);
-  //gc_stack_print(r->gc, false);
+#if LOG_FRAMES
+  runtime_print_frames(r);
+#endif
+
+#if LOG_VALUE_STACK
+  gc_stack_print(r->gc, false);
+#endif
+
+#if LOG_OBJ_COUNT
   printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
-  #endif
+#endif
 }
 
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
 
   int code_length = 0;
-  Code *bytecode = compile(r, env, form, &code_length);
+  Code *bytecode = compile(r, env, false, form, &code_length);
+  #if LOG_BYTECODE
   code_print(bytecode);
+  #endif
   int old_obj_count = g_obj_count;
   
   runtime_frame_push(r, env, bytecode, "top-level");
