@@ -21,7 +21,7 @@ bool iswhitespace(char c) {
   return c == ' ' || c == '\t' || c == '\n';
 }
 
-static const char *specials = "+-*/=%&_!@#?§<>λ§°'$";
+static const char *specials = "+-*/=%&_!@?§<>λ§°'$";
 
 bool isokinsymbol(char c) {
   for (int i = 0; i < strlen(specials); i++) {

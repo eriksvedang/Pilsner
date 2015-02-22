@@ -81,7 +81,7 @@ Obj *gc_make_cons(GC *gc, Obj *car, Obj *cdr) {
 }
 
 void set_name(Obj *o, const char *name) {
-  char *name_copy = malloc(sizeof(char) * strlen(name));
+  char *name_copy = calloc(strlen(name) + 1, sizeof(char));
   strcpy(name_copy, name);
   o->name = name_copy;
 }
@@ -134,6 +134,8 @@ Obj *gc_make_lambda(GC *gc, Obj *env, Obj *args, Obj *body, Code *code) {
 
 void gc_obj_free(GC *gc, Obj *o) {
   if(o->type == SYMBOL || o->type == STRING) {
+    o->car = NULL;
+    o->cdr = NULL;
     free(o->name);
   }
   
@@ -232,7 +234,7 @@ GCResult gc_collect(GC *gc) {
 }
 
 void gc_delete(GC *gc) {
-  while(gc->stackSize >= 0) {
+  while(gc->stackSize >= 1) {
     gc_stack_pop(gc);
   }
   gc_collect(gc);

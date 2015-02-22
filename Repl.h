@@ -28,7 +28,7 @@ void repl() {
 
   const int MAX_INPUT_BUFFER_SIZE = 2048;
   char str[MAX_INPUT_BUFFER_SIZE];
-  
+
   while(r->mode != RUNTIME_MODE_FINISHED) {
     printf("\e[32m➜\e[0m ");
     fgets(str, MAX_INPUT_BUFFER_SIZE, stdin);
@@ -39,11 +39,12 @@ void repl() {
     }
   }
 
+  //printf("\e[32m\nTHE END\e[0m\n");
+
   // The global environment should be the only thing on the stack
   assert(r->gc->stackSize == 1);
   gc_stack_pop(r->gc);
-  
-  gc_collect(r->gc);
+
   runtime_delete(r);
 
   //fgets(str, MAX_INPUT_BUFFER_SIZE, stdin);

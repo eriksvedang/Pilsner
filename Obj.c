@@ -25,9 +25,8 @@ const char *obj_to_str(Obj *o) {
     return o->name;
   }
   else if(o->type == FUNC) {
-    char *s = malloc(sizeof(char) * strlen(o->name) + sizeof(char) * 3); // LEAK! SHOULD BE A PROPER OBJ STRING
-    s[0] = '<';
-    s[strlen(o->name) - 2] = '>';
+    char *s = malloc(sizeof(char) * strlen(o->name) + sizeof(char) * 2); // LEAK! SHOULD BE A PROPER OBJ STRING
+    s[0] = '#';
     s[strlen(o->name) - 1] = '\0';
     char *s1 = &s[1];
     strcpy(s1, o->name);
@@ -88,7 +87,7 @@ void print_obj(Obj *o) {
     printf("%s", o->name);
   }
   else if(o->type == FUNC) {
-    printf("<%s>", o->name);
+    printf("#%s", o->name);
   }
   else if(o->type == NUMBER) {
     printf("%f", o->number);
