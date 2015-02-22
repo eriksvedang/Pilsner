@@ -507,7 +507,8 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
       fgets(str, BUFFER_SIZE, stdin);
       r->mode = RUNTIME_MODE_RUN;
       if(strlen(str) > 0) {
-	runtime_eval_internal(r, env, str, true, 0, r->top_frame);
+	Obj *inner_env = r->frames[r->top_frame].env;
+	runtime_eval_internal(r, inner_env, str, true, 0, r->top_frame);
       }
       else {
 	// continue normal execution
