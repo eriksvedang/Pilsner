@@ -188,9 +188,10 @@ GCResult gc_collect(GC *gc) {
     mark(gc->stack[i]);
   }
 
-  GCResult result;
-  result.alive = 0;
-  result.freed = 0;
+  GCResult result = {
+    .alive = 0,
+    .freed = 0,
+  };
   
   // Sweep!
   Obj** obj = &gc->firstObj;

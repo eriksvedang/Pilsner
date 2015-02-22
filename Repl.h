@@ -32,7 +32,11 @@ void repl() {
   while(r->mode != RUNTIME_MODE_FINISHED) {
     printf("\e[32m➜\e[0m ");
     fgets(str, MAX_INPUT_BUFFER_SIZE, stdin);
-    runtime_eval(r, str);
+    if(strcmp(str, "§\n") == 0) {
+      gc_collect(r->gc);
+    } else {
+      runtime_eval(r, str);
+    }
   }
 
   // The global environment should be the only thing on the stack
