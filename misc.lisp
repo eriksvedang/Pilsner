@@ -21,6 +21,10 @@
 
 (def aha (fn (n) (map ahaa (range 1 n))))
 
+(def b (fn (x) (do (println x)
+		   (break)
+		 (println x))))
+
 (def bf (fn (x) (do (println (* x x))
 		    (break)
 		    (println (* x x x))

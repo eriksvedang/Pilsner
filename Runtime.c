@@ -29,7 +29,6 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search, bool *O
   Obj *current = env->car; // get the a-list for this env
   while(current->car) {
     if(eq(current->car->car, key)) {
-      //printf("Found!\n");
       if(OUT_found_in_local_env) {
 	*OUT_found_in_local_env = HAS_PARENT_ENV(env);
       }
@@ -113,13 +112,13 @@ void runtime_inspect_env(Runtime *r) {
 }
 
 void runtime_print_frames(Runtime *r) {
-  //printf("\n\e[35m");
-  printf("----------- FRAMES ----------- \n");
+  printf("\n\e[35m");
+  printf("______ CALL STACK ______ \n");
   for(int i = r->top_frame; i >= 0; i--) {
     printf("%d\t%s\n", i, r->frames[i].name);
   }
-  printf("------------------------------ \n");
-  //printf("\e[0m\n");
+  printf("________________________ \n");
+  printf("\e[0m\n");
 }
 
 Obj *runtime_gc_collect(Runtime *r, Obj *args[], int arg_count) {
@@ -196,9 +195,9 @@ void register_builtin_funcs(Runtime *r) {
 
 void register_basics(Runtime *r) {
   register_func(r, "load", &runtime_load);
-  register_func(r, "gc", &runtime_gc_collect);
   register_func(r, "env", &runtime_env);
   register_func(r, "stack", &runtime_print_stack);
+  register_func(r, "gc", &runtime_gc_collect);
 }
 
 void register_builtin_vars(Runtime *r) {
@@ -481,10 +480,17 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
   int old_obj_count = g_obj_count;
   
   runtime_frame_push(r, env, bytecode, "top-level");
+  
   while(1) {
+    if(r->top_frame <= break_frame_index) {
+      r->mode = RUNTIME_MODE_BREAK;
+      break;
+    }
+
     if(r->mode == RUNTIME_MODE_RUN) {
       runtime_step_eval(r);
       if(r->top_frame < top_frame_index) {
+	//printf("Breaking out of eval top form.\n");
 	break;
       }
     }
@@ -493,8 +499,19 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
       break;
     }
     else {
-      printf("Not implemented.\n");
-      exit(1);
+      runtime_print_frames(r);
+      printf("Debug REPL, press return to continue execution.\n");
+      printf("\e[35m➜\e[0m ");
+      const int BUFFER_SIZE = 2048;
+      char str[BUFFER_SIZE];
+      fgets(str, BUFFER_SIZE, stdin);
+      r->mode = RUNTIME_MODE_RUN;
+      if(strlen(str) > 0) {
+	runtime_eval_internal(r, env, str, true, 0, r->top_frame);
+      }
+      else {
+	// continue normal execution
+      }
     }
   }
 
