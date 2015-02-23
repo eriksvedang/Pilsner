@@ -21,6 +21,7 @@ typedef enum {
   DIV = 15,
   DIRECT_LOOKUP_VAR = 16,
   TAIL_CALL = 17,
+  SET = 18,
   END_OF_CODES = 666,
 } Code;
 
@@ -40,6 +41,7 @@ CodeWriter *code_writer_init(CodeWriter *writer, int size);
 int code_write_push_constant(CodeWriter *writer, Obj *o);
 int code_write_lookup_and_push(CodeWriter *writer, Obj *sym);
 int code_write_define(CodeWriter *writer, Obj *sym);
+int code_write_set(CodeWriter *writer, Obj *sym);
 int code_write_call(CodeWriter *writer, int arg_count);
 int code_write_tail_call(CodeWriter *writer, int arg_count);
 int code_write_end(CodeWriter *writer);

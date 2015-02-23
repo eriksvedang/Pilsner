@@ -3,22 +3,23 @@
 #include <stdio.h>
 
 const char *code_to_str(Code code) {
-  if(code == END_OF_CODES)          return "END     ";
-  else if(code == PUSH_CONSTANT)    return "PUSH    ";
-  else if(code == RETURN)           return "RETURN  ";
-  else if(code == LOOKUP_AND_PUSH)  return "LOOKUP  ";
-  else if(code == DEFINE)           return "DEFINE  ";
-  else if(code == CALL)             return "CALL!   ";
-  else if(code == PUSH_LAMBDA)      return "LAMBDA  ";
-  else if(code == JUMP)             return "JUMP -> ";
-  else if(code == IF)               return "IF      ";
-  else if(code == POP_AND_DISCARD)  return "POP     ";
-  else if(code == ADD)              return "ADD     ";
-  else if(code == MUL)              return "MUL     ";
-  else if(code == SUB)              return "SUB     ";
-  else if(code == DIV)              return "DIV     ";
-  else if(code == DIRECT_LOOKUP_VAR)return "DIRECT  ";
-  else if(code == TAIL_CALL)        return "TAILCALL";
+  if(code == END_OF_CODES)          return "END      ";
+  else if(code == PUSH_CONSTANT)    return "PUSH     ";
+  else if(code == RETURN)           return "RETURN   ";
+  else if(code == LOOKUP_AND_PUSH)  return "LOOKUP   ";
+  else if(code == DEFINE)           return "DEFINE   ";
+  else if(code == CALL)             return "CALL!    ";
+  else if(code == PUSH_LAMBDA)      return "LAMBDA   ";
+  else if(code == JUMP)             return "JUMP ->  ";
+  else if(code == IF)               return "IF       ";
+  else if(code == POP_AND_DISCARD)  return "POP      ";
+  else if(code == ADD)              return "ADD      ";
+  else if(code == MUL)              return "MUL      ";
+  else if(code == SUB)              return "SUB      ";
+  else if(code == DIV)              return "DIV      ";
+  else if(code == DIRECT_LOOKUP_VAR)return "DIRECT   ";
+  else if(code == TAIL_CALL)        return "TAILCALL ";
+  else if(code == SET)              return "SET      ";
   else if(code == UNINITIALIZED) return "UNINITIALIZED";
   else return "UNKNOWN_CODE";
 }
@@ -27,6 +28,7 @@ bool pushes_obj(Code code) {
   return (code == PUSH_CONSTANT ||
 	  code == LOOKUP_AND_PUSH ||
 	  code == DEFINE ||
+	  code == SET ||
 	  code == DIRECT_LOOKUP_VAR);
 }
 
@@ -127,6 +129,15 @@ int code_write_define(CodeWriter *writer, Obj *sym) {
     error("Can't write DEFINE with non-symbol.");
   }
   code_write(writer, DEFINE);
+  obj_write(writer, sym);
+  return 3;
+}
+
+int code_write_set(CodeWriter *writer, Obj *sym) {
+  if(sym->type != SYMBOL) {
+    error("Can't write SET with non-symbol.");
+  }
+  code_write(writer, SET);
   obj_write(writer, sym);
   return 3;
 }
