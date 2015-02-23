@@ -444,7 +444,17 @@ void runtime_step_eval(Runtime *r) {
   else if(code == PUSH_LAMBDA) {
     Obj *args = read_next_code_as_obj(frame);
     Obj *body = read_next_code_as_obj(frame);
-    Code *bytecode = (Code*)read_next_code_as_obj(frame);
+    Code *IGNORE = (Code*)read_next_code_as_obj(frame); // IGNORE THIS FOR NOW
+
+    /* printf("Compiling lambda in env "); */
+    /* print_obj(frame->env); */
+    /* printf("\n"); */
+    
+    int code_length = 0;
+    Code *bytecode = compile(r, frame->env, true, body, &code_length);
+
+    //code_print(bytecode);
+    
     Obj *lambda = gc_make_lambda(r->gc, frame->env, args, body, bytecode);
     gc_stack_push(r->gc, lambda);
   }

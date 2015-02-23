@@ -78,3 +78,17 @@
 
 ; (def u (fn (x) (* x jhkjb)))
 
+
+(def mkcounter
+    (fn (nnn)
+	(fn ()
+	    (do
+	     (set! nnn (inc nnn))
+	     nnn))))
+; (def c (mkcounter 10))
+
+(def noo 123)
+(def f (fn (noo) (do (set! noo 444) (fn () noo))))
+;; (def ff (f 10))
+
+;(def g (fn (xxx) (fn () noo)))

@@ -20,15 +20,16 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
   if(form->type == SYMBOL) {
     bool found_in_local_env = false;
     Obj *binding_pair = runtime_env_find_pair(env, form, true, &found_in_local_env);
-    if(found_in_local_env) {
+    /*if(found_in_local_env) {
       code_write_lookup_and_push(writer, form); // This is a local, can't look it up with C-pointer
     }
-    else if(binding_pair) {
-      assert(binding_pair);
+    else*/
+    if(binding_pair) {
+      //printf("Found binding called '%s' in env %p: ", form->name, env); print_obj(binding_pair); printf("\n");
       code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
     }
     else {
-      printf("Warning: Can't find binding called '%s'.\n", form->name);
+      //printf("Warning: Can't find binding called '%s'.\n", form->name);
       code_write_lookup_and_push(writer, form); // Not found at all!
     }
   }
@@ -43,14 +44,14 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       // Pre-define the binding so that it can be found by recursive function calls etc.
       Obj *symbol = form->cdr->car;
       Obj *value = form->cdr->cdr->car;
-      runtime_env_assoc(r, r->global_env, symbol, r->nil);
+      //runtime_env_assoc(r, r->global_env, symbol, r->nil);
       visit(writer, r, env, value, tail_position);
       code_write_define(writer, symbol);
     }
     else if(is_symbol(form, "set!")) {
       Obj *symbol = SECOND(form);
       Obj *value = THIRD(form);
-      runtime_env_assoc(r, env, symbol, r->nil);
+      //runtime_env_assoc(r, env, symbol, r->nil);
       visit(writer, r, env, value, tail_position);
       code_write_set(writer, symbol);
     }
@@ -140,6 +141,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       int arg_count = count(arg_symbols);
 
       // Create a bunch of fake bindings with the right name but their value set to nil
+      /*
       Obj *arg_values = r->nil;
       for(int i = 0; i < arg_count; i++) {
 	arg_values = gc_make_cons(r->gc, r->nil, arg_values);
@@ -148,11 +150,9 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       
       int code_length = 0;
       Code *bytecode = compile(r, compile_time_local_env, true, body, &code_length);
-      /* printf("Compiled code for lambda "); */
-      /* print_obj(form); */
-      /* printf("\n"); */
-      /* code_print(bytecode); */
-      code_write_push_lambda(writer, arg_symbols, body, bytecode);
+      */
+      
+      code_write_push_lambda(writer, arg_symbols, body, NULL);
     }
     else {
       Obj *f = form->car;
