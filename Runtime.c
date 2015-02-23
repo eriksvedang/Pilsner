@@ -397,8 +397,13 @@ void runtime_step_eval(Runtime *r) {
     if(value) {
       gc_stack_push(r->gc, value);
     } else {
+      printf("\e[31m");
       printf("Can't find value '%s' in environment.\n", sym->name);
-      gc_stack_push(r->gc, r->nil);
+      printf("To fix, call: (set! %s _____)\n", sym->name);
+      printf("\e[0m");
+      //gc_stack_push(r->gc, r->nil);
+      frame->p -= 3;
+      r->mode = RUNTIME_MODE_BREAK;
     }
   }
   else if(code == POP_AND_DISCARD) {

@@ -68,7 +68,13 @@
 		(iter-n (dec n) f)
 		'done))))
 
-;(def not-iter
+(def plus +)
 
+(def not-iter
+    (fn (n)
+	(if (< n 2)
+	    1
+	    (plus n (not-iter (dec n))))))
 
+; (def u (fn (x) (* x uu)))
 

@@ -66,6 +66,7 @@ Code *code_print_single(Code *code) {
 }
 
 void code_print(Code *code_block) {
+  printf("\n\e[36m");
   printf("--- CODE BLOCK ---\n");
   while(*code_block != END_OF_CODES) {
     code_block = code_print_single(code_block);
@@ -73,6 +74,7 @@ void code_print(Code *code_block) {
   }
   printf("%s\n", code_to_str(*code_block));
   printf("------------------\n");
+  printf("\e[0m\n");
 }
 
 CodeWriter *code_writer_init(CodeWriter *writer, int size) {
