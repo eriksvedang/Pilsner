@@ -4,7 +4,6 @@ Prio 1
 * apply function
 * macros
 * real number constants (handle decimals)
-* errors should result in breaking at the stack, with possibility to fix issue
 * not allowing cons to take a non-list as second argument
 
 Todo
@@ -26,6 +25,7 @@ Todo
 Done
 ====
 * not doing string comparison for special form symbols
+* errors should result in breaking at the stack, with possibility to fix issue
 * make break-mode work again, without bugs
 * compiled code
 * calling (break) on toplevel messes up value stack and is weird

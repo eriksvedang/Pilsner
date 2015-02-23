@@ -193,14 +193,14 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "print-code", &print_code);
 }
 
-void register_basics(Runtime *r) {
+void register_basic_funcs(Runtime *r) {
   register_func(r, "load", &runtime_load);
   register_func(r, "env", &runtime_env);
   register_func(r, "stack", &runtime_print_stack);
   register_func(r, "gc", &runtime_gc_collect);
 }
 
-void register_builtin_vars(Runtime *r) {
+void register_basic_vars(Runtime *r) {
   register_var(r, "nil", r->nil);
   register_var(r, "false", r->nil);
   register_var(r, "true", r->true_val);
@@ -216,10 +216,10 @@ Runtime *runtime_new(bool builtins) {
   r->top_frame = -1;
   r->mode = RUNTIME_MODE_RUN;
   gc_stack_push(r->gc, r->global_env); // root the global env so it won't get GC:d
-  register_basics(r);
+  register_basic_funcs(r);
+  register_basic_vars(r);
   if(builtins) {
     register_builtin_funcs(r);
-    register_builtin_vars(r);
   }
   return r;
 }

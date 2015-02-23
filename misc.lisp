@@ -76,5 +76,5 @@
 	    1
 	    (plus n (not-iter (dec n))))))
 
-; (def u (fn (x) (* x uu)))
+; (def u (fn (x) (* x jhkjb)))
 
