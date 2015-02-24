@@ -45,16 +45,16 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
     else {
       // Search for an argument in the call stack (not in the global frame though!)
       for(int i = r->top_frame; i > 0; i--) {
-	Frame frame = r->frames[i];
-	int arg_index = find_arg_index_in_arglist(frame.arg_symbols, form);
-	if(arg_index > -1) {
-	  Obj *constant = frame.args[arg_index];
-	  /* printf("Found value for %s in frame %s: ", form->name, frame.name); */
-	  /* print_obj(constant); */
-	  /* printf("\n"); */
-	  code_write_push_constant(writer, constant);
-	  return;
-	}
+      	Frame frame = r->frames[i];
+      	int arg_index = find_arg_index_in_arglist(frame.arg_symbols, form);
+      	if(arg_index > -1) {
+      	  Obj *constant = frame.args[arg_index];
+      	  /* printf("Found value for %s in frame %s: ", form->name, frame.name); */
+      	  /* print_obj(constant); */
+      	  /* printf("\n"); */
+      	  code_write_push_constant(writer, constant);
+      	  return;
+      	}
       }
       
       Obj *binding_pair = runtime_env_find_pair(r->global_env, form, true, NULL);

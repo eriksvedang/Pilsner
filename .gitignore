@@ -6,3 +6,6 @@
 /gcfool
 /pilsner
 /pilsner.dSYM/
+
+.#Compiler.c
+#Compiler.c#

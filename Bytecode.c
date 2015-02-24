@@ -33,6 +33,13 @@ bool pushes_obj(Code code) {
 	  code == DIRECT_LOOKUP_VAR);
 }
 
+bool pushes_int(Code code) {
+  return (code == CALL ||
+	  code == TAIL_CALL ||
+	  code == JUMP ||
+	  code == LOOKUP_ARG);
+}
+
 void print_code_as_obj(Code *code) {
   Code *cp = code;
   Obj **oo = (Obj**)cp;
@@ -48,7 +55,7 @@ Code *code_print_single(Code *code) {
     print_code_as_obj(code);
     code += 2;
   }
-  else if(*code == CALL || *code == TAIL_CALL || *code == JUMP || *code == LOOKUP_ARG) {
+  else if(pushes_int(*code)) {
     code += 1;
     Code *cp = code;
     int *ip = (int*)cp;

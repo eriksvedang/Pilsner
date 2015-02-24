@@ -170,6 +170,28 @@ void mark(Obj *o) {
       mark(o->cdr);
     }
   }
+  else if(o->type == BYTECODE) {
+    Code *code = (Code*)o->code;
+    while(*code != END_OF_CODES) {
+      if(pushes_obj(*code)) {
+	code += 1;
+	Obj **oo = (Obj**)code;
+	Obj *inner_o = *oo;
+	mark(inner_o);
+	code += 2;
+      }
+      else if(pushes_int(*code)) {
+	code += 2;
+      }
+      else if(*code == PUSH_LAMBDA) {
+	//printf(" <args> <body> <code>");
+	code += 7;
+      }
+      else {
+	code++;
+      }
+    }
+  }
 }
 
 GC *gc_new() {

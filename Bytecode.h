@@ -36,6 +36,9 @@ const char *code_to_str(Code code);
 Code *code_print_single(Code *code);
 void code_print(Code *code_block);
 
+bool pushes_obj(Code code);
+bool pushes_int(Code code);
+
 CodeWriter *code_writer_init(CodeWriter *writer, int size);
 
 // All these functions return the number of slots in the code array they take up -- TODO: remove return value!
