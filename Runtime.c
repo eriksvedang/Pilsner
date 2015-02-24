@@ -13,6 +13,7 @@
 
 #define LOG_EVAL 0
 #define LOG_OBJ_COUNT 0
+#define LOG_OBJ_COUNT_TOP_LEVEL 0
 #define LOG_BYTECODE 0
 #define LOG_FRAMES 0
 #define LOG_VALUE_STACK 0
@@ -373,6 +374,9 @@ void runtime_step_eval(Runtime *r) {
   printf("%s> ", frame->name);
   code_print_single(frame->p);
   printf("\n");
+  #endif
+
+  #if LOG_OBJ_COUNT
   int old_obj_count = g_obj_count;
   #endif
   
@@ -553,7 +557,9 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
     }
   }
 
-  //printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
+  #if LOG_OBJ_COUNT_TOP_LEVEL
+  printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
+  #endif
 }
 
 void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index) {
