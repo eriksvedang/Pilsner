@@ -20,37 +20,35 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
   /* printf("\n"); */
   
   if(form->type == SYMBOL) {
-    bool found_in_local_env = false;
-    Obj *binding_pair = runtime_env_find_pair(env, form, true, &found_in_local_env);
-    /*if(found_in_local_env) {
-      code_write_lookup_and_push(writer, form); // This is a local, can't look it up with C-pointer
+
+    int arg_index = -1;
+    Obj *arg = args;
+    int i = 0;
+    while(arg && arg->car) {
+      if(eq(arg->car, form)) {
+	arg_index = i;
+	/* printf("Arg '%s' found in position %d.\n", arg->car->name, arg_index); */
+	break;
+      }
+      arg = arg->cdr;
+      i++;
     }
-    else*/
-    if(binding_pair) {
-      //printf("Found binding called '%s' in env %p: ", form->name, env); print_obj(binding_pair); printf("\n");
-      code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
+
+    if(arg_index > -1) {
+      code_write_lookup_arg(writer, arg_index);      
     }
     else {
-      int arg_index = -1;
-      Obj *arg = args;
-      int i = 0;
-      while(arg && arg->car) {
-	if(eq(arg->car, form)) {
-	  arg_index = i;
-	  /* printf("Arg '%s' found in position %d.\n", arg->car->name, arg_index); */
-	  break;
-	}
-	arg = arg->cdr;
-	i++;
+      Obj *binding_pair = runtime_env_find_pair(r->global_env, form, true, NULL);
+    
+      if(binding_pair) {
+	//printf("Found binding called '%s' in env %p: ", form->name, env); print_obj(binding_pair); printf("\n");
+	code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
       }
-
-      if(arg_index == -1) {
+      else {
 	printf("Warning: Can't find binding called '%s'.\n", form->name);
 	code_write_lookup_and_push(writer, form); // Not found at all!	
-      } else {
-	code_write_lookup_arg(writer, arg_index);
       }
-    }
+    }    
   }
   else if(form->type == NUMBER || form->type == STRING) {
     code_write_push_constant(writer, form);
@@ -63,7 +61,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       // Pre-define the binding so that it can be found by recursive function calls etc.
       Obj *symbol = form->cdr->car;
       Obj *value = form->cdr->cdr->car;
-      //runtime_env_assoc(r, r->global_env, symbol, r->nil);
+      runtime_env_assoc(r, r->global_env, symbol, r->nil);
       visit(writer, r, env, value, tail_position, args);
       code_write_define(writer, symbol);
     }
