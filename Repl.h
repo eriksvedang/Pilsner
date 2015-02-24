@@ -21,6 +21,7 @@ void repl() {
     
   Runtime *r = runtime_new(true);
 
+  load(r, lib_path, "minimal.lisp");
   load(r, lib_path, "core.lisp");
   load(r, lib_path, "misc.lisp");
   

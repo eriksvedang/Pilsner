@@ -315,11 +315,13 @@ void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
     return;
   }
 
-  Obj *parent_env = f->car->car;
-  assert(parent_env);
-  Obj *arg_symbols = f->car->cdr;
-  Obj *arg_values = fetch_args(r, arg_count);
-  Obj *local_env = bind_args_in_new_env(r, parent_env, arg_symbols, arg_values, arg_count);
+  /* Obj *parent_env = f->car->car; */
+  /* assert(parent_env); */
+  /* Obj *arg_symbols = f->car->cdr; */
+  /* Obj *arg_values = fetch_args(r, arg_count); */
+  /* Obj *local_env = bind_args_in_new_env(r, parent_env, arg_symbols, arg_values, arg_count); */
+
+  Obj *local_env = r->global_env; // TEMP!!!!!
   
   Obj *bytecode = f->cdr->cdr;
   assert(bytecode->type == BYTECODE);
@@ -333,6 +335,15 @@ void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
 #else
   runtime_frame_push(r, local_env, (Code*)bytecode->code, "call_lambda");
 #endif
+
+  Frame *frame = &r->frames[r->top_frame];
+  
+  for(int i = arg_count - 1; i >= 0; i--) {
+    frame->args[i] = gc_stack_pop(r->gc);
+    /* printf("Put arg "); */
+    /* print_obj(frame->args[i]); */
+    /* printf(" at arg pos %d in frame.\n", i); */
+  }
 }
 
 Obj *read_next_code_as_obj(Frame *frame) {
@@ -390,6 +401,11 @@ void runtime_step_eval(Runtime *r) {
   else if(code == DIRECT_LOOKUP_VAR) {
     Obj *binding_pair = read_next_code_as_obj(frame);
     gc_stack_push(r->gc, binding_pair->cdr); // the value is stored in the cdr of the binding pair
+  }
+  else if(code == LOOKUP_ARG) {
+    int arg_index = read_next_code_as_int(frame);
+    Obj *value = frame->args[arg_index];
+    gc_stack_push(r->gc, value);
   }
   else if(code == LOOKUP_AND_PUSH) {
     Obj *sym = read_next_code_as_obj(frame);
@@ -451,7 +467,7 @@ void runtime_step_eval(Runtime *r) {
     /* printf("\n"); */
     
     int code_length = 0;
-    Code *bytecode = compile(r, frame->env, true, body, &code_length);
+    Code *bytecode = compile(r, frame->env, true, body, &code_length, args);
 
     //code_print(bytecode);
     
@@ -494,7 +510,7 @@ void runtime_step_eval(Runtime *r) {
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
 
   int code_length = 0;
-  Code *bytecode = compile(r, env, false, form, &code_length);
+  Code *bytecode = compile(r, env, false, form, &code_length, NULL);
   #if LOG_BYTECODE
   code_print(bytecode);
   #endif

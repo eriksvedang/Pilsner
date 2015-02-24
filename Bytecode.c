@@ -20,6 +20,7 @@ const char *code_to_str(Code code) {
   else if(code == DIRECT_LOOKUP_VAR)return "DIRECT   ";
   else if(code == TAIL_CALL)        return "TAILCALL ";
   else if(code == SET)              return "SET      ";
+  else if(code == LOOKUP_ARG)       return "LOOK ARG ";
   else if(code == UNINITIALIZED) return "UNINITIALIZED";
   else return "UNKNOWN_CODE";
 }
@@ -47,7 +48,7 @@ Code *code_print_single(Code *code) {
     print_code_as_obj(code);
     code += 2;
   }
-  else if(*code == CALL || *code == TAIL_CALL || *code == JUMP) {
+  else if(*code == CALL || *code == TAIL_CALL || *code == JUMP || *code == LOOKUP_ARG) {
     code += 1;
     Code *cp = code;
     int *ip = (int*)cp;
@@ -179,6 +180,12 @@ int code_write_tail_call(CodeWriter *writer, int arg_count) {
 int code_write_jump(CodeWriter *writer, int jump_length) {
   code_write(writer, JUMP);
   int_write(writer, jump_length);
+  return 2;
+}
+
+int code_write_lookup_arg(CodeWriter *writer, int arg_index) {
+  code_write(writer, LOOKUP_ARG);
+  int_write(writer, arg_index);
   return 2;
 }
 

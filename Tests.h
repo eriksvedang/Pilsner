@@ -252,7 +252,7 @@ void test_bytecode_if() {
   Runtime *r = runtime_new(true);
 
   int code_length = 0;
-  Code *c = compile(r, r->global_env, false, parse(r->gc, "(if 1 1337 404)")->car, &code_length);
+  Code *c = compile(r, r->global_env, false, parse(r->gc, "(if 1 1337 404)")->car, &code_length, NULL);
   code_print(c);
   printf("Code length: %d\n", code_length);
   //return;
@@ -350,7 +350,7 @@ void test_compiler() {
   Obj *forms = parse(r->gc, "(- 20 3)");
   Obj *form = forms->car;
   int len;
-  Code *code = compile(r, r->global_env, false, form, &len);
+  Code *code = compile(r, r->global_env, false, form, &len, NULL);
   code_print(code);
   runtime_frame_push(r, r->global_env, code, "top-level");
   

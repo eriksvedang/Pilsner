@@ -11,6 +11,7 @@ typedef struct {
   char name[128];
   Obj *env;
   Code *p;
+  Obj *args[64];
 } Frame;
 
 typedef enum {

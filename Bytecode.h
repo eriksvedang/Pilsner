@@ -22,6 +22,7 @@ typedef enum {
   DIRECT_LOOKUP_VAR = 16,
   TAIL_CALL = 17,
   SET = 18,
+  LOOKUP_ARG = 19,
   END_OF_CODES = 666,
 } Code;
 
@@ -52,5 +53,6 @@ int code_write_if(CodeWriter *writer);
 int code_write_pop(CodeWriter *writer);
 int code_write_code(CodeWriter *writer, Code code);
 int code_write_direct_lookup_var(CodeWriter *writer, Obj *binding_pair);
+int code_write_lookup_arg(CodeWriter *writer, int arg_index);
 
 #endif

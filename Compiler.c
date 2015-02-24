@@ -12,9 +12,11 @@ bool is_binary_call(Obj *form, const char *name) {
   return is_symbol(form, name) && count(form->cdr) == 2;
 }
 
-void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_position) {
+void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_position, Obj *args) {
   /* printf("Visiting %s ", tail_position ? "tail position" : ""); */
   /* print_obj(form); */
+  /* printf(" with args "); */
+  /* print_obj(args); */
   /* printf("\n"); */
   
   if(form->type == SYMBOL) {
@@ -29,8 +31,25 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
     }
     else {
-      //printf("Warning: Can't find binding called '%s'.\n", form->name);
-      code_write_lookup_and_push(writer, form); // Not found at all!
+      int arg_index = -1;
+      Obj *arg = args;
+      int i = 0;
+      while(arg && arg->car) {
+	if(eq(arg->car, form)) {
+	  arg_index = i;
+	  /* printf("Arg '%s' found in position %d.\n", arg->car->name, arg_index); */
+	  break;
+	}
+	arg = arg->cdr;
+	i++;
+      }
+
+      if(arg_index == -1) {
+	printf("Warning: Can't find binding called '%s'.\n", form->name);
+	code_write_lookup_and_push(writer, form); // Not found at all!	
+      } else {
+	code_write_lookup_arg(writer, arg_index);
+      }
     }
   }
   else if(form->type == NUMBER || form->type == STRING) {
@@ -45,44 +64,44 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       Obj *symbol = form->cdr->car;
       Obj *value = form->cdr->cdr->car;
       //runtime_env_assoc(r, r->global_env, symbol, r->nil);
-      visit(writer, r, env, value, tail_position);
+      visit(writer, r, env, value, tail_position, args);
       code_write_define(writer, symbol);
     }
     else if(is_symbol(form, "set!")) {
       Obj *symbol = SECOND(form);
       Obj *value = THIRD(form);
       //runtime_env_assoc(r, env, symbol, r->nil);
-      visit(writer, r, env, value, tail_position);
+      visit(writer, r, env, value, tail_position, args);
       code_write_set(writer, symbol);
     }
     else if(is_symbol(form, "quote")) {
       code_write_push_constant(writer, form->cdr->car);
     }
     else if(is_binary_call(form, "+")) {
-      visit(writer, r, env, form->cdr->car, false);
-      visit(writer, r, env, form->cdr->cdr->car, false);
+      visit(writer, r, env, form->cdr->car, false, args);
+      visit(writer, r, env, form->cdr->cdr->car, false, args);
       code_write_code(writer, ADD);
     }
     else if(is_binary_call(form, "-")) {
-      visit(writer, r, env, form->cdr->car, false);
-      visit(writer, r, env, form->cdr->cdr->car, false);
+      visit(writer, r, env, form->cdr->car, false, args);
+      visit(writer, r, env, form->cdr->cdr->car, false, args);
       code_write_code(writer, SUB);
     }
     else if(is_binary_call(form, "*")) {
-      visit(writer, r, env, form->cdr->car, false);
-      visit(writer, r, env, form->cdr->cdr->car, false);
+      visit(writer, r, env, form->cdr->car, false, args);
+      visit(writer, r, env, form->cdr->cdr->car, false, args);
       code_write_code(writer, MUL);
     }
     else if(is_binary_call(form, "/")) {
-      visit(writer, r, env, form->cdr->car, false);
-      visit(writer, r, env, form->cdr->cdr->car, false);
+      visit(writer, r, env, form->cdr->car, false, args);
+      visit(writer, r, env, form->cdr->cdr->car, false, args);
       code_write_code(writer, DIV);
     }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
       Obj *subform = form->cdr;
       while(subform && subform->car) {
 	bool last_form = subform->cdr == NULL || subform->cdr->car == NULL;
-	visit(writer, r, env, subform->car, last_form);
+	visit(writer, r, env, subform->car, last_form, args);
 	if(!last_form) {
 	  code_write_pop(writer); // pop value if form is not the last one
 	}
@@ -108,13 +127,13 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
 	return;
       }
       
-      visit(writer, r, env, expression, false); // the result from this will be the branching value
+      visit(writer, r, env, expression, false, args); // the result from this will be the branching value
 
       int true_code_length;
-      Code *true_bytecode = compile(r, env, tail_position, true_branch, &true_code_length);
+      Code *true_bytecode = compile(r, env, tail_position, true_branch, &true_code_length, args);
 
       int false_code_length;
-      Code *false_bytecode = compile(r, env, tail_position, false_branch, &false_code_length);
+      Code *false_bytecode = compile(r, env, tail_position, false_branch, &false_code_length, args);
 
       code_write_if(writer); // this code will jump forward one step if value on the stack is true, otherwise it will jump two steps
       
@@ -159,11 +178,11 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       Obj *arg = form->cdr;
       int caller_arg_count = 0;
       while(arg && arg->car) {
-	visit(writer, r, env, arg->car, false);
+	visit(writer, r, env, arg->car, false, args);
 	caller_arg_count++;
 	arg = arg->cdr;
       }
-      visit(writer, r, env, f, false);
+      visit(writer, r, env, f, false, args);
 
       if(tail_position) {
 	code_write_tail_call(writer, caller_arg_count);
@@ -180,10 +199,10 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
   }
 }
 
-Code *compile(Runtime *r, Obj *env, bool tail_position, Obj *form, int *OUT_code_length) {
+Code *compile(Runtime *r, Obj *env, bool tail_position, Obj *form, int *OUT_code_length, Obj *args) {
   CodeWriter writer;
   code_writer_init(&writer, 1024);
-  visit(&writer, r, env, form, tail_position);
+  visit(&writer, r, env, form, tail_position, args);
   code_write_end(&writer);
   *OUT_code_length = writer.pos;
   return writer.codes;
@@ -196,7 +215,7 @@ void compile_and_print(const char *source) {
   while(form_cons && form_cons->car) {
     Obj *form = form_cons->car;
     int code_length = 0;
-    Code *code = compile(r, r->global_env, false, form, &code_length);
+    Code *code = compile(r, r->global_env, false, form, &code_length, NULL);
     printf("Generating code for ");
     print_obj(form);
     printf("\n");
