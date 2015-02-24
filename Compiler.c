@@ -48,11 +48,16 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       	Frame frame = r->frames[i];
       	int arg_index = find_arg_index_in_arglist(frame.arg_symbols, form);
       	if(arg_index > -1) {
-      	  Obj *constant = frame.args[arg_index];
+      	  Obj *value = frame.args[arg_index];
+	  
       	  /* printf("Found value for %s in frame %s: ", form->name, frame.name); */
-      	  /* print_obj(constant); */
+      	  /* print_obj(value); */
       	  /* printf("\n"); */
-      	  code_write_push_constant(writer, constant);
+      	  
+	  Obj *new_binding_pair = runtime_env_assoc(r, frame.env, form, value);
+	  //printf("Created new binding pair %p.\n", new_binding_pair);
+	  
+	  code_write_direct_lookup_var(writer, new_binding_pair);
       	  return;
       	}
       }

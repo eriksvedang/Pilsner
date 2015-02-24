@@ -43,7 +43,7 @@ Frame *runtime_frame_push(Runtime *r, Obj *env, Code *code, const char *name);
 void runtime_frame_pop(Runtime *r);
 void runtime_print_frames(Runtime *r);
 
-void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value);
+Obj *runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value);
 Obj *runtime_env_lookup(Obj *env, Obj *key);
 Obj *runtime_env_make_local(Runtime *r, Obj *parent_env);
 Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search, bool *OUT_found_in_local_env);

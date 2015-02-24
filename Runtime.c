@@ -13,7 +13,7 @@
 
 #define LOG_EVAL 0
 #define LOG_OBJ_COUNT 0
-#define LOG_OBJ_COUNT_TOP_LEVEL 0
+#define LOG_OBJ_COUNT_TOP_LEVEL 1
 #define LOG_BYTECODE 0
 #define LOG_FRAMES 0
 #define LOG_VALUE_STACK 0
@@ -44,16 +44,18 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search, bool *O
   }
 }
 
-void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
+Obj *runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
   /* printf("Will register %s in env %p with value\n", key->name, env); print_obj(value); printf("\n"); */
   Obj *pair = runtime_env_find_pair(env, key, false, NULL);
   if(pair) {
     pair->cdr = value;
+    return pair;
   }
   else {
     Obj *new_pair = gc_make_cons(r->gc, key, value);
     Obj *new_cons = gc_make_cons(r->gc, new_pair, env->car);
     env->car = new_cons; // cons pair to the a-list
+    return new_pair;
   }
 }
 
@@ -316,13 +318,14 @@ void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
     return;
   }
 
-  /* Obj *parent_env = f->car->car; */
-  /* assert(parent_env); */
+  Obj *parent_env = f->car->car;
+  assert(parent_env);
+  
   /* Obj *arg_symbols = f->car->cdr; */
   /* Obj *arg_values = fetch_args(r, arg_count); */
   /* Obj *local_env = bind_args_in_new_env(r, parent_env, arg_symbols, arg_values, arg_count); */
 
-  Obj *local_env = r->global_env; // TEMP!!!!!
+  Obj *local_env = runtime_env_make_local(r, parent_env); // Creating an empty env where stuff can be added later, if needed..?
   
   Obj *bytecode = f->cdr->cdr;
   assert(bytecode->type == BYTECODE);
@@ -406,6 +409,7 @@ void runtime_step_eval(Runtime *r) {
   }
   else if(code == DIRECT_LOOKUP_VAR) {
     Obj *binding_pair = read_next_code_as_obj(frame);
+    //printf("Direct lookup on pair %p.\n", binding_pair);
     gc_stack_push(r->gc, binding_pair->cdr); // the value is stored in the cdr of the binding pair
   }
   else if(code == LOOKUP_ARG) {
@@ -460,7 +464,14 @@ void runtime_step_eval(Runtime *r) {
   else if(code == SET) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = gc_stack_pop(r->gc);
-    runtime_env_assoc(r, frame->env, sym, value);
+    //printf("Calling set! on symbol %s.\n", sym->name);
+    Obj *pair = runtime_env_find_pair(frame->env, sym, true, NULL);
+    if(pair) {
+      //printf("Found pair %p.\n", pair);
+      pair->cdr = value;
+    } else {
+      printf("set! can't find symbol '%s'.\n", sym->name);
+    }   
     gc_stack_push(r->gc, sym);
   }
   else if(code == PUSH_LAMBDA) {

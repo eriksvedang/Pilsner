@@ -23,6 +23,7 @@
 ;; With args as C-array: 2.14
 ;; With direct lookup of global variabels: 0.965
 ;; With args stored in stack frames instead of envs: 0.525
+;; With proper lookup in closing envs: 0.64
 
 ;; (timing (fn () (fib 31)))
 ;; With direct lookup of global variabels: 2.485
@@ -35,6 +36,7 @@
 ;; + 272 Obj:s
 ;; With args as C-array: 179 Obj:s
 ;; With args stored in stack frames instead of envs: 20 Obj:s
+;; With proper lookup in closing envs: 62 Obj:s
 
 
 (def t (fn (n)
