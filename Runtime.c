@@ -114,7 +114,7 @@ void runtime_inspect_env(Runtime *r) {
 
 void runtime_print_frames(Runtime *r) {
   printf("\n\e[35m");
-  printf("______ CALL STACK ______ \n");
+  printf("______ CALL STACK ______ \n\n");
   for(int i = r->top_frame; i >= 0; i--) {
     printf("%d\t%s\n", i, r->frames[i].name);
   }
@@ -345,6 +345,8 @@ void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
     /* print_obj(frame->args[i]); */
     /* printf(" at arg pos %d in frame.\n", i); */
   }
+
+  frame->arg_symbols = GET_ARGS(f);
 }
 
 Obj *read_next_code_as_obj(Frame *frame) {

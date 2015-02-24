@@ -12,6 +12,23 @@ bool is_binary_call(Obj *form, const char *name) {
   return is_symbol(form, name) && count(form->cdr) == 2;
 }
 
+int find_arg_index_in_arglist(Obj *args, Obj *symbol) {
+  assert(symbol->type == SYMBOL);
+  int arg_index = -1;
+  Obj *arg = args;
+  int i = 0;
+  while(arg && arg->car) {
+    if(eq(arg->car, symbol)) {
+      arg_index = i;
+      /* printf("Arg '%s' found in position %d.\n", arg->car->name, arg_index); */
+      break;
+    }
+    arg = arg->cdr;
+    i++;
+  }
+  return arg_index;
+}
+
 void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_position, Obj *args) {
   /* printf("Visiting %s ", tail_position ? "tail position" : ""); */
   /* print_obj(form); */
@@ -20,24 +37,26 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
   /* printf("\n"); */
   
   if(form->type == SYMBOL) {
-
-    int arg_index = -1;
-    Obj *arg = args;
-    int i = 0;
-    while(arg && arg->car) {
-      if(eq(arg->car, form)) {
-	arg_index = i;
-	/* printf("Arg '%s' found in position %d.\n", arg->car->name, arg_index); */
-	break;
-      }
-      arg = arg->cdr;
-      i++;
-    }
-
+    int arg_index = find_arg_index_in_arglist(args, form);
     if(arg_index > -1) {
-      code_write_lookup_arg(writer, arg_index);      
+      // Value is local to innermost function!
+      code_write_lookup_arg(writer, arg_index);
     }
     else {
+      // Search for an argument in the call stack (not in the global frame though!)
+      for(int i = r->top_frame; i > 0; i--) {
+	Frame frame = r->frames[i];
+	int arg_index = find_arg_index_in_arglist(frame.arg_symbols, form);
+	if(arg_index > -1) {
+	  Obj *constant = frame.args[arg_index];
+	  /* printf("Found value for %s in frame %s: ", form->name, frame.name); */
+	  /* print_obj(constant); */
+	  /* printf("\n"); */
+	  code_write_push_constant(writer, constant);
+	  return;
+	}
+      }
+      
       Obj *binding_pair = runtime_env_find_pair(r->global_env, form, true, NULL);
     
       if(binding_pair) {
@@ -45,7 +64,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
 	code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
       }
       else {
-	printf("Warning: Can't find binding called '%s'.\n", form->name);
+	printf("Warning: Can't find binding for '%s'.\n", form->name);
 	code_write_lookup_and_push(writer, form); // Not found at all!	
       }
     }    
