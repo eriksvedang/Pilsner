@@ -170,6 +170,14 @@ Obj *runtime_load(Runtime *r, Obj *args[], int arg_count) {
   }
 }
 
+Obj *runtime_push_value(Runtime *r, Obj *args[], int arg_count) {
+  if(arg_count != 1) {
+    printf("Must call push-value with exactly one argument.\n");
+  }
+  gc_stack_push(r->gc, args[0]);
+  return r->nil;
+}
+
 void register_builtin_funcs(Runtime *r) {
   register_func(r, "+", &plus);
   register_func(r, "=", &equal);
@@ -189,6 +197,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "time", &get_time);
   
   register_func(r, "break", &runtime_break);
+  register_func(r, "push-value", &runtime_push_value);
   register_func(r, "quit", &runtime_quit);
   register_func(r, "help", &help);
   register_func(r, "print-code", &print_code);
@@ -421,11 +430,14 @@ void runtime_step_eval(Runtime *r) {
     } else {
       printf("\e[31m");
       printf("Can't find value '%s' in environment.\n", sym->name);
-      printf("To fix, call: (set! %s _____)\n", sym->name);
       printf("\e[0m");
-      //gc_stack_push(r->gc, r->nil);
-      frame->p -= 3;
-      r->mode = RUNTIME_MODE_BREAK;
+      //frame->p -= 3;
+      //r->mode = RUNTIME_MODE_BREAK;
+      runtime_print_frames(r);
+      while(r->top_frame > 0) {
+	runtime_frame_pop(r);
+      }
+      gc_stack_push(r->gc, r->nil);
     }
   }
   else if(code == POP_AND_DISCARD) {

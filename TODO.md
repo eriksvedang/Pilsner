@@ -1,5 +1,7 @@
 Prio 1
 ======
+* compiler errors should propagate to runtime (when compiling lambdas), if-statments with missing branch collapses for example
+* popping the global scope off the stack should be prohibited
 * str function
 * apply function
 * macros
