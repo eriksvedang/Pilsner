@@ -10,3 +10,7 @@
 .#Compiler.c
 #Compiler.c#
 /bin/pilsner
+/bin/main.o
+/.gitignore
+/bin/pilsner.dSYM/Contents/Info.plist
+/bin/pilsner.dSYM/Contents/Resources/DWARF/pilsner
