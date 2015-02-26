@@ -318,14 +318,14 @@ void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
     return;
   }
 
-  Obj *parent_env = f->car->car;
-  assert(parent_env);
+  //Obj *parent_env = f->car->car;
+  //assert(parent_env);
   
   /* Obj *arg_symbols = f->car->cdr; */
   /* Obj *arg_values = fetch_args(r, arg_count); */
   /* Obj *local_env = bind_args_in_new_env(r, parent_env, arg_symbols, arg_values, arg_count); */
 
-  Obj *local_env = runtime_env_make_local(r, parent_env); // Creating an empty env where stuff can be added later, if needed..?
+  Obj *local_env = NULL; //runtime_env_make_local(r, parent_env); // Creating an empty env where stuff can be added later, if needed..?
   
   Obj *bytecode = f->cdr->cdr;
   assert(bytecode->type == BYTECODE);
@@ -368,6 +368,27 @@ int read_next_code_as_int(Frame *frame) {
   //printf("read i = %d\n", i);
   frame->p++;
   return i;
+}
+
+Obj *ensure_env(Runtime *r, Frame *frame) {
+  Obj *env = NULL;
+    
+  if(frame->env) {
+    env = frame->env;
+  }
+  else {
+    // Look for enclosing env and then create a local one that the compiled lambda can use
+    Obj *parent_env = NULL;
+    for(int i = r->top_frame; i >= 0; i--) {
+      if(r->frames[i].env != NULL) {
+	env = runtime_env_make_local(r, r->frames[i].env);
+	break;
+      }
+    }
+  }
+
+  assert(env);
+  return env;
 }
 
 void runtime_step_eval(Runtime *r) {
@@ -465,7 +486,8 @@ void runtime_step_eval(Runtime *r) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = gc_stack_pop(r->gc);
     //printf("Calling set! on symbol %s.\n", sym->name);
-    Obj *pair = runtime_env_find_pair(frame->env, sym, true, NULL);
+    Obj *env = ensure_env(r, frame);
+    Obj *pair = runtime_env_find_pair(env, sym, true, NULL);
     if(pair) {
       //printf("Found pair %p.\n", pair);
       pair->cdr = value;
@@ -479,12 +501,13 @@ void runtime_step_eval(Runtime *r) {
     Obj *body = read_next_code_as_obj(frame);
     Code *IGNORE = (Code*)read_next_code_as_obj(frame); // IGNORE THIS FOR NOW
 
-    /* printf("Compiling lambda in env "); */
-    /* print_obj(frame->env); */
-    /* printf("\n"); */
+    // Lazy instantiation of env.
+    // It's only needed now when we know there is a lambda to be pushed.
+    
+    Obj *env = ensure_env(r, frame);
     
     int code_length = 0;
-    Code *bytecode = compile(r, frame->env, true, body, &code_length, args);
+    Code *bytecode = compile(r, env, true, body, &code_length, args);
 
     //code_print(bytecode);
     
