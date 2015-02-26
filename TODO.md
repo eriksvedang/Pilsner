@@ -2,32 +2,33 @@ Prio 1
 ======
 * compiler errors should propagate to runtime (when compiling lambdas), if-statments with missing branch collapses for example
 * popping the global scope off the stack should be prohibited
+* list function should be special form
 * str function
 * apply function
 * macros
 * real number constants (handle decimals)
-* not allowing cons to take a non-list as second argument
+* let expressions
 
 Todo
 ====
 * docstrings
 * crashes when GC:ing in break mode
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
-* memory pool to avoid unnecessary amounts of alloc / free
 * eval function
 * read function
 * more math functions like mod, round, max, min, etc
-* let expressions
 * quasiquoting
 * some kind of support for lists/arrays using [ and ]
 * rest arg syntax
 * better repl interaction, with keypresses, history, colors, etc
 * run gc when "low" on memory
+* memory pool to avoid unnecessary amounts of alloc / free
 
 Done
 ====
 * not doing string comparison for special form symbols
 * errors should result in breaking at the stack, with possibility to fix issue
+* not allowing cons to take a non-list as second argument
 * make break-mode work again, without bugs
 * compiled code
 * calling (break) on toplevel messes up value stack and is weird

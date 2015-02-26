@@ -107,6 +107,11 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       visit(writer, r, env, form->cdr->cdr->car, false, args);
       code_write_code(writer, DIV);
     }
+    else if(is_binary_call(form, "=")) {
+      visit(writer, r, env, form->cdr->car, false, args);
+      visit(writer, r, env, form->cdr->cdr->car, false, args);
+      code_write_code(writer, EQ);
+    }
     else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
       Obj *subform = form->cdr;
       while(subform && subform->car) {

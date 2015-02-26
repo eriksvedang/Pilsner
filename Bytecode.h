@@ -21,6 +21,7 @@ typedef enum {
   DIV = 15,
   DIRECT_LOOKUP_VAR = 16,
   TAIL_CALL = 17,
+  EQ = 18,
   LOOKUP_ARG = 19,
   END_OF_CODES = 666,
 } Code;

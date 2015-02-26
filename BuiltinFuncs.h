@@ -119,7 +119,7 @@ Obj *equal(Runtime *r, Obj *args[], int arg_count) {
     return r->nil;
   }
   if(eq(args[0], args[1])) {
-    return gc_make_symbol(r->gc, "true");
+    return r->true_val;
   } else {
     return r->nil;
   }

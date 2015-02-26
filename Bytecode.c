@@ -17,6 +17,7 @@ const char *code_to_str(Code code) {
   else if(code == MUL)              return "MUL      ";
   else if(code == SUB)              return "SUB      ";
   else if(code == DIV)              return "DIV      ";
+  else if(code == EQ)               return "EQ      ";
   else if(code == DIRECT_LOOKUP_VAR)return "DIRECT   ";
   else if(code == TAIL_CALL)        return "TAILCALL ";
   else if(code == LOOKUP_ARG)       return "LOOK ARG ";

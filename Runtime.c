@@ -463,6 +463,11 @@ void runtime_step_eval(Runtime *r) {
     double b = gc_stack_pop(r->gc)->number;
     gc_stack_push(r->gc, gc_make_number(r->gc, b / a));
   }
+  else if(code == EQ) {
+    Obj *a = gc_stack_pop(r->gc);
+    Obj *b = gc_stack_pop(r->gc);
+    gc_stack_push(r->gc, eq(a, b) ? r->true_val : r->nil);
+  }
   else if(code == DEFINE) {
     Obj *sym = read_next_code_as_obj(frame);
     Obj *value = gc_stack_pop(r->gc);
