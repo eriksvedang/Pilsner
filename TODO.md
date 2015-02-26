@@ -1,5 +1,6 @@
 Prio 1
 ======
+* Låt nil finnas i GC:n så att alla listavslutare är samma nil och det inte finns en enda alloc av onödiga nils någonstans.
 * compiler errors should propagate to runtime (when compiling lambdas), if-statments with missing branch collapses for example
 * popping the global scope off the stack should be prohibited
 * apply function

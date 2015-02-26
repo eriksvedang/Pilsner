@@ -219,12 +219,13 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "quit", &runtime_quit);
   register_func(r, "help", &help);
   register_func(r, "print-code", &print_code);
-}
 
-void register_basic_funcs(Runtime *r) {
   register_func(r, "load", &runtime_load);
   register_func(r, "env", &runtime_env);
   register_func(r, "stack", &runtime_print_stack);
+}
+
+void register_basic_funcs(Runtime *r) {
   register_func(r, "gc", &runtime_gc_collect);
 }
 
@@ -513,7 +514,6 @@ void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_
     Obj *result = gc_stack_pop(r->gc);
     if(print_result && result) {
       print_obj(result);
-      printf("\n");
     }
     current_form = current_form->cdr;
   }

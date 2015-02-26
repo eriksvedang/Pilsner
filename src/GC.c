@@ -5,7 +5,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define LOG 0
+#define LOG 1
 #define LOG_GC_COLLECT_RESULT 1
 #define LOG_PUSH_AND_POP 0
 
@@ -152,7 +152,9 @@ void gc_obj_free(GC *gc, Obj *o) {
 
 void mark(Obj *o) {
   #if LOG
-  printf("Marking %p, %s as reachable.\n", o, obj_to_str(o));
+  printf("Marking %p, %s as reachable: ", o, obj_to_str(o));
+  print_obj(o);
+  printf("\n");
   #endif
   
   if(o->reachable) {
