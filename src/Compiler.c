@@ -43,24 +43,21 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       code_write_lookup_arg(writer, arg_index);
     }
     else {
-      // Search for an argument in the call stack (not in the global frame though!)
+      // Search for an argument in the call stack (not in the global frame though)
       for(int i = r->top_frame; i > 0; i--) {
       	Frame frame = r->frames[i];
       	int arg_index = find_arg_index_in_arglist(frame.arg_symbols, form);
       	if(arg_index > -1) {
       	  Obj *constant = frame.args[arg_index];
-      	  /* printf("Found value for %s in frame %s: ", form->name, frame.name); */
-      	  /* print_obj(constant); */
-      	  /* printf("\n"); */
       	  code_write_push_constant(writer, constant);
-      	  return;
+      	  return; // done searching, early return
       	}
       }
-      
+
+      // The symbol wasn't found in the arg list or in the enclosing scopes
       Obj *binding_pair = runtime_env_find_pair(r->global_env, form, true, NULL);
     
       if(binding_pair) {
-	//printf("Found binding called '%s' in env %p: ", form->name, env); print_obj(binding_pair); printf("\n");
 	code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
       }
       else {
@@ -77,9 +74,9 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       code_write_push_constant(writer, r->nil);
     }
     else if(is_symbol(form, "def")) {
+      Obj *symbol = SECOND(form);
+      Obj *value = THIRD(form);
       // Pre-define the binding so that it can be found by recursive function calls etc.
-      Obj *symbol = form->cdr->car;
-      Obj *value = form->cdr->cdr->car;
       runtime_env_assoc(r, r->global_env, symbol, r->nil);
       visit(writer, r, env, value, tail_position, args);
       code_write_define(writer, symbol);
@@ -88,31 +85,31 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       code_write_push_constant(writer, form->cdr->car);
     }
     else if(is_binary_call(form, "+")) {
-      visit(writer, r, env, form->cdr->car, false, args);
-      visit(writer, r, env, form->cdr->cdr->car, false, args);
+      visit(writer, r, env, SECOND(form), false, args);
+      visit(writer, r, env, THIRD(form), false, args);
       code_write_code(writer, ADD);
     }
     else if(is_binary_call(form, "-")) {
-      visit(writer, r, env, form->cdr->car, false, args);
-      visit(writer, r, env, form->cdr->cdr->car, false, args);
+      visit(writer, r, env, SECOND(form), false, args);
+      visit(writer, r, env, THIRD(form), false, args);
       code_write_code(writer, SUB);
     }
     else if(is_binary_call(form, "*")) {
-      visit(writer, r, env, form->cdr->car, false, args);
-      visit(writer, r, env, form->cdr->cdr->car, false, args);
+      visit(writer, r, env, SECOND(form), false, args);
+      visit(writer, r, env, THIRD(form), false, args);
       code_write_code(writer, MUL);
     }
     else if(is_binary_call(form, "/")) {
-      visit(writer, r, env, form->cdr->car, false, args);
-      visit(writer, r, env, form->cdr->cdr->car, false, args);
+      visit(writer, r, env, SECOND(form), false, args);
+      visit(writer, r, env, THIRD(form), false, args);
       code_write_code(writer, DIV);
     }
     else if(is_binary_call(form, "=")) {
-      visit(writer, r, env, form->cdr->car, false, args);
-      visit(writer, r, env, form->cdr->cdr->car, false, args);
+      visit(writer, r, env, SECOND(form), false, args);
+      visit(writer, r, env, THIRD(form), false, args);
       code_write_code(writer, EQ);
     }
-    else if(form->car->type == SYMBOL && strcmp(form->car->name, "do") == 0) {
+    else if(is_symbol(form, "do")) {
       Obj *subform = form->cdr;
       while(subform && subform->car) {
 	bool last_form = subform->cdr == NULL || subform->cdr->car == NULL;
@@ -169,24 +166,11 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       free(true_bytecode);
       free(false_bytecode);
     }
-    else if(form->car->type == SYMBOL && (strcmp(form->car->name, "fn") == 0 || strcmp(form->car->name, "λ") == 0)) {
+    else if(is_symbol(form, "fn") || is_symbol(form, "λ")) {
       Obj *arg_symbols = form->cdr->car;
       Obj *body = form->cdr->cdr->car;
       int arg_count = count(arg_symbols);
-
-      // Create a bunch of fake bindings with the right name but their value set to nil
-      /*
-      Obj *arg_values = r->nil;
-      for(int i = 0; i < arg_count; i++) {
-	arg_values = gc_make_cons(r->gc, r->nil, arg_values);
-      }
-      Obj *compile_time_local_env = bind_args_in_new_env(r, env, arg_symbols, arg_values, arg_count);
-      
-      int code_length = 0;
-      Code *bytecode = compile(r, compile_time_local_env, true, body, &code_length);
-      */
-      
-      code_write_push_lambda(writer, arg_symbols, body, NULL);
+      code_write_push_lambda(writer, arg_symbols, body, NULL); // TODO: remove the null
     }
     else {
       Obj *f = form->car;

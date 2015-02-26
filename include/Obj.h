@@ -28,7 +28,7 @@ typedef struct sObj {
     // FUNC
     struct {
       void *func;
-      //char *func_name;
+      //char *func_name; // TODO: use this again and move *name into union?
     };
     // NUMBER
     double number;

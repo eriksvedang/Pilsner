@@ -6,24 +6,24 @@
 
 typedef enum {
   UNINITIALIZED = 0,
-  RETURN = 3,
-  PUSH_CONSTANT = 4,
-  LOOKUP_AND_PUSH = 5,
-  DEFINE = 6,
-  CALL = 7,
-  PUSH_LAMBDA = 8,
-  JUMP = 9,
-  IF = 10,
-  POP_AND_DISCARD = 11,
-  ADD = 12,
-  SUB = 13,
-  MUL = 14,
-  DIV = 15,
-  DIRECT_LOOKUP_VAR = 16,
-  TAIL_CALL = 17,
-  EQ = 18,
-  LOOKUP_ARG = 19,
-  END_OF_CODES = 666,
+  PUSH_CONSTANT,
+  PUSH_LAMBDA,
+  LOOKUP_AND_PUSH,
+  DIRECT_LOOKUP_VAR,
+  LOOKUP_ARG,
+  DEFINE,
+  CALL,
+  TAIL_CALL,
+  JUMP,
+  IF,
+  RETURN,
+  POP_AND_DISCARD,
+  ADD,
+  SUB,
+  MUL,
+  DIV,
+  EQ,
+  END_OF_CODES,
 } Code;
 
 typedef struct {
@@ -41,7 +41,6 @@ bool pushes_int(Code code);
 
 CodeWriter *code_writer_init(CodeWriter *writer, int size);
 
-// All these functions return the number of slots in the code array they take up -- TODO: remove return value!
 void code_write_push_constant(CodeWriter *writer, Obj *o);
 void code_write_lookup_and_push(CodeWriter *writer, Obj *sym);
 void code_write_define(CodeWriter *writer, Obj *sym);
