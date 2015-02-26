@@ -35,18 +35,18 @@
 	     ()
 	   (cons item (repeat (dec n) item)))))
 
-
-(def loop
-    (fn (i)
-	(if (= 0 i)
-	    nil
-	    (loop (dec i)))))
+(def iter-n
+    (fn (n f)
+	(do (f n)
+	    (if (< 2 n)
+		(iter-n (dec n) f)
+		'done))))
 
 ;; Use local let bindings instead!!!
 (def timing
   (fn (f) (do (def start-time (time))
               (f)
               (def end-time (time))
-              (println "dt:")
+              (print "dt:")
               (println (- end-time start-time)))))
 

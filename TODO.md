@@ -10,12 +10,13 @@ Prio 1
 
 Todo
 ====
+* remove enums and use actual bytes (chars) for bytecode
 * docstrings
 * crashes when GC:ing in break mode
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
 * eval function
 * read function
-* more math functions like mod, round, max, min, etc
+* more math functions like mod, round, max, min, text->number, get-line
 * quasiquoting
 * some kind of support for lists/arrays using [ and ]
 * rest arg syntax
