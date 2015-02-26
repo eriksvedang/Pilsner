@@ -154,12 +154,12 @@ Obj *println(Runtime *r, Obj *args[], int arg_count) {
 Obj *str(Runtime *r, Obj *args[], int arg_count) {
   int total_length = 0;
   for(int i = 0; i < arg_count; i++) {
-    total_length += strlen(args[i]->name);
+    total_length += strlen(obj_to_str(args[i]));
   }
   char *s = malloc(total_length + 1);
   char *s_pos = s;
   for(int i = 0; i < arg_count; i++) {
-    s_pos = strcat(s_pos, args[i]->name);
+    s_pos = strcat(s_pos, obj_to_str(args[i]));
   }
   s[total_length] = '\0';
   return gc_make_string(r->gc, s);
