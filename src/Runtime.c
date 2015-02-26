@@ -188,6 +188,7 @@ void register_builtin_funcs(Runtime *r) {
 
   register_func(r, "cos", &internal_cos);
   register_func(r, "sin", &internal_sin);
+  register_func(r, "rand", &internal_rand);
 
   register_func(r, "and", &and);
   register_func(r, "or", &or);

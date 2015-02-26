@@ -105,6 +105,24 @@ Obj *internal_sin(Runtime *r, Obj *args[], int arg_count) {
   return gc_make_number(r->gc, cos(args[0]->number));
 }
 
+Obj *internal_rand(Runtime *r, Obj *args[], int arg_count) {
+  if(arg_count == 0) {
+    return gc_make_number(r->gc, rand());
+  }
+  if(arg_count == 1) {
+    return gc_make_number(r->gc, rand() % (int)args[0]->number);
+  }
+  if(arg_count == 2) {
+    int low = (int)args[0]->number;
+    int high = (int)args[1]->number;
+    int diff = high - low;
+    return gc_make_number(r->gc, low + rand() % diff);
+  }
+  else {
+    printf("Can't call 'rand' with %d arguments.\n", arg_count);
+    return r->nil;
+  }
+}
 
 Obj *and(Runtime *r, Obj *args[], int arg_count) {
   for(int i = 0; i < arg_count; i++) {
