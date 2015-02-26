@@ -25,6 +25,7 @@ void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_
 // The environments root is a cons cell where the car
 // contains the a-list and the cdr contains the parent env.
 
+// TODO: remove parent env check?
 Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search, bool *OUT_found_in_local_env) {
   //printf("Looking for pair for %s in env %p (is global: %d)\n", obj_to_str(key), env, !HAS_PARENT_ENV(env));
   Obj *current = env->car; // get the a-list for this env
@@ -44,6 +45,7 @@ Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search, bool *O
   }
 }
 
+// TODO: is this one called?
 void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
   /* printf("Will register %s in env %p with value\n", key->name, env); print_obj(value); printf("\n"); */
   Obj *pair = runtime_env_find_pair(env, key, false, NULL);
@@ -70,6 +72,7 @@ Obj *runtime_env_lookup(Obj *env, Obj *key) {
   }
 }
 
+// TODO: remove this?
 Obj *runtime_env_make_local(Runtime *r, Obj *parent_env) {
   Obj *empty_alist = gc_make_cons(r->gc, NULL, NULL);
   Obj *env = gc_make_cons(r->gc, empty_alist, parent_env);
