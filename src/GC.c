@@ -184,8 +184,15 @@ void mark(Obj *o) {
 	code += 2;
       }
       else if(*code == PUSH_LAMBDA) {
-	// TODO: follow args and body pointers
-	code += 7;
+	code += 1;
+	Obj **oo1 = (Obj**)code;
+	Obj *arg_o = *oo1;
+	mark(arg_o);
+	code += 2;
+	Obj **oo2 = (Obj**)code;
+	Obj *body_o = *oo2;
+	mark(body_o);
+	code += 2;
       }
       else {
 	code++;
