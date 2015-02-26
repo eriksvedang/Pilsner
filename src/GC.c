@@ -184,7 +184,7 @@ void mark(Obj *o) {
 	code += 2;
       }
       else if(*code == PUSH_LAMBDA) {
-	//printf(" <args> <body> <code>");
+	// TODO: follow args and body pointers
 	code += 7;
       }
       else {

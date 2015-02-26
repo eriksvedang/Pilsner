@@ -3,26 +3,26 @@
 #include <stdio.h>
 
 const char *code_to_str(Code code) {
-  if(code == END_OF_CODES)          return "END      ";
-  else if(code == PUSH_CONSTANT)    return "PUSH     ";
-  else if(code == RETURN)           return "RETURN   ";
-  else if(code == LOOKUP_AND_PUSH)  return "LOOKUP   ";
-  else if(code == DEFINE)           return "DEFINE   ";
-  else if(code == CALL)             return "CALL!    ";
-  else if(code == PUSH_LAMBDA)      return "LAMBDA   ";
-  else if(code == JUMP)             return "JUMP ->  ";
-  else if(code == IF)               return "IF       ";
-  else if(code == POP_AND_DISCARD)  return "POP      ";
-  else if(code == ADD)              return "ADD      ";
-  else if(code == MUL)              return "MUL      ";
-  else if(code == SUB)              return "SUB      ";
-  else if(code == DIV)              return "DIV      ";
-  else if(code == EQ)               return "EQ      ";
-  else if(code == DIRECT_LOOKUP_VAR)return "DIRECT   ";
-  else if(code == TAIL_CALL)        return "TAILCALL ";
-  else if(code == LOOKUP_ARG)       return "LOOK ARG ";
-  else if(code == UNINITIALIZED) return "UNINITIALIZED";
-  else return "UNKNOWN_CODE";
+  if(code == END_OF_CODES)             return "END       ";
+  else if(code == PUSH_CONSTANT)       return "PUSH      ";
+  else if(code == RETURN)              return "RETURN    ";
+  else if(code == LOOKUP_AND_PUSH)     return "LOOKUP    ";
+  else if(code == DEFINE)              return "DEFINE    ";
+  else if(code == CALL)                return "CALL      ";
+  else if(code == PUSH_LAMBDA)         return "LAMBDA    ";
+  else if(code == JUMP)                return "JUMP      ";
+  else if(code == IF)                  return "IF        ";
+  else if(code == POP_AND_DISCARD)     return "POP       ";
+  else if(code == ADD)                 return "ADD       ";
+  else if(code == MUL)                 return "MUL       ";
+  else if(code == SUB)                 return "SUB       ";
+  else if(code == DIV)                 return "DIV       ";
+  else if(code == EQ)                  return "EQ        ";
+  else if(code == DIRECT_LOOKUP_VAR)   return "DIRECT    ";
+  else if(code == TAIL_CALL)           return "TAILCALL  ";
+  else if(code == LOOKUP_ARG)          return "LOOK ARG  ";
+  else if(code == UNINITIALIZED)       return "UN-INITED ";
+  else                                 return "UNKNOWN   ";
 }
 
 bool pushes_obj(Code code) {
@@ -196,3 +196,4 @@ void code_write_pop(CodeWriter *writer) {
 void code_write_code(CodeWriter *writer, Code code) {
   code_write(writer, code);
 }
+

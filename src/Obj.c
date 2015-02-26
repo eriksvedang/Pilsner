@@ -72,7 +72,6 @@ void print_obj(Obj *o) {
 	}
       }
       curr = curr->cdr;
-      //printf("Curr set to %p", curr);
     }
     printf(")");
   }
@@ -132,3 +131,4 @@ int count(Obj *list) {
   }
   return i;
 }
+

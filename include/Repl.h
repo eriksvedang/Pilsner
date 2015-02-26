@@ -44,7 +44,6 @@ void repl() {
 
   // The global environment should be the only thing on the stack
   assert(r->gc->stackSize == 1);
-  gc_stack_pop(r->gc);
 
   runtime_delete(r);
 
