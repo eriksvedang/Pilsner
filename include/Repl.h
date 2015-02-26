@@ -19,7 +19,7 @@ void repl() {
     error("The environment variable PILNSER_LIB is not set.");
   }
 
-  bool builtins = false;
+  bool builtins = true;
   
   Runtime *r = runtime_new(builtins);
 

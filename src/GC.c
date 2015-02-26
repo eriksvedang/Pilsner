@@ -5,7 +5,7 @@
 #include <string.h>
 #include <assert.h>
 
-#define LOG 1
+#define LOG 0
 #define LOG_GC_COLLECT_RESULT 1
 #define LOG_PUSH_AND_POP 0
 
