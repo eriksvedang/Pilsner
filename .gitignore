@@ -2,3 +2,6 @@
 /bin/main.o
 /bin/pilsner.dSYM/Contents/Info.plist
 /bin/pilsner.dSYM/Contents/Resources/DWARF/pilsner
+/main.o
+/pilsner
+/pilsner.dSYM/
