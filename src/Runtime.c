@@ -200,6 +200,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "not", &not);
   register_func(r, "print", &print);
   register_func(r, "println", &println);
+  register_func(r, "str", &str);
   register_func(r, "time", &get_time);
   
   register_func(r, "break", &runtime_break);
@@ -332,6 +333,13 @@ int read_next_code_as_int(Frame *frame) {
   return i;
 }
 
+void pop_to_global_scope_and_push_nil(Runtime *r) {
+  while(r->top_frame > 0) {
+    runtime_frame_pop(r);
+  }
+  gc_stack_push(r->gc, r->nil);
+}
+
 void runtime_step_eval(Runtime *r) {
   Frame *frame = &r->frames[r->top_frame];
 
@@ -388,11 +396,8 @@ void runtime_step_eval(Runtime *r) {
       printf("\e[0m");
       //frame->p -= 3;
       //r->mode = RUNTIME_MODE_BREAK;
-      runtime_print_frames(r);
-      while(r->top_frame > 0) {
-	runtime_frame_pop(r);
-      }
-      gc_stack_push(r->gc, r->nil);
+      //runtime_print_frames(r);
+      pop_to_global_scope_and_push_nil(r);
     }
   }
   else if(code == POP_AND_DISCARD) {

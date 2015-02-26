@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <sys/time.h>
 #include <math.h>
+#include <string.h>
+
 #include "Obj.h"
 
 Obj *plus(Runtime *r, Obj *args[], int arg_count) {
@@ -121,7 +123,6 @@ Obj *or(Runtime *r, Obj *args[], int arg_count) {
 Obj *print(Runtime *r, Obj *args[], int arg_count) {
   for(int i = 0; i < arg_count; i++) {
     printf("%s", obj_to_str(args[i]));
-    printf("\n");
   }
   return r->nil;
 }
@@ -130,6 +131,20 @@ Obj *println(Runtime *r, Obj *args[], int arg_count) {
   print(r, args, arg_count);
   printf("\n");
   return r->nil;
+}
+
+Obj *str(Runtime *r, Obj *args[], int arg_count) {
+  int total_length = 0;
+  for(int i = 0; i < arg_count; i++) {
+    total_length += strlen(args[i]->name);
+  }
+  char *s = malloc(total_length + 1);
+  char *s_pos = s;
+  for(int i = 0; i < arg_count; i++) {
+    s_pos = strcat(s_pos, args[i]->name);
+  }
+  s[total_length] = '\0';
+  return gc_make_string(r->gc, s);
 }
 
 Obj *not_internal(Runtime *r, Obj *o) {
