@@ -50,3 +50,14 @@
               (print "dt:")
               (println (- end-time start-time)))))
 
+(def assert
+    (fn (n pred)
+	(if pred
+	    (println (str "Test '" n "' passed."))
+	    (println (str "Test '" n "' failed.")))))
+
+(def assert-eq
+    (fn (n a b)
+	(assert n (= a b))))
+
+

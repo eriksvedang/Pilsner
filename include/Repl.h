@@ -24,6 +24,7 @@ void repl() {
   //load(r, lib_path, "minimal.lisp");
   load(r, lib_path, "core.lisp");
   load(r, lib_path, "misc.lisp");
+  load(r, lib_path, "tests.lisp");
   
   printf("\e[33m~ Welcome to the Pilsner REPL ~\e[0m\n");
 
