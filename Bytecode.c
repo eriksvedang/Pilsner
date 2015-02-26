@@ -19,7 +19,6 @@ const char *code_to_str(Code code) {
   else if(code == DIV)              return "DIV      ";
   else if(code == DIRECT_LOOKUP_VAR)return "DIRECT   ";
   else if(code == TAIL_CALL)        return "TAILCALL ";
-  else if(code == SET)              return "SET      ";
   else if(code == LOOKUP_ARG)       return "LOOK ARG ";
   else if(code == UNINITIALIZED) return "UNINITIALIZED";
   else return "UNKNOWN_CODE";
@@ -29,7 +28,6 @@ bool pushes_obj(Code code) {
   return (code == PUSH_CONSTANT ||
 	  code == LOOKUP_AND_PUSH ||
 	  code == DEFINE ||
-	  code == SET ||
 	  code == DIRECT_LOOKUP_VAR);
 }
 
@@ -139,15 +137,6 @@ int code_write_define(CodeWriter *writer, Obj *sym) {
     error("Can't write DEFINE with non-symbol.");
   }
   code_write(writer, DEFINE);
-  obj_write(writer, sym);
-  return 3;
-}
-
-int code_write_set(CodeWriter *writer, Obj *sym) {
-  if(sym->type != SYMBOL) {
-    error("Can't write SET with non-symbol.");
-  }
-  code_write(writer, SET);
   obj_write(writer, sym);
   return 3;
 }

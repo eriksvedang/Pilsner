@@ -84,13 +84,6 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       visit(writer, r, env, value, tail_position, args);
       code_write_define(writer, symbol);
     }
-    else if(is_symbol(form, "set!")) {
-      Obj *symbol = SECOND(form);
-      Obj *value = THIRD(form);
-      //runtime_env_assoc(r, env, symbol, r->nil);
-      visit(writer, r, env, value, tail_position, args);
-      code_write_set(writer, symbol);
-    }
     else if(is_symbol(form, "quote")) {
       code_write_push_constant(writer, form->cdr->car);
     }

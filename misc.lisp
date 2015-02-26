@@ -77,26 +77,16 @@
 	    1
 	    (plus n (not-iter (dec n))))))
 
-; (def u (fn (x) (* x jhkjb)))
+
+(def capture
+    (fn (x)
+	(fn () x)))
+
+(def cap-1 (capture 450))
+(def cap-2 (capture 666))
 
 
-(def mkcounter
-    (fn (nnn)
-	(fn ()
-	    (do
-	     (set! nnn (inc nnn))
-	     (* 10 nnn)))))
-; (def c (mkcounter 10))
-
-(def noo 123)
-(def f (fn (noo) (do (set! noo 444) (fn () noo))))
-;; (def ff (f 10))
-
-;;(def g (fn (xxx) (fn () noo)))
-
-
-;;(def hej (fn (x) (fn () x)))
-
+(def undf (fn () (* u u))) ;; using the undefined variable u
 
 
 
