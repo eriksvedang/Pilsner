@@ -117,31 +117,28 @@ void int_write(CodeWriter *writer, int i) {
   writer->pos++;
 }
 
-int code_write_push_constant(CodeWriter *writer, Obj *o) {
+void code_write_push_constant(CodeWriter *writer, Obj *o) {
   code_write(writer, PUSH_CONSTANT);
   obj_write(writer, o);
-  return 3;
 }
 
-int code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
+void code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
   if(sym->type != SYMBOL) {
     error("Can't write LOOKUP_AND_PUSH with non-symbol.");
   }
   code_write(writer, LOOKUP_AND_PUSH);
   obj_write(writer, sym);
-  return 3;
 }
 
-int code_write_define(CodeWriter *writer, Obj *sym) {
+void code_write_define(CodeWriter *writer, Obj *sym) {
   if(sym->type != SYMBOL) {
     error("Can't write DEFINE with non-symbol.");
   }
   code_write(writer, DEFINE);
   obj_write(writer, sym);
-  return 3;
 }
 
-int code_write_direct_lookup_var(CodeWriter *writer, Obj *binding_pair) {
+void code_write_direct_lookup_var(CodeWriter *writer, Obj *binding_pair) {
   if(binding_pair->type != CONS) {
     error("Can't write DIRECT_LOOKUP_VAR with non-cons.");
   }
@@ -150,62 +147,51 @@ int code_write_direct_lookup_var(CodeWriter *writer, Obj *binding_pair) {
   }
   code_write(writer, DIRECT_LOOKUP_VAR);
   obj_write(writer, binding_pair);
-  return 3;
 }
 
-int code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code) {
+void code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code) {
   code_write(writer, PUSH_LAMBDA);
   obj_write(writer, args);
   obj_write(writer, body);
   obj_write(writer, (Obj*)code); // pointers take up the same amount of space
-  return 7;
 }
 
-int code_write_call(CodeWriter *writer, int arg_count) {
+void code_write_call(CodeWriter *writer, int arg_count) {
   code_write(writer, CALL);
   int_write(writer, arg_count);
-  return 2;
 }
 
-int code_write_tail_call(CodeWriter *writer, int arg_count) {
+void code_write_tail_call(CodeWriter *writer, int arg_count) {
   code_write(writer, TAIL_CALL);
   int_write(writer, arg_count);
-  return 2;
 }
 
-int code_write_jump(CodeWriter *writer, int jump_length) {
+void code_write_jump(CodeWriter *writer, int jump_length) {
   code_write(writer, JUMP);
   int_write(writer, jump_length);
-  return 2;
 }
 
-int code_write_lookup_arg(CodeWriter *writer, int arg_index) {
+void code_write_lookup_arg(CodeWriter *writer, int arg_index) {
   code_write(writer, LOOKUP_ARG);
   int_write(writer, arg_index);
-  return 2;
 }
 
-int code_write_if(CodeWriter *writer) {
+void code_write_if(CodeWriter *writer) {
   code_write(writer, IF);
-  return 1;
 }
 
-int code_write_end(CodeWriter *writer) {
+void code_write_end(CodeWriter *writer) {
   code_write(writer, END_OF_CODES);
-  return 1;
 }
 
-int code_write_return(CodeWriter *writer) {
+void code_write_return(CodeWriter *writer) {
   code_write(writer, RETURN);
-  return 1;
 }
 
-int code_write_pop(CodeWriter *writer) {
+void code_write_pop(CodeWriter *writer) {
   code_write(writer, POP_AND_DISCARD);
-  return 1;
 }
 
-int code_write_code(CodeWriter *writer, Code code) {
+void code_write_code(CodeWriter *writer, Code code) {
   code_write(writer, code);
-  return 1;
 }
