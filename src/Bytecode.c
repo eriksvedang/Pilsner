@@ -6,7 +6,6 @@ const char *code_to_str(Code code) {
   if(code == END_OF_CODES)             return "END       ";
   else if(code == PUSH_CONSTANT)       return "PUSH      ";
   else if(code == RETURN)              return "RETURN    ";
-  else if(code == LOOKUP_AND_PUSH)     return "LOOKUP    ";
   else if(code == DEFINE)              return "DEFINE    ";
   else if(code == CALL)                return "CALL      ";
   else if(code == PUSH_LAMBDA)         return "LAMBDA    ";
@@ -27,7 +26,6 @@ const char *code_to_str(Code code) {
 
 bool pushes_obj(Code code) {
   return (code == PUSH_CONSTANT ||
-	  code == LOOKUP_AND_PUSH ||
 	  code == DEFINE ||
 	  code == DIRECT_LOOKUP_VAR);
 }
@@ -121,14 +119,6 @@ void int_write(CodeWriter *writer, int i) {
 void code_write_push_constant(CodeWriter *writer, Obj *o) {
   code_write(writer, PUSH_CONSTANT);
   obj_write(writer, o);
-}
-
-void code_write_lookup_and_push(CodeWriter *writer, Obj *sym) {
-  if(sym->type != SYMBOL) {
-    error("Can't write LOOKUP_AND_PUSH with non-symbol.");
-  }
-  code_write(writer, LOOKUP_AND_PUSH);
-  obj_write(writer, sym);
 }
 
 void code_write_define(CodeWriter *writer, Obj *sym) {

@@ -8,7 +8,6 @@ typedef enum {
   UNINITIALIZED = 0,
   PUSH_CONSTANT,     // Places an Obj on the stack.
   PUSH_LAMBDA,       // Creates an Obj of type LAMBDA and places it on the stack.
-  LOOKUP_AND_PUSH,   // Push the value of a variable in an env. Only used for variables that don't exist at compile time.
   DIRECT_LOOKUP_VAR, // Pointer lookup to a binding in an env.
   LOOKUP_ARG,        // Lookup an arg in the current stack frame.
   DEFINE,            // Set (or create if necessary) the value of a binding in the global scope.
@@ -42,7 +41,6 @@ bool pushes_int(Code code);
 CodeWriter *code_writer_init(CodeWriter *writer, int size);
 
 void code_write_push_constant(CodeWriter *writer, Obj *o);
-void code_write_lookup_and_push(CodeWriter *writer, Obj *sym);
 void code_write_define(CodeWriter *writer, Obj *sym);
 void code_write_call(CodeWriter *writer, int arg_count);
 void code_write_tail_call(CodeWriter *writer, int arg_count);

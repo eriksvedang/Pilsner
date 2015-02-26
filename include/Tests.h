@@ -201,10 +201,10 @@ void test_bytecode() {
   code_write_define(&writer, gc_make_symbol(r->gc, "bleh")); // bleh = 42
   code_write_push_constant(&writer, gc_make_number(r->gc, 100.0));
   code_write_push_constant(&writer, gc_make_number(r->gc, 200.0));
-  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "+"));
+  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "+"), true, NULL));
   code_write_call(&writer, 2);
-  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "bleh"));
-  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "*"));
+  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "bleh"), true, NULL));
+  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "*"), true, NULL));
   code_write_call(&writer, 2);
   code_write_end(&writer);
 
@@ -304,9 +304,9 @@ void test_bytecode_with_lambda() {
 
   // Write code for lambda: (fn (dront) (* dront dront))
   code_writer_init(&writer, 1024);
-  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "dront"));
-  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "dront"));
-  code_write_lookup_and_push(&writer, gc_make_symbol(r->gc, "*"));
+  code_write_push_constant(&writer, gc_make_symbol(r->gc, "dront"));
+  code_write_push_constant(&writer, gc_make_symbol(r->gc, "dront"));
+  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "*"), true, NULL));
   code_write_call(&writer, 2);
   code_write_return(&writer);
   code_write_end(&writer);

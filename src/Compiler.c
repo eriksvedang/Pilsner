@@ -62,7 +62,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form, bool tail_position, Obj *a
       }
       else {
 	printf("Warning: Can't find binding for '%s'.\n", form->name);
-	code_write_lookup_and_push(writer, form); // Not found at all!	
+	code_write_return(writer);
       }
     }    
   }
