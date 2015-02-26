@@ -86,7 +86,7 @@
 (def cap-2 (capture 666))
 
 
-(def undf (fn () (* u u))) ;; using the undefined variable u
+;; (def undf (fn () (* u u))) ;; using the undefined variable u
 
 
 
