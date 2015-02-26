@@ -210,7 +210,7 @@ void test_bytecode() {
 
   //code_print(writer.codes);
   
-  runtime_frame_push(r, r->global_env, writer.codes, "testframe");
+  runtime_frame_push(r, 0, NULL, writer.codes, "testframe");
 
   while(r->top_frame >= 0) {
     runtime_step_eval(r);
@@ -235,7 +235,7 @@ void test_bytecode_jump() {
 
   //code_print(writer.codes);
   
-  runtime_frame_push(r, r->global_env, writer.codes, "testframe");
+  runtime_frame_push(r, 0, NULL, writer.codes, "testframe");
 
   while(r->top_frame >= 0) {
     runtime_step_eval(r);
@@ -252,7 +252,7 @@ void test_bytecode_if() {
   Runtime *r = runtime_new(true);
 
   int code_length = 0;
-  Code *c = compile(r, r->global_env, false, parse(r->gc, "(if 1 1337 404)")->car, &code_length, NULL);
+  Code *c = compile(r, false, parse(r->gc, "(if 1 1337 404)")->car, &code_length, NULL);
   code_print(c);
   printf("Code length: %d\n", code_length);
   //return;
@@ -284,7 +284,7 @@ void test_bytecode_if() {
   code_print(writer.codes);
   printf("\n");
   
-  runtime_frame_push(r, r->global_env, writer.codes, "top-level");
+  runtime_frame_push(r, 0, NULL, writer.codes, "top-level");
 
   while(r->top_frame >= 0) {
     runtime_step_eval(r);
@@ -329,7 +329,7 @@ void test_bytecode_with_lambda() {
   code_write_end(&writer);
   //code_print(writer.codes);
   
-  runtime_frame_push(r, r->global_env, writer.codes, "testframe");
+  runtime_frame_push(r, 0, NULL, writer.codes, "testframe");
 
   while(r->top_frame >= 0) {
     runtime_step_eval(r);
@@ -350,9 +350,9 @@ void test_compiler() {
   Obj *forms = parse(r->gc, "(- 20 3)");
   Obj *form = forms->car;
   int len;
-  Code *code = compile(r, r->global_env, false, form, &len, NULL);
+  Code *code = compile(r, false, form, &len, NULL);
   code_print(code);
-  runtime_frame_push(r, r->global_env, code, "top-level");
+  runtime_frame_push(r, 0, NULL, code, "top-level");
   
   while(r->top_frame >= 0) {
     runtime_step_eval(r);

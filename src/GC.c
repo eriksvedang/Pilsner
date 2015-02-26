@@ -123,9 +123,9 @@ Obj *gc_make_bytecode(GC *gc, Code *code) {
   return o;
 }
 
-Obj *gc_make_lambda(GC *gc, Obj *env, Obj *args, Obj *body, Code *code) {
+Obj *gc_make_lambda(GC *gc, Obj *args, Obj *body, Code *code) {
   Obj *o = gc_make_obj(gc, LAMBDA);
-  Obj *envAndArgs = gc_make_cons(gc, env, args);
+  Obj *envAndArgs = gc_make_cons(gc, NULL, args);
   Obj *bodyAndCode = gc_make_cons(gc, body, gc_make_bytecode(gc, code));
   o->car = envAndArgs;
   o->cdr = bodyAndCode;

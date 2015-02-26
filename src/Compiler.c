@@ -29,7 +29,7 @@ int find_arg_index_in_arglist(Obj *args, Obj *symbol) {
   return arg_index;
 }
 
-void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_position, Obj *args) {
+void visit(CodeWriter *writer, Runtime *r, Obj *form, bool tail_position, Obj *args) {
   /* printf("Visiting %s ", tail_position ? "tail position" : ""); */
   /* print_obj(form); */
   /* printf(" with args "); */
@@ -78,42 +78,42 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       Obj *value = THIRD(form);
       // Pre-define the binding so that it can be found by recursive function calls etc.
       runtime_env_assoc(r, r->global_env, symbol, r->nil);
-      visit(writer, r, env, value, tail_position, args);
+      visit(writer, r, value, tail_position, args);
       code_write_define(writer, symbol);
     }
     else if(is_symbol(form, "quote")) {
       code_write_push_constant(writer, form->cdr->car);
     }
     else if(is_binary_call(form, "+")) {
-      visit(writer, r, env, SECOND(form), false, args);
-      visit(writer, r, env, THIRD(form), false, args);
+      visit(writer, r, SECOND(form), false, args);
+      visit(writer, r, THIRD(form), false, args);
       code_write_code(writer, ADD);
     }
     else if(is_binary_call(form, "-")) {
-      visit(writer, r, env, SECOND(form), false, args);
-      visit(writer, r, env, THIRD(form), false, args);
+      visit(writer, r, SECOND(form), false, args);
+      visit(writer, r, THIRD(form), false, args);
       code_write_code(writer, SUB);
     }
     else if(is_binary_call(form, "*")) {
-      visit(writer, r, env, SECOND(form), false, args);
-      visit(writer, r, env, THIRD(form), false, args);
+      visit(writer, r, SECOND(form), false, args);
+      visit(writer, r, THIRD(form), false, args);
       code_write_code(writer, MUL);
     }
     else if(is_binary_call(form, "/")) {
-      visit(writer, r, env, SECOND(form), false, args);
-      visit(writer, r, env, THIRD(form), false, args);
+      visit(writer, r, SECOND(form), false, args);
+      visit(writer, r, THIRD(form), false, args);
       code_write_code(writer, DIV);
     }
     else if(is_binary_call(form, "=")) {
-      visit(writer, r, env, SECOND(form), false, args);
-      visit(writer, r, env, THIRD(form), false, args);
+      visit(writer, r, SECOND(form), false, args);
+      visit(writer, r, THIRD(form), false, args);
       code_write_code(writer, EQ);
     }
     else if(is_symbol(form, "do")) {
       Obj *subform = form->cdr;
       while(subform && subform->car) {
 	bool last_form = subform->cdr == NULL || subform->cdr->car == NULL;
-	visit(writer, r, env, subform->car, last_form, args);
+	visit(writer, r, subform->car, last_form, args);
 	if(!last_form) {
 	  code_write_pop(writer); // pop value if form is not the last one
 	}
@@ -139,13 +139,13 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
 	return;
       }
       
-      visit(writer, r, env, expression, false, args); // the result from this will be the branching value
+      visit(writer, r, expression, false, args); // the result from this will be the branching value
 
       int true_code_length;
-      Code *true_bytecode = compile(r, env, tail_position, true_branch, &true_code_length, args);
+      Code *true_bytecode = compile(r, tail_position, true_branch, &true_code_length, args);
 
       int false_code_length;
-      Code *false_bytecode = compile(r, env, tail_position, false_branch, &false_code_length, args);
+      Code *false_bytecode = compile(r, tail_position, false_branch, &false_code_length, args);
 
       code_write_if(writer); // this code will jump forward one step if value on the stack is true, otherwise it will jump two steps
       
@@ -177,11 +177,11 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       Obj *arg = form->cdr;
       int caller_arg_count = 0;
       while(arg && arg->car) {
-	visit(writer, r, env, arg->car, false, args);
+	visit(writer, r, arg->car, false, args);
 	caller_arg_count++;
 	arg = arg->cdr;
       }
-      visit(writer, r, env, f, false, args);
+      visit(writer, r, f, false, args);
 
       if(tail_position) {
 	code_write_tail_call(writer, caller_arg_count);
@@ -198,10 +198,10 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
   }
 }
 
-Code *compile(Runtime *r, Obj *env, bool tail_position, Obj *form, int *OUT_code_length, Obj *args) {
+Code *compile(Runtime *r, bool tail_position, Obj *form, int *OUT_code_length, Obj *args) {
   CodeWriter writer;
   code_writer_init(&writer, 1024);
-  visit(&writer, r, env, form, tail_position, args);
+  visit(&writer, r, form, tail_position, args);
   code_write_end(&writer);
   *OUT_code_length = writer.pos;
   return writer.codes;
@@ -214,7 +214,7 @@ void compile_and_print(const char *source) {
   while(form_cons && form_cons->car) {
     Obj *form = form_cons->car;
     int code_length = 0;
-    Code *code = compile(r, r->global_env, false, form, &code_length, NULL);
+    Code *code = compile(r, false, form, &code_length, NULL);
     printf("Generating code for ");
     print_obj(form);
     printf("\n");

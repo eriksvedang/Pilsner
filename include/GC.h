@@ -44,6 +44,6 @@ Obj *gc_make_func(GC *gc, const char *name, void *f);
 Obj *gc_make_number(GC *gc, double x);
 Obj *gc_make_string(GC *gc, char *text);
 Obj *gc_make_bytecode(GC *gc, Code *code);
-Obj *gc_make_lambda(GC *gc, Obj *env, Obj *args, Obj *body, Code *code);
+Obj *gc_make_lambda(GC *gc, Obj *args, Obj *body, Code *code);
 
 #endif

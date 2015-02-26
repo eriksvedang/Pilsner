@@ -76,6 +76,13 @@ Obj *runtime_env_make_local(Runtime *r, Obj *parent_env) {
   return env;
 }
 
+void pop_to_global_scope_and_push_nil(Runtime *r) {
+  while(r->top_frame > 0) {
+    runtime_frame_pop(r);
+  }
+  gc_stack_push(r->gc, r->nil);
+}
+
 void register_var(Runtime *r, const char *name, Obj *value) {
   Obj *var_name = gc_make_symbol(r->gc, name);
   runtime_env_assoc(r, r->global_env, var_name, value);
@@ -247,21 +254,24 @@ void runtime_delete(Runtime *r) {
   free(r);
 }
 
-Frame *runtime_frame_init(Runtime *r, Obj *env, Code *code, const char *name) {
+Frame *runtime_frame_init(Runtime *r, int arg_count, Obj *arg_symbols, Code *code, const char *name) {
   Frame *frame = &r->frames[r->top_frame];
   frame->p = code;
-  frame->env = env;
   strcpy(frame->name, name);
+  for(int i = arg_count - 1; i >= 0; i--) {
+    frame->args[i] = gc_stack_pop(r->gc);
+  }
+  frame->arg_symbols = arg_symbols;  
   return frame;
 }
 
-Frame *runtime_frame_push(Runtime *r, Obj *env, Code *code, const char *name) {
+Frame *runtime_frame_push(Runtime *r, int arg_count, Obj *arg_symbols, Code *code, const char *name) {
   r->top_frame++;
   if(r->top_frame >= MAX_FRAMES) {
     printf("Can't push more stack frames, reached max limit: %d.\n", MAX_FRAMES);
     exit(1);
   }
-  return runtime_frame_init(r, env, code, name);
+  return runtime_frame_init(r, arg_count, arg_symbols, code, name);
 }
 
 void runtime_frame_pop(Runtime *r) {
@@ -269,11 +279,11 @@ void runtime_frame_pop(Runtime *r) {
 }
 
 // Changes the current frame, just as if popping and then pushing a new one.
-Frame *runtime_frame_replace(Runtime *r, Obj *env, Code *code, const char *name) {
+Frame *runtime_frame_replace(Runtime *r, int arg_count, Obj *arg_symbols, Code *code, const char *name) {
   if(r->top_frame < 0) {
     error("Can't replace top frame because there are no frames.\n");
   }
-  return runtime_frame_init(r, env, code, name);
+  return runtime_frame_init(r, arg_count, arg_symbols, code, name);
 }
 
 void call_func(Runtime *r, Obj *f, int arg_count) {
@@ -286,36 +296,25 @@ void call_func(Runtime *r, Obj *f, int arg_count) {
 }
 
 void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
-  // TODO: Clean up this mess!
-  
   int proper_arg_count = count(GET_ARGS(f));
   if(proper_arg_count != arg_count) {
     printf("Can't call function %s with %d args (should be %d).\n", obj_to_str(f), arg_count, proper_arg_count);
     gc_stack_push(r->gc, r->nil);
     return;
   }
-  Obj *local_env = r->global_env; // TEMP!!!!!
-  
+
   Obj *bytecode = f->cdr->cdr;
   assert(bytecode->type == BYTECODE);
 
 #if TAIL_CALLS_ENABLED  
   if(tail_call) {
-    runtime_frame_replace(r, local_env, (Code*)bytecode->code, "tail_call_lambda");
+    runtime_frame_replace(r, arg_count, GET_ARGS(f), (Code*)bytecode->code, "tail_call_lambda");
   } else {
-    runtime_frame_push(r, local_env, (Code*)bytecode->code, "call_lambda");
+    runtime_frame_push(r, arg_count, GET_ARGS(f), (Code*)bytecode->code, "call_lambda");
   }
 #else
-  runtime_frame_push(r, local_env, (Code*)bytecode->code, "call_lambda");
+  runtime_frame_push(r, arg_count, GET_ARGS(f), (Code*)bytecode->code, "call_lambda");
 #endif
-
-  Frame *frame = &r->frames[r->top_frame];
-  
-  for(int i = arg_count - 1; i >= 0; i--) {
-    frame->args[i] = gc_stack_pop(r->gc);
-  }
-
-  frame->arg_symbols = GET_ARGS(f);
 }
 
 Obj *read_next_code_as_obj(Frame *frame) {
@@ -332,13 +331,6 @@ int read_next_code_as_int(Frame *frame) {
   int i = *ip;
   frame->p++;
   return i;
-}
-
-void pop_to_global_scope_and_push_nil(Runtime *r) {
-  while(r->top_frame > 0) {
-    runtime_frame_pop(r);
-  }
-  gc_stack_push(r->gc, r->nil);
 }
 
 void runtime_step_eval(Runtime *r) {
@@ -386,21 +378,6 @@ void runtime_step_eval(Runtime *r) {
     Obj *value = frame->args[arg_index];
     gc_stack_push(r->gc, value);
   }
-  else if(code == LOOKUP_AND_PUSH) {
-    Obj *sym = read_next_code_as_obj(frame);
-    Obj *value = runtime_env_lookup(frame->env, sym);
-    if(value) {
-      gc_stack_push(r->gc, value);
-    } else {
-      printf("\e[31m");
-      printf("Can't find value '%s' in environment.\n", sym->name);
-      printf("\e[0m");
-      //frame->p -= 3;
-      //r->mode = RUNTIME_MODE_BREAK;
-      //runtime_print_frames(r);
-      pop_to_global_scope_and_push_nil(r);
-    }
-  }
   else if(code == POP_AND_DISCARD) {
     gc_stack_pop(r->gc);
   }
@@ -439,8 +416,8 @@ void runtime_step_eval(Runtime *r) {
     Obj *args = read_next_code_as_obj(frame);
     Obj *body = read_next_code_as_obj(frame);
     int code_length = 0;
-    Code *bytecode = compile(r, frame->env, true, body, &code_length, args);
-    Obj *lambda = gc_make_lambda(r->gc, frame->env, args, body, bytecode);
+    Code *bytecode = compile(r, true, body, &code_length, args);
+    Obj *lambda = gc_make_lambda(r->gc, args, body, bytecode);
     gc_stack_push(r->gc, lambda);
   }
   else if(code == CALL || code == TAIL_CALL) {
@@ -479,13 +456,13 @@ void runtime_step_eval(Runtime *r) {
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
 
   int code_length = 0;
-  Code *bytecode = compile(r, env, false, form, &code_length, NULL);
+  Code *bytecode = compile(r, false, form, &code_length, NULL);
   #if LOG_BYTECODE
   code_print(bytecode);
   #endif
   int old_obj_count = g_obj_count;
   
-  runtime_frame_push(r, env, bytecode, "top-level");
+  runtime_frame_push(r, 0, NULL, bytecode, "top-level");
   
   while(1) {
     if(r->top_frame <= break_frame_index) {
@@ -512,8 +489,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
       fgets(str, BUFFER_SIZE, stdin);
       r->mode = RUNTIME_MODE_RUN;
       if(strlen(str) > 0) {
-	Obj *inner_env = r->frames[r->top_frame].env;
-	runtime_eval_internal(r, inner_env, str, true, 0, r->top_frame);
+	runtime_eval_internal(r, r->global_env, str, true, 0, r->top_frame);
       }
       else {
 	// continue normal execution

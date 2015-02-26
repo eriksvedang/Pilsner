@@ -6,6 +6,7 @@ Prio 1
 * macros
 * real number constants (handle decimals)
 * let expressions
+* convert variadic uses of + etc compile into a series of ADD ops
 
 Todo
 ====

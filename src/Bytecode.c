@@ -85,7 +85,7 @@ void code_print(Code *code_block) {
 }
 
 CodeWriter *code_writer_init(CodeWriter *writer, int size) {
-  writer->codes = malloc(size); // TODO: Remember to clean this up somewhere!
+  writer->codes = malloc(size); // This should get freed by the caller, exactly how depends on its usage.
   writer->codes[0] = UNINITIALIZED;
   writer->size = size;
   writer->pos = 0;

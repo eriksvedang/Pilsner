@@ -9,10 +9,9 @@
 
 typedef struct {
   char name[128];
-  Obj *env;
-  Code *p;
+  Code *p; // current instruction to execute
   Obj *args[64]; // change name to arg_values
-  Obj *arg_symbols;
+  Obj *arg_symbols; // used when looking up args in enclosing scopes
 } Frame;
 
 typedef enum {
@@ -39,7 +38,7 @@ void runtime_step_eval(Runtime *r);
 bool runtime_load_file(Runtime *r, const char *filename, bool silent);
 void runtime_inspect_env(Runtime *r);
 
-Frame *runtime_frame_push(Runtime *r, Obj *env, Code *code, const char *name);
+Frame *runtime_frame_push(Runtime *r, int arg_count, Obj *arg_symbols, Code *code, const char *name);
 void runtime_frame_pop(Runtime *r);
 void runtime_print_frames(Runtime *r);
 
