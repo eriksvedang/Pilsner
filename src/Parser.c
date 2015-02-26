@@ -51,8 +51,7 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
     return cons;
   }
   else if(isalpha(source[p->pos]) || isokinsymbol(source[p->pos])) {
-    //printf("Found symbol: ");
-    char *name = malloc(sizeof(char) * 256); // TODO: free this when the Obj is freed
+    char *name = malloc(sizeof(char) * 256);
     int i = 0;
     while(!iswhitespace(source[p->pos]) &&
 	  source[p->pos] != ')' &&
@@ -65,11 +64,10 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
       }
     }
     name[i] = '\0';
-    //printf("%s\n", name);
     return gc_make_symbol_from_malloced_string(gc, name);
   }
   else if(source[p->pos] == '"') {
-    char *text = malloc(sizeof(char) * 256); // TODO: free this when the Obj is freed
+    char *text = malloc(sizeof(char) * 256);
     int i = 0;
     p->pos++;
     while(source[p->pos] != '"' && source[p->pos] != '\0') {
@@ -77,7 +75,7 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
       p->pos++;
     }
     text[i] = '\0';
-    return gc_make_string(gc, text);
+    return gc_make_string(gc, text); // TODO: use other function here?
   }
   else if(isdigit(source[p->pos])) {
     char s[256];
@@ -90,8 +88,7 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
     double num = atof(s);
     return gc_make_number(gc, num);
   }
-
-  //printf("No form found, will return NULL\n");
+  
   return NULL;
 }
 
@@ -99,12 +96,9 @@ Obj *parse_list(GC *gc, Parser *p, const char *source) {
   Obj *list = gc_make_cons(gc, NULL, NULL);
   Obj *lastCons = list;
 
-  //printf("Starting work on list %p\n", list);
-
   p->pos++; // move beyond the first paren
 
   if(source[p->pos] == ')') {
-    //printf("Empty list\n");
     p->pos++;
     return list;
   }
@@ -113,7 +107,6 @@ Obj *parse_list(GC *gc, Parser *p, const char *source) {
         
     Obj *item = parse_form(gc, p, source);
     if(item) {
-      //printf("Adding item to list %p: %s\n", list, obj_to_str(item));
       lastCons->car = item;
       Obj *next = gc_make_cons(gc, NULL, NULL);
       lastCons->cdr = next;
@@ -126,7 +119,6 @@ Obj *parse_list(GC *gc, Parser *p, const char *source) {
     }
 
     if(source[p->pos] == ')') {
-      //printf("Found )\n");
       p->pos++;
       break;
     }
@@ -134,7 +126,6 @@ Obj *parse_list(GC *gc, Parser *p, const char *source) {
     p->pos++;
   }
 
-  //printf("Ending work on list %p\n", list);  
   return list;
 }
 
@@ -147,12 +138,8 @@ Obj *parse(GC *gc, const char *source) {
   Obj *last_form = forms;
   
   while(p->pos < source_len) {
-    //printf("Looking for new form at pos %d \n", p->pos);
     Obj *form = parse_form(gc, p, source);
     if(form) {
-      //printf("Got top-level form: ");
-      //print_obj(form);
-      //printf("\n");
       last_form->car = form;
       last_form->cdr = gc_make_cons(gc, NULL, NULL);
       last_form = last_form->cdr;
@@ -161,7 +148,5 @@ Obj *parse(GC *gc, const char *source) {
     p->pos++;
   }
 
-  //printf("%d parens.\n", parens);
- 
   return forms;
 }

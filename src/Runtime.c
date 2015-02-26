@@ -274,18 +274,6 @@ Frame *runtime_frame_replace(Runtime *r, Obj *env, Code *code, const char *name)
   return runtime_frame_init(r, env, code, name);
 }
 
-Obj *fetch_args(Runtime *r, int arg_count) {
-  // TODO: Use a C-array to pass args instead!
-  Obj *args = gc_make_cons(r->gc, NULL, NULL);
-  Obj *last_arg = args;
-  for(int i = 0; i < arg_count; i++) {
-    Obj *value = gc_stack_pop(r->gc);
-    Obj *new_arg = gc_make_cons(r->gc, value, last_arg);
-    last_arg = new_arg;
-  }
-  return last_arg;
-}
-
 void call_func(Runtime *r, Obj *f, int arg_count) {
   Obj *args[arg_count];
   for(int i = arg_count - 1; i >= 0; i--) {
@@ -295,48 +283,15 @@ void call_func(Runtime *r, Obj *f, int arg_count) {
   gc_stack_push(r->gc, result);
 }
 
-Obj *bind_args_in_new_env(Runtime *r, Obj *parent_env, Obj *arg_symbols, Obj *arg_values, int arg_count) {
-  
-  Obj *local_env = runtime_env_make_local(r, parent_env);
-
-  Obj *arg_symbol_cons = arg_symbols;
-  Obj *arg_value_cons = arg_values;
-  
-  while(arg_symbol_cons && arg_symbol_cons->car &&
-	arg_value_cons  && arg_value_cons->car) {
-    Obj *arg_symbol = arg_symbol_cons->car;
-    if(arg_symbol->type != SYMBOL) {
-      printf("Must bind symbols as args, found: ");
-      print_obj(arg_symbol); printf("\n");
-    }
-    Obj *arg_value = arg_value_cons->car;
-
-    /* printf("Binding arg_symbol '%s' to value ", arg_symbol->name); */
-    /* print_obj(arg_value); */
-    /* printf("\n"); */
-
-    runtime_env_assoc(r, local_env, arg_symbol, arg_value);
-    arg_symbol_cons = arg_symbol_cons->cdr;
-    arg_value_cons = arg_value_cons->cdr;
-  }
-
-  return local_env;
-}
-
 void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
+  // TODO: Clean up this mess!
+  
   int proper_arg_count = count(GET_ARGS(f));
   if(proper_arg_count != arg_count) {
     printf("Can't call function %s with %d args (should be %d).\n", obj_to_str(f), arg_count, proper_arg_count);
     gc_stack_push(r->gc, r->nil);
     return;
   }
-
-  /* Obj *parent_env = f->car->car; */
-  /* assert(parent_env); */
-  /* Obj *arg_symbols = f->car->cdr; */
-  /* Obj *arg_values = fetch_args(r, arg_count); */
-  /* Obj *local_env = bind_args_in_new_env(r, parent_env, arg_symbols, arg_values, arg_count); */
-
   Obj *local_env = r->global_env; // TEMP!!!!!
   
   Obj *bytecode = f->cdr->cdr;
@@ -356,9 +311,6 @@ void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
   
   for(int i = arg_count - 1; i >= 0; i--) {
     frame->args[i] = gc_stack_pop(r->gc);
-    /* printf("Put arg "); */
-    /* print_obj(frame->args[i]); */
-    /* printf(" at arg pos %d in frame.\n", i); */
   }
 
   frame->arg_symbols = GET_ARGS(f);
@@ -368,7 +320,6 @@ Obj *read_next_code_as_obj(Frame *frame) {
   Code *cp = frame->p;
   Obj **oo = (Obj**)cp;
   Obj *o = *oo;
-  //printf("read o = %p\n", o);
   frame->p += 2;
   return o;
 }
@@ -377,7 +328,6 @@ int read_next_code_as_int(Frame *frame) {
   Code *cp = frame->p;
   int *ip = (int*)cp;
   int i = *ip;
-  //printf("read i = %d\n", i);
   frame->p++;
   return i;
 }
@@ -407,7 +357,7 @@ void runtime_step_eval(Runtime *r) {
     if(eq(value, r->nil)) {
       frame->p += 2;
     } else {
-      // do nothing
+      // do nothing, just step to next statement
     }
   }
   else if(code == JUMP) {
@@ -417,7 +367,6 @@ void runtime_step_eval(Runtime *r) {
   else if(code == PUSH_CONSTANT) {
     Obj *o = read_next_code_as_obj(frame);
     gc_stack_push(r->gc, o);
-    //printf("Constant: %s\n", obj_to_str(o));
   }
   else if(code == DIRECT_LOOKUP_VAR) {
     Obj *binding_pair = read_next_code_as_obj(frame);
@@ -483,17 +432,11 @@ void runtime_step_eval(Runtime *r) {
   else if(code == PUSH_LAMBDA) {
     Obj *args = read_next_code_as_obj(frame);
     Obj *body = read_next_code_as_obj(frame);
-    Code *IGNORE = (Code*)read_next_code_as_obj(frame); // IGNORE THIS FOR NOW
+    Code *IGNORE = (Code*)read_next_code_as_obj(frame); // IGNORE THIS FOR NOW, TODO: clean up!
 
-    /* printf("Compiling lambda in env "); */
-    /* print_obj(frame->env); */
-    /* printf("\n"); */
-    
     int code_length = 0;
     Code *bytecode = compile(r, frame->env, true, body, &code_length, args);
 
-    //code_print(bytecode);
-    
     Obj *lambda = gc_make_lambda(r->gc, frame->env, args, body, bytecode);
     gc_stack_push(r->gc, lambda);
   }
@@ -550,7 +493,6 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
     if(r->mode == RUNTIME_MODE_RUN) {
       runtime_step_eval(r);
       if(r->top_frame < top_frame_index) {
-	//printf("Breaking out of eval top form.\n");
 	break;
       }
     }

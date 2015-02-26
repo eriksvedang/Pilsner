@@ -159,11 +159,6 @@ Obj *cons(Runtime *r, Obj *args[], int arg_count) {
     printf("Can't cons %s onto object %s.\n", obj_to_str(o), obj_to_str(rest));
     return r->nil;
   }
-  /* printf("Consing "); */
-  /* print_obj(o); */
-  /* printf(" onto "); */
-  /* print_obj(rest); */
-  /* printf("\n"); */
   Obj *cons = gc_make_cons(r->gc, o, rest);
   return cons;
 }
@@ -195,7 +190,6 @@ Obj *rest(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *list(Runtime *r, Obj *args[], int arg_count) {
-  // todo: make this a special form instead, to avoid making new conses?
   Obj *l = r->nil;
   for(int i = arg_count - 1; i >= 0; i--) {
     Obj *cons = gc_make_cons(r->gc, args[i], l);
@@ -232,28 +226,19 @@ Obj *print_code(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *help(Runtime *r, Obj *args[], int arg_count) {
-  printf("Useful functions\n");
-  printf("----------------\n");
-  printf("(quit)\n");
-  printf("(env)\n");
-  printf("(stack)\n");
-  printf("(first xs) (rest xs)\n");
-  printf("(def var value)\n");
-  printf("(fn (x) (* x x)\n");
-  printf("(if expr then else)\n");
+  printf("No help available right now.\n");
   return r->nil;
 }
 
 double current_timestamp() {
     struct timeval te;
     gettimeofday(&te, NULL); // get current time
-    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
-    //printf("milliseconds: %lld\n", milliseconds);
+    long long milliseconds = te.tv_sec * 1000LL + te.tv_usec / 1000; // caculate milliseconds
     return ((double)milliseconds) / 1000.0;
 }
 
 Obj *get_time(Runtime *r, Obj *args[], int arg_count) {
-  return gc_make_number(r->gc, (double)current_timestamp()); //  / CLOCKS_PER_SEC
+  return gc_make_number(r->gc, (double)current_timestamp());
 }
 
 #endif
