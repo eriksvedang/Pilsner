@@ -30,8 +30,6 @@ int find_arg_index_in_arglist(Obj *args, Obj *symbol) {
 }
 
 void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_position, Obj *args) {
-  assert(env);
-  
   /* printf("Visiting %s ", tail_position ? "tail position" : ""); */
   /* print_obj(form); */
   /* printf(" with args "); */
@@ -50,16 +48,11 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       	Frame frame = r->frames[i];
       	int arg_index = find_arg_index_in_arglist(frame.arg_symbols, form);
       	if(arg_index > -1) {
-      	  Obj *value = frame.args[arg_index];
-	  
+      	  Obj *constant = frame.args[arg_index];
       	  /* printf("Found value for %s in frame %s: ", form->name, frame.name); */
-      	  /* print_obj(value); */
+      	  /* print_obj(constant); */
       	  /* printf("\n"); */
-      	  
-	  Obj *binding_pair = runtime_env_assoc(r, /*frame.*/env, form, value);
-	  //printf("Created new binding pair %p.\n", new_binding_pair);
-	  
-	  code_write_direct_lookup_var(writer, binding_pair);
+      	  code_write_push_constant(writer, constant);
       	  return;
       	}
       }

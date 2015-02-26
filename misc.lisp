@@ -85,18 +85,18 @@
 	(fn ()
 	    (do
 	     (set! nnn (inc nnn))
-	     nnn))))
-(def c (mkcounter 10))
+	     (* 10 nnn)))))
+; (def c (mkcounter 10))
+
+(def noo 123)
+(def f (fn (noo) (do (set! noo 444) (fn () noo))))
+;; (def ff (f 10))
+
+;;(def g (fn (xxx) (fn () noo)))
+
+
+;;(def hej (fn (x) (fn () x)))
 
 
 
-(def h (fn (y)
-	   (fn ()
-	       (do (set! y 123)
-		   y))))
-(def h' (h 10))
-
-(print-code h')
-
-; (h')
 
