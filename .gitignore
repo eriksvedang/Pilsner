@@ -1,16 +1,4 @@
-/main.o
-/gcfool.dSYM/
-/.#main.c
-/#main.c#
-/old_sweep.c
-/gcfool
-/pilsner
-/pilsner.dSYM/
-
-.#Compiler.c
-#Compiler.c#
 /bin/pilsner
 /bin/main.o
-/.gitignore
 /bin/pilsner.dSYM/Contents/Info.plist
 /bin/pilsner.dSYM/Contents/Resources/DWARF/pilsner
