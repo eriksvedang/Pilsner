@@ -180,12 +180,17 @@ Obj *runtime_push_value(Runtime *r, Obj *args[], int arg_count) {
 
 void register_builtin_funcs(Runtime *r) {
   register_func(r, "+", &plus);
-  register_func(r, "=", &equal);
   register_func(r, "-", &minus);
   register_func(r, "*", &multiply);
   register_func(r, "/", &divide);
   register_func(r, "<", &greater_than);
   register_func(r, ">", &less_than);
+
+  register_func(r, "cos", &internal_cos);
+  register_func(r, "sin", &internal_sin);
+
+  register_func(r, "and", &and);
+  register_func(r, "or", &or);
   
   register_func(r, "cons", &cons);
   register_func(r, "first", &first);
@@ -193,6 +198,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "list", &list);
   register_func(r, "nil?", &nil_p);
   register_func(r, "not", &not);
+  register_func(r, "print", &print);
   register_func(r, "println", &println);
   register_func(r, "time", &get_time);
   

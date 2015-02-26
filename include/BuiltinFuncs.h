@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sys/time.h>
+#include <math.h>
 #include "Obj.h"
-
 
 Obj *plus(Runtime *r, Obj *args[], int arg_count) {
   double sum = 0.0;
@@ -89,11 +89,46 @@ Obj *greater_than(Runtime *r, Obj *args[], int arg_count) {
   return r->true_val;
 }
 
-Obj *println(Runtime *r, Obj *args[], int arg_count) {
+Obj *internal_cos(Runtime *r, Obj *args[], int arg_count) {
+  if(arg_count != 1) {
+    printf("Must call 'cos' with 1 argument.\n");
+  }
+  return gc_make_number(r->gc, cos(args[0]->number));
+}
+
+Obj *internal_sin(Runtime *r, Obj *args[], int arg_count) {
+  if(arg_count != 1) {
+    printf("Must call 'cos' with 1 argument.\n");
+  }
+  return gc_make_number(r->gc, cos(args[0]->number));
+}
+
+
+Obj *and(Runtime *r, Obj *args[], int arg_count) {
+  for(int i = 0; i < arg_count; i++) {
+    if(args[i] == r->nil) return r->nil;
+  }
+  return r->true_val;
+}
+
+Obj *or(Runtime *r, Obj *args[], int arg_count) {
+  for(int i = 0; i < arg_count; i++) {
+    if(args[i] != r->nil) return r->true_val;
+  }
+  return r->nil;
+}
+
+Obj *print(Runtime *r, Obj *args[], int arg_count) {
   for(int i = 0; i < arg_count; i++) {
     printf("%s", obj_to_str(args[i]));
     printf("\n");
   }
+  return r->nil;
+}
+
+Obj *println(Runtime *r, Obj *args[], int arg_count) {
+  print(r, args, arg_count);
+  printf("\n");
   return r->nil;
 }
 
@@ -111,18 +146,6 @@ Obj *not(Runtime *r, Obj *args) {
 
 Obj *less_than(Runtime *r, Obj *args[], int arg_count) {
   return not_internal(r, greater_than(r, args, arg_count));
-}
-
-Obj *equal(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 2) {
-    printf("Must call = with 2 args.\n");
-    return r->nil;
-  }
-  if(eq(args[0], args[1])) {
-    return r->true_val;
-  } else {
-    return r->nil;
-  }
 }
 
 Obj *cons(Runtime *r, Obj *args[], int arg_count) {
