@@ -5,5 +5,5 @@
 
 (assert-eq "Fibonacci"
 	   '(1 1 2 3 5 8 13)
-	   (map fib (range 1 8)))
+	   (map fib (range 1 7)))
 

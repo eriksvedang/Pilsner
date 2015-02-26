@@ -54,7 +54,7 @@
     (fn (n pred)
 	(if pred
 	    (println (str "Test '" n "' passed."))
-	    (println (str "Test '" n "' failed.")))))
+	    (println (str "TEST '" n "' FAILED!!!")))))
 
 (def assert-eq
     (fn (n a b)
