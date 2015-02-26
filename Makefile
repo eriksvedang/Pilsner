@@ -1,12 +1,14 @@
 CFLAGS=
 LDFLAGS=
 LDLIBS=
-FILES=main.c gc.c obj.c error.c parser.c runtime.c bytecode.c compiler.c pool.c
+C_FILES=$(wildcard src/*.c)
+OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
+TARGET=./bin/pilsner
 
-all: main.o
-	clang $(FILES) -g -o pilsner $(CFLAGS) $(LDFLAGS) $(LDLIBS)
+all: $(OBJ_FILES)
+	clang $(C_FILES) -I ./include -g -o $(TARGET) $(CFLAGS) $(LDFLAGS) $(LDLIBS)
 
 run:
-	./pilsner
+	$(TARGET)
 
 
