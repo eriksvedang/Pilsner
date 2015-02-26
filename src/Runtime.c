@@ -432,11 +432,8 @@ void runtime_step_eval(Runtime *r) {
   else if(code == PUSH_LAMBDA) {
     Obj *args = read_next_code_as_obj(frame);
     Obj *body = read_next_code_as_obj(frame);
-    Code *IGNORE = (Code*)read_next_code_as_obj(frame); // IGNORE THIS FOR NOW, TODO: clean up!
-
     int code_length = 0;
     Code *bytecode = compile(r, frame->env, true, body, &code_length, args);
-
     Obj *lambda = gc_make_lambda(r->gc, frame->env, args, body, bytecode);
     gc_stack_push(r->gc, lambda);
   }

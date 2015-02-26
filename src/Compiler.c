@@ -167,10 +167,10 @@ void visit(CodeWriter *writer, Runtime *r, Obj *env, Obj *form, bool tail_positi
       free(false_bytecode);
     }
     else if(is_symbol(form, "fn") || is_symbol(form, "λ")) {
-      Obj *arg_symbols = form->cdr->car;
-      Obj *body = form->cdr->cdr->car;
+      Obj *arg_symbols = SECOND(form);
+      Obj *body = THIRD(form);
       int arg_count = count(arg_symbols);
-      code_write_push_lambda(writer, arg_symbols, body, NULL); // TODO: remove the null
+      code_write_push_lambda(writer, arg_symbols, body);
     }
     else {
       Obj *f = form->car;

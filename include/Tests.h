@@ -324,7 +324,7 @@ void test_bytecode_with_lambda() {
   // Write code for main: ((fn (dront) (* dront dront)) 5)
   code_writer_init(&writer, 1024);
   code_write_push_constant(&writer, gc_make_number(r->gc, 5.0));
-  code_write_push_lambda(&writer, args, body, lambda_code);
+  code_write_push_lambda(&writer, args, body);
   code_write_call(&writer, 1); // one arg
   code_write_end(&writer);
   //code_print(writer.codes);

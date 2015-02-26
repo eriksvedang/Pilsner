@@ -6,24 +6,24 @@
 
 typedef enum {
   UNINITIALIZED = 0,
-  PUSH_CONSTANT,
-  PUSH_LAMBDA,
-  LOOKUP_AND_PUSH,
-  DIRECT_LOOKUP_VAR,
-  LOOKUP_ARG,
-  DEFINE,
-  CALL,
-  TAIL_CALL,
-  JUMP,
-  IF,
-  RETURN,
-  POP_AND_DISCARD,
-  ADD,
-  SUB,
-  MUL,
-  DIV,
-  EQ,
-  END_OF_CODES,
+  PUSH_CONSTANT,     // Places an Obj on the stack.
+  PUSH_LAMBDA,       // Creates an Obj of type LAMBDA and places it on the stack.
+  LOOKUP_AND_PUSH,   // Push the value of a variable in an env. Only used for variables that don't exist at compile time.
+  DIRECT_LOOKUP_VAR, // Pointer lookup to a binding in an env.
+  LOOKUP_ARG,        // Lookup an arg in the current stack frame.
+  DEFINE,            // Set (or create if necessary) the value of a binding in the global scope.
+  CALL,              // Calls a function, pushing a new stack frame.
+  TAIL_CALL,         // Calls a function by replacing the current stack frame.
+  JUMP,              // Move the execution pointer 'p' in the current stack frame a certain index forward.
+  IF,                // Skips over the next instruction if top value of the stack is nil (false).
+  RETURN,            // Pop the current stack frame.
+  POP_AND_DISCARD,   // Remove the top value of the value stack. Used by the (do ...) form to remove unwanted values.
+  ADD,               // Fast way of adding two numbers from the top of the stack together, pushing the new result.
+  SUB,               // See above.
+  MUL,               // See above.
+  DIV,               // See above.
+  EQ,                // See above.
+  END_OF_CODES,      // Marks the end of the code block. Any instructions after this will be ignored.
 } Code;
 
 typedef struct {
@@ -48,7 +48,7 @@ void code_write_call(CodeWriter *writer, int arg_count);
 void code_write_tail_call(CodeWriter *writer, int arg_count);
 void code_write_end(CodeWriter *writer);
 void code_write_return(CodeWriter *writer);
-void code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code);
+void code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body);
 void code_write_jump(CodeWriter *writer, int jump_length);
 void code_write_if(CodeWriter *writer);
 void code_write_pop(CodeWriter *writer);

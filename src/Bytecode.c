@@ -63,8 +63,8 @@ Code *code_print_single(Code *code) {
     code += 1;
   }
   else if(*code == PUSH_LAMBDA) {
-    printf(" <args> <body> <code>");
-    code += 7;
+    printf(" <args> <body>");
+    code += 5;
   }
   else {
     code++;
@@ -150,11 +150,10 @@ void code_write_direct_lookup_var(CodeWriter *writer, Obj *binding_pair) {
   obj_write(writer, binding_pair);
 }
 
-void code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body, Code *code) {
+void code_write_push_lambda(CodeWriter *writer, Obj *args, Obj *body) {
   code_write(writer, PUSH_LAMBDA);
   obj_write(writer, args);
   obj_write(writer, body);
-  obj_write(writer, (Obj*)code); // pointers take up the same amount of space
 }
 
 void code_write_call(CodeWriter *writer, int arg_count) {
