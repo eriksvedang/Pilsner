@@ -216,7 +216,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "time", &get_time);
   
   register_func(r, "break", &runtime_break);
-  register_func(r, "push-value", &runtime_push_value);
+  register_func(r, "push", &runtime_push_value);
   register_func(r, "quit", &runtime_quit);
   register_func(r, "help", &help);
   register_func(r, "bytecode", &get_bytecode);

@@ -133,7 +133,7 @@ Obj *and(Runtime *r, Obj *args[], int arg_count) {
 
 Obj *or(Runtime *r, Obj *args[], int arg_count) {
   for(int i = 0; i < arg_count; i++) {
-    if(args[i] != r->nil) return r->true_val;
+    if(args[i] != r->nil) return args[i];
   }
   return r->nil;
 }
