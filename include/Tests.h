@@ -100,42 +100,6 @@ void test_runtime() {
   runtime_delete(r);
 }
 
-void test_local_environments() {
-  Runtime *r = runtime_new(true);
-
-  print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "+"))); printf("\n");
-  print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "grgdgdger"))); printf("\n");
-
-  runtime_env_assoc(r, r->global_env, gc_make_symbol(r->gc, "HAH"), gc_make_symbol(r->gc, "mhm"));
-  print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "HAH"))); printf("\n");
-
-  printf("\nLOCALS\n");
-  
-  Obj *local_env_1 = runtime_env_make_local(r, r->global_env);
-  runtime_env_assoc(r, local_env_1, gc_make_symbol(r->gc, "local!"), gc_make_symbol(r->gc, "123"));
-  print_obj(runtime_env_lookup(local_env_1, gc_make_symbol(r->gc, "local!"))); printf("\n");
-  print_obj(runtime_env_lookup(local_env_1, gc_make_symbol(r->gc, "+"))); printf("\n");
-
-  printf("\nMORE LOCALS\n");
-  Obj *local_env_2 = runtime_env_make_local(r, local_env_1);
-  runtime_env_assoc(r, local_env_2, gc_make_symbol(r->gc, "deep"), gc_make_symbol(r->gc, "JOJO"));
-  print_obj(runtime_env_lookup(local_env_1, gc_make_symbol(r->gc, "deep"))); printf("\n");
-  print_obj(runtime_env_lookup(local_env_2, gc_make_symbol(r->gc, "deep"))); printf("\n");
-
-  printf("\nOVERRIDE\n");
-  runtime_env_assoc(r, local_env_2, gc_make_symbol(r->gc, "HAH"), gc_make_symbol(r->gc, "mhm!!!"));
-  print_obj(runtime_env_lookup(r->global_env, gc_make_symbol(r->gc, "HAH"))); printf("\n");
-  print_obj(runtime_env_lookup(local_env_2, gc_make_symbol(r->gc, "HAH"))); printf("\n");
-
-  /* printf("GLOBAL ENV: \n"); */
-  /* print_obj(r->global_env); */
-  /* printf("\nLOCAL ENV: \n"); */
-  /* print_obj(local_env_1); */
-  /* printf("\n"); */
-  
-  runtime_delete(r);
-}
-
 void test_str_allocs() {
   printf("sizeof(char) = %ld\n", sizeof(char));
   
@@ -201,10 +165,10 @@ void test_bytecode() {
   code_write_define(&writer, gc_make_symbol(r->gc, "bleh")); // bleh = 42
   code_write_push_constant(&writer, gc_make_number(r->gc, 100.0));
   code_write_push_constant(&writer, gc_make_number(r->gc, 200.0));
-  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "+"), true, NULL));
+  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "+")));
   code_write_call(&writer, 2);
-  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "bleh"), true, NULL));
-  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "*"), true, NULL));
+  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "bleh")));
+  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "*")));
   code_write_call(&writer, 2);
   code_write_end(&writer);
 
@@ -306,7 +270,7 @@ void test_bytecode_with_lambda() {
   code_writer_init(&writer, 1024);
   code_write_push_constant(&writer, gc_make_symbol(r->gc, "dront"));
   code_write_push_constant(&writer, gc_make_symbol(r->gc, "dront"));
-  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "*"), true, NULL));
+  code_write_direct_lookup_var(&writer, runtime_env_find_pair(r->global_env, gc_make_symbol(r->gc, "*")));
   code_write_call(&writer, 2);
   code_write_return(&writer);
   code_write_end(&writer);

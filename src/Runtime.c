@@ -25,42 +25,31 @@ void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_
 // The environments root is a cons cell where the car
 // contains the a-list and the cdr contains the parent env.
 
-// TODO: remove parent env check?
-Obj *runtime_env_find_pair(Obj *env, Obj *key, bool allow_parent_search, bool *OUT_found_in_local_env) {
-  //printf("Looking for pair for %s in env %p (is global: %d)\n", obj_to_str(key), env, !HAS_PARENT_ENV(env));
+Obj *runtime_env_find_pair(Obj *env, Obj *key) {
   Obj *current = env->car; // get the a-list for this env
   while(current->car) {
     if(eq(current->car->car, key)) {
-      if(OUT_found_in_local_env) {
-	*OUT_found_in_local_env = HAS_PARENT_ENV(env);
-      }
       return current->car;
     }
     current = current->cdr;
   }
-  if(allow_parent_search && HAS_PARENT_ENV(env)) {
-    return runtime_env_find_pair(env->cdr, key, true, OUT_found_in_local_env);
-  } else {
-    return NULL;
-  }
+  return NULL;
 }
 
-// TODO: is this one called?
 void runtime_env_assoc(Runtime *r, Obj *env, Obj *key, Obj *value) {
-  /* printf("Will register %s in env %p with value\n", key->name, env); print_obj(value); printf("\n"); */
-  Obj *pair = runtime_env_find_pair(env, key, false, NULL);
+  Obj *pair = runtime_env_find_pair(env, key);
   if(pair) {
     pair->cdr = value;
   }
   else {
-    Obj *new_pair = gc_make_cons(r->gc, key, value);
-    Obj *new_cons = gc_make_cons(r->gc, new_pair, env->car);
-    env->car = new_cons; // cons pair to the a-list
+    Obj *new_binding_pair = gc_make_cons(r->gc, key, value);
+    Obj *new_cons = gc_make_cons(r->gc, new_binding_pair, env->car);
+    env->car = new_cons; // cons binding to the a-list
   }
 }
 
 Obj *runtime_env_lookup(Obj *env, Obj *key) {
-  Obj *pair = runtime_env_find_pair(env, key, true, NULL);
+  Obj *pair = runtime_env_find_pair(env, key);
   if(pair) {
     return pair->cdr;
   }
@@ -72,7 +61,6 @@ Obj *runtime_env_lookup(Obj *env, Obj *key) {
   }
 }
 
-// TODO: remove this?
 Obj *runtime_env_make_local(Runtime *r, Obj *parent_env) {
   Obj *empty_alist = gc_make_cons(r->gc, NULL, NULL);
   Obj *env = gc_make_cons(r->gc, empty_alist, parent_env);
@@ -240,7 +228,7 @@ Runtime *runtime_new(bool builtins) {
   Runtime *r = malloc(sizeof(Runtime));
   r->gc = gc;
   r->global_env = runtime_env_make_local(r, NULL);
-  r->nil = gc_make_cons(gc, NULL, NULL);
+  r->nil = gc->nil;
   r->true_val = gc_make_symbol(r->gc, "true");
   r->top_frame = -1;
   r->mode = RUNTIME_MODE_RUN;

@@ -55,7 +55,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form, bool tail_position, Obj *a
       }
 
       // The symbol wasn't found in the arg list or in the enclosing scopes
-      Obj *binding_pair = runtime_env_find_pair(r->global_env, form, true, NULL);
+      Obj *binding_pair = runtime_env_find_pair(r->global_env, form);
     
       if(binding_pair) {
 	code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
