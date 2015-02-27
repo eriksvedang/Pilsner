@@ -1,4 +1,5 @@
 #include "Obj.h"
+#include "Bytecode.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -98,7 +99,7 @@ void print_obj(Obj *o) {
     printf("λ");
   }
   else if(o->type == BYTECODE) {
-    printf("BYTECODE");
+    code_print((Code*)o->code);
   }
 }
 

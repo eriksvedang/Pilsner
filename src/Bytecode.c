@@ -79,7 +79,7 @@ void code_print(Code *code_block) {
   }
   printf("%s\n", code_to_str(*code_block));
   printf("------------------\n");
-  printf("\e[0m\n");
+  printf("\e[0m");
 }
 
 CodeWriter *code_writer_init(CodeWriter *writer, int size) {

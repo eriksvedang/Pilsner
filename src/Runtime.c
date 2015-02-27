@@ -183,10 +183,10 @@ Obj *runtime_compile(Runtime *r, Obj *args[], int arg_count) {
   int code_length;
   Code *bytecode = compile(r, false, args[0], &code_length, NULL);
   if(bytecode) {
-    code_print(bytecode);
-    free(bytecode);
+    return gc_make_bytecode(r->gc, bytecode);
+  } else {
+    return r->nil;
   }
-  return r->nil;
 }
 
 void register_builtin_funcs(Runtime *r) {
@@ -219,7 +219,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "push-value", &runtime_push_value);
   register_func(r, "quit", &runtime_quit);
   register_func(r, "help", &help);
-  register_func(r, "print-code", &print_code);
+  register_func(r, "bytecode", &get_bytecode);
   register_func(r, "compile", &runtime_compile);
 
   register_func(r, "load", &runtime_load);

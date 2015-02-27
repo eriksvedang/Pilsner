@@ -239,16 +239,16 @@ Obj *nil_p(Runtime *r, Obj *args[], int arg_count) {
   }
 }
 
-Obj *print_code(Runtime *r, Obj *args[], int arg_count) {
+Obj *get_bytecode(Runtime *r, Obj *args[], int arg_count) {
   if(arg_count != 1) {
-    printf("Must call 'print-code' with 1 arg.\n");
-    return r->nil;
+    printf("Must call 'bytecode' with 1 arg.\n");
   }
-  if(args[0]->type != LAMBDA) {
-    printf("Can't call 'print-code' on non-lambda.\n");
+  else if(args[0]->type != LAMBDA) {
+    printf("Can't call 'bytecode' on non-lambda.\n");
   }
   else {
-    code_print((Code*)GET_CODE(args[0]));
+    //code_print((Code*)GET_CODE(args[0]));
+    return gc_make_bytecode(r->gc, (Code*)GET_CODE(args[0]));
   }
   return r->nil;
 }
