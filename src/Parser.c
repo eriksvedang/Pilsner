@@ -43,10 +43,9 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
   }
   else if(source[p->pos] == '\'') {
     p->pos++;
-    Obj *nil = gc_make_cons(gc, NULL, NULL);
     Obj *quote = gc_make_symbol(gc, "quote");
     Obj *quoted_form = parse_form(gc, p, source);
-    Obj *rest = gc_make_cons(gc, quoted_form, nil);
+    Obj *rest = gc_make_cons(gc, quoted_form, gc->nil);
     Obj *cons = gc_make_cons(gc, quote, rest);
     return cons;
   }
@@ -93,8 +92,8 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
 }
 
 Obj *parse_list(GC *gc, Parser *p, const char *source) {
-  Obj *list = gc_make_cons(gc, NULL, NULL);
-  Obj *lastCons = list;
+  Obj *list = gc->nil;
+  Obj *last_cons = NULL;
 
   p->pos++; // move beyond the first paren
 
@@ -107,10 +106,13 @@ Obj *parse_list(GC *gc, Parser *p, const char *source) {
         
     Obj *item = parse_form(gc, p, source);
     if(item) {
-      lastCons->car = item;
-      Obj *next = gc_make_cons(gc, NULL, NULL);
-      lastCons->cdr = next;
-      lastCons = next;
+      Obj *new = gc_make_cons(gc, item, gc->nil);
+      if(last_cons) {
+	last_cons->cdr = new;
+      } else {
+	list = new;
+      }
+      last_cons = new;
     }
 
     if(source[p->pos] == '\0') {
@@ -134,15 +136,19 @@ Obj *parse(GC *gc, const char *source) {
   int source_len = strlen(source);
   int parens = 0;
 
-  Obj *forms = gc_make_cons(gc, NULL, NULL);
-  Obj *last_form = forms;
+  Obj *forms = gc->nil;
+  Obj *last_cons = NULL;
   
   while(p->pos < source_len) {
     Obj *form = parse_form(gc, p, source);
     if(form) {
-      last_form->car = form;
-      last_form->cdr = gc_make_cons(gc, NULL, NULL);
-      last_form = last_form->cdr;
+      Obj *new = gc_make_cons(gc, form, gc->nil);
+      if(last_cons) {
+	last_cons->cdr = new;
+      } else {
+	forms = new;
+      }
+      last_cons = new;
     }
 
     p->pos++;

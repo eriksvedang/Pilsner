@@ -17,6 +17,7 @@ typedef struct {
   Obj *stack[STACK_MAX];
   int stackSize;
   Obj *firstObj; // linked list of all objects
+  Obj *nil;
   #if USE_MEMORY_POOL
   Pool *pool;
   #endif
@@ -45,5 +46,8 @@ Obj *gc_make_number(GC *gc, double x);
 Obj *gc_make_string(GC *gc, char *text);
 Obj *gc_make_bytecode(GC *gc, Code *code);
 Obj *gc_make_lambda(GC *gc, Obj *args, Obj *body, Code *code);
+
+// Util
+Obj *make_list(GC *gc, Obj *objs[], int obj_count);
 
 #endif

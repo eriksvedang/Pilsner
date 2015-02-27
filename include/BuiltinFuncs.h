@@ -223,12 +223,7 @@ Obj *rest(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *list(Runtime *r, Obj *args[], int arg_count) {
-  Obj *l = r->nil;
-  for(int i = arg_count - 1; i >= 0; i--) {
-    Obj *cons = gc_make_cons(r->gc, args[i], l);
-    l = cons;
-  }
-  return l;
+  return make_list(r->gc, args, arg_count);
 }
 
 Obj *nil_p(Runtime *r, Obj *args[], int arg_count) {

@@ -207,6 +207,7 @@ GC *gc_new() {
   GC *gc = malloc(sizeof(GC));
   gc->stackSize = 0;
   gc->firstObj = NULL;
+  gc->nil = gc_make_cons(gc, NULL, NULL);
 
 #if USE_MEMORY_POOL
   gc->pool = pool_new(0);
@@ -220,6 +221,9 @@ GCResult gc_collect(GC *gc) {
   for (int i = 0; i < gc->stackSize; i++) {
     mark(gc->stack[i]);
   }
+
+  // Mark nil so that it doesn't get GC:d accidentally
+  mark(gc->nil);
 
   GCResult result = {
     .alive = 0,
@@ -275,5 +279,14 @@ void gc_delete(GC *gc) {
   #endif
   
   free(gc);
+}
+
+Obj *make_list(GC *gc, Obj *objs[], int obj_count) {
+  Obj *l = gc->nil;
+  for(int i = obj_count - 1; i >= 0; i--) {
+    Obj *cons = gc_make_cons(gc, objs[i], l);
+    l = cons;
+  }
+  return l;
 }
 

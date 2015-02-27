@@ -514,6 +514,7 @@ void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_
     Obj *result = gc_stack_pop(r->gc);
     if(print_result && result) {
       print_obj(result);
+      printf("\n");
     }
     current_form = current_form->cdr;
   }
