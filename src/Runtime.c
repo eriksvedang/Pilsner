@@ -312,15 +312,11 @@ void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
   Obj *bytecode = f->cdr->cdr;
   assert(bytecode->type == BYTECODE);
 
-#if TAIL_CALLS_ENABLED  
-  if(tail_call) {
+  if(TAIL_CALLS_ENABLED && tail_call) {
     runtime_frame_replace(r, arg_count, GET_ARGS(f), (Code*)bytecode->code, "tail_call_lambda");
   } else {
     runtime_frame_push(r, arg_count, GET_ARGS(f), (Code*)bytecode->code, "call_lambda");
   }
-#else
-  runtime_frame_push(r, arg_count, GET_ARGS(f), (Code*)bytecode->code, "call_lambda");
-#endif
 }
 
 Obj *read_next_code_as_obj(Frame *frame) {
