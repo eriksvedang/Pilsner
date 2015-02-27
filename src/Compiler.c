@@ -61,8 +61,8 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form, bool tail_position, Obj *a
 	code_write_direct_lookup_var(writer, binding_pair); // Fast lookup of globals
       }
       else {
-	printf("Warning: Can't find binding for '%s'.\n", form->name);
-	code_write_return(writer);
+	printf("ERROR: Can't find binding for '%s'.\n", form->name);
+	writer->error = "Referencing undefined variable.";
       }
     }    
   }
@@ -124,18 +124,21 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form, bool tail_position, Obj *a
       Obj *expression = form->cdr->car;
       if(!expression) {
 	printf("No expression in if-statement.\n");
+	writer->error = "Invalid if-statement.";
 	return;
       }
       
       Obj *true_branch = form->cdr->cdr->car;
       if(!true_branch) {
 	printf("No true-branch in if-statement.\n");
+	writer->error = "Invalid if-statement.";
 	return;
       }
       
       Obj *false_branch = form->cdr->cdr->cdr->car;
       if(!false_branch) {
 	printf("No false-branch in if-statement.\n");
+	writer->error = "Invalid if-statement.";
 	return;
       }
       
@@ -204,7 +207,12 @@ Code *compile(Runtime *r, bool tail_position, Obj *form, int *OUT_code_length, O
   visit(&writer, r, form, tail_position, args);
   code_write_end(&writer);
   *OUT_code_length = writer.pos;
-  return writer.codes;
+  if(writer.error) {
+    free(writer.codes);
+    return NULL;
+  } else {
+    return writer.codes;
+  }
 }
 
 void compile_and_print(const char *source) {

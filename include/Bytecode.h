@@ -29,6 +29,7 @@ typedef struct {
   Code *codes;
   int size;
   int pos;
+  char *error;
 } CodeWriter;
 
 const char *code_to_str(Code code);

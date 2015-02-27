@@ -182,8 +182,10 @@ Obj *runtime_compile(Runtime *r, Obj *args[], int arg_count) {
   }
   int code_length;
   Code *bytecode = compile(r, false, args[0], &code_length, NULL);
-  code_print(bytecode);
-  free(bytecode);
+  if(bytecode) {
+    code_print(bytecode);
+    free(bytecode);
+  }
   return r->nil;
 }
 
@@ -421,8 +423,12 @@ void runtime_step_eval(Runtime *r) {
     Obj *body = read_next_code_as_obj(frame);
     int code_length = 0;
     Code *bytecode = compile(r, true, body, &code_length, args);
-    Obj *lambda = gc_make_lambda(r->gc, args, body, bytecode);
-    gc_stack_push(r->gc, lambda);
+    if(bytecode) {
+      Obj *lambda = gc_make_lambda(r->gc, args, body, bytecode);
+      gc_stack_push(r->gc, lambda);
+    } else {
+      pop_to_global_scope_and_push_nil(r);
+    }
   }
   else if(code == CALL || code == TAIL_CALL) {
     Obj *f = gc_stack_pop(r->gc);
@@ -461,9 +467,19 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
 
   int code_length = 0;
   Code *bytecode = compile(r, false, form, &code_length, NULL);
+
+  if(!bytecode) {
+    /* printf("Failed to compile top form: "); */
+    /* print_obj(form); */
+    /* printf("\n"); */
+    gc_stack_push(r->gc, r->gc->nil);
+    return;
+  }
+  
   #if LOG_BYTECODE
   code_print(bytecode);
   #endif
+  
   int old_obj_count = g_obj_count;
   
   runtime_frame_push(r, 0, NULL, bytecode, "top-level");

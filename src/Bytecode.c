@@ -87,6 +87,7 @@ CodeWriter *code_writer_init(CodeWriter *writer, int size) {
   writer->codes[0] = UNINITIALIZED;
   writer->size = size;
   writer->pos = 0;
+  writer->error = NULL;
   return writer;
 }
 
