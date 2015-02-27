@@ -170,9 +170,20 @@ Obj *runtime_load(Runtime *r, Obj *args[], int arg_count) {
 
 Obj *runtime_push_value(Runtime *r, Obj *args[], int arg_count) {
   if(arg_count != 1) {
-    printf("Must call push-value with exactly one argument.\n");
+    printf("Must call 'push-value' with exactly one argument.\n");
   }
   gc_stack_push(r->gc, args[0]);
+  return r->nil;
+}
+
+Obj *runtime_compile(Runtime *r, Obj *args[], int arg_count) {
+  if(arg_count != 1) {
+    printf("Must call 'compile' with exactly one argument.\n");
+  }
+  int code_length;
+  Code *bytecode = compile(r, false, args[0], &code_length, NULL);
+  code_print(bytecode);
+  free(bytecode);
   return r->nil;
 }
 
@@ -207,6 +218,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "quit", &runtime_quit);
   register_func(r, "help", &help);
   register_func(r, "print-code", &print_code);
+  register_func(r, "compile", &runtime_compile);
 
   register_func(r, "load", &runtime_load);
   register_func(r, "env", &runtime_env);

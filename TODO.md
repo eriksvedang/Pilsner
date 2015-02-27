@@ -8,6 +8,7 @@ Prio 1
 * real number constants (handle decimals)
 * let expressions
 * convert variadic uses of + etc compile into a series of ADD ops
+* direct lookup should look directly at cdr and not even keep a pointer to the pair?
 
 Todo
 ====
