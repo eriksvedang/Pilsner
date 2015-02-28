@@ -5,6 +5,9 @@
 (def inc (fn (x) (+ x 1)))
 (def dec (fn (x) (- x 1)))
 
+(def even? (fn (x) (= 0 (mod x 2))))
+(def odd? (fn (x) (not (even? x))))
+
 (def zip
   (fn (a b) (if (nil? a)
               ()

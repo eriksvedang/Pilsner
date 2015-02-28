@@ -10,11 +10,12 @@
 #include "Obj.h"
 
 #define ASSERT_ARG_COUNT(name, x) if(arg_count != x) { printf("Must call '%s' with %d arg(s).\n", name, x); return r->nil; }
+#define bool_to_obj(r, b) ((b) ? (r->true_val) : (r->nil) )
 
-Obj *bool_to_obj(Runtime *r, bool b) {
-  if(b) return r->true_val;
-  else  return r->nil;
-}
+/* Obj *bool_to_obj(Runtime *r, bool b) { */
+/*   if(b) return r->true_val; */
+/*   else  return r->nil; */
+/* } */
 
 Obj *plus(Runtime *r, Obj *args[], int arg_count) {
   double sum = 0.0;
@@ -106,6 +107,11 @@ Obj *internal_cos(Runtime *r, Obj *args[], int arg_count) {
 Obj *internal_sin(Runtime *r, Obj *args[], int arg_count) {
   ASSERT_ARG_COUNT("sin", 1);
   return gc_make_number(r->gc, cos(args[0]->number));
+}
+
+Obj *internal_mod(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("mod", 2);
+  return gc_make_number(r->gc, (int)args[0]->number % (int)args[1]->number);
 }
 
 Obj *internal_rand(Runtime *r, Obj *args[], int arg_count) {
