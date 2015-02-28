@@ -79,8 +79,14 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
   else if(isdigit(source[p->pos])) {
     char s[256];
     int i = 0;
-    while(isdigit(source[p->pos]) && source[p->pos] != '\0') {
+    bool hit_period = false;
+    while((isdigit(source[p->pos]) || (source[p->pos] == '.' && !hit_period)) &&
+	  source[p->pos] != '\0')
+    {
       s[i++] = source[p->pos];
+      if(source[p->pos] == '.') {
+	hit_period = true;
+      }
       p->pos++;
     }
     s[i] = '\0';
