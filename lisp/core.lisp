@@ -47,6 +47,18 @@
 	(do (f)
 	    (loop f))))
 
+(def keep
+    (fn (pred xs)
+	(if (nil? xs)
+	    nil
+	    (if (pred (first xs))
+		(cons (first xs) (keep pred (rest xs)))
+		(keep pred (rest xs))))))
+
+(def remove
+    (fn (pred xs)
+	(keep (fn (x) (not (pred x))) xs)))
+
 ;; Use local let bindings instead!!!
 (def timing
   (fn (f) (do (def start-time (time))

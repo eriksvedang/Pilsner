@@ -169,15 +169,12 @@ Obj *str(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *not_internal(Runtime *r, Obj *o) {
-  if(eq(o, r->nil)) {
-    return r->true_val;
-  } else {
-    return r->nil;
-  }
+  return bool_to_obj(r, eq(o, r->nil));
 }
 
-Obj *not(Runtime *r, Obj *args) {
-  return not_internal(r, args->car);
+Obj *not(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("not", 1);
+  return not_internal(r, args[0]);
 }
 
 Obj *less_than(Runtime *r, Obj *args[], int arg_count) {

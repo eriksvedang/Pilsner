@@ -107,7 +107,10 @@ bool eq(Obj *a, Obj *b) {
   if(a == b) {
     return true;
   }
-  if(a == NULL || b == NULL) {
+  else if(a == NULL && b != NULL) {
+    return false;
+  }
+  else if(b == NULL && a != NULL) {
     return false;
   }
   else if(a->type != b->type) {

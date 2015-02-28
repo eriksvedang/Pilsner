@@ -11,5 +11,7 @@
 	   '420
 	   (eval (read "(* 42 10)")))
 
-
+(assert-eq "Remove Odd"
+	   '(2 4 6 8 10)
+	   (remove odd? (range 1 10)))
 
