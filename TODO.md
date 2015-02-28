@@ -1,15 +1,17 @@
 Prio 1
 ======
 * macros
-* real number constants (handle decimals)
 * let expressions
 * convert variadic uses of + etc compile into a series of ADD ops
 * direct lookup should look directly at cdr and not even keep a pointer to the pair?
 * popping the global scope off the stack should be prohibited
 * user proper typedef over function pointer instead of void *
+* print numbers more nicely
+* real number constants (handle decimals)
 
 Todo
 ====
+* crashes on load if recursive function can't find itself
 * remove enums and use actual bytes (chars) for bytecode
 * docstrings
 * crashes when calling (gc)

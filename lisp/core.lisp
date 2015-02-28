@@ -36,7 +36,7 @@
      (fn (n item)
 	 (if (= 0 n)
 	     ()
-	   (cons item (repeat (dec n) item)))))
+	   (cons item (replicate (dec n) item)))))
 
 (def iter-n
     (fn (n f)
