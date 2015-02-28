@@ -32,7 +32,7 @@
       x
       (reduce f (f x (first xs)) (rest xs)))))
 
-(def repeat
+(def replicate
      (fn (n item)
 	 (if (= 0 n)
 	     ()
