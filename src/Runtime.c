@@ -21,7 +21,8 @@
 #define HAS_PARENT_ENV(env) (env->cdr != NULL)
 
 void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index);
-
+Obj *runtime_apply(Runtime *r, Obj *args[], int arg_count);
+  
 // The environments root is a cons cell where the car
 // contains the a-list and the cdr contains the parent env.
 
@@ -214,7 +215,8 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "println", &println);
   register_func(r, "str", &str);
   register_func(r, "time", &get_time);
-  
+
+  register_func(r, "apply", &runtime_apply);
   register_func(r, "break", &runtime_break);
   register_func(r, "push", &runtime_push_value);
   register_func(r, "quit", &runtime_quit);
@@ -298,7 +300,9 @@ void call_func(Runtime *r, Obj *f, int arg_count) {
     args[i] = gc_stack_pop(r->gc);
   }
   Obj *result = ((Obj*(*)(Runtime*,Obj**,int))f->func)(r, args, arg_count);
-  gc_stack_push(r->gc, result);
+  if(result) {
+    gc_stack_push(r->gc, result);
+  }
 }
 
 void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
@@ -316,6 +320,38 @@ void call_lambda(Runtime *r, Obj *f, int arg_count, bool tail_call) {
     runtime_frame_replace(r, arg_count, GET_ARGS(f), (Code*)bytecode->code, "tail_call_lambda");
   } else {
     runtime_frame_push(r, arg_count, GET_ARGS(f), (Code*)bytecode->code, "call_lambda");
+  }
+}
+
+
+Obj *runtime_apply(Runtime *r, Obj *args[], int arg_count) {
+  if(arg_count != 2) {
+     printf("Must call 'apply' with exactly two arguments.\n");
+     return r->nil;
+  }
+
+  Obj *sub_args = args[1];
+
+  int sub_arg_count = 0;
+  Obj *sub_arg = sub_args;
+  while(sub_arg && sub_arg->car) {
+    gc_stack_push(r->gc, sub_arg->car);
+    sub_arg_count++;
+    sub_arg = sub_arg->cdr;
+  }
+  
+  Obj *f = args[0];
+  if(f->type == LAMBDA) {
+    call_lambda(r, f, sub_arg_count, false);
+    return NULL;
+  }
+  else if(f->type == FUNC) {
+    call_func(r, f, sub_arg_count);
+    return NULL;
+  }
+  else {
+     printf("First argument to 'apply' must be a lambda or primitive function.\n");
+     return r->nil;
   }
 }
 

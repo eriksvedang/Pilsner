@@ -1,10 +1,8 @@
 Prio 1
 ======
-* compiler errors should propagate to runtime (when compiling lambdas), if-statments with missing branch collapses for example
 * popping the global scope off the stack should be prohibited
 * apply function
 * macros
-* or should return first true value
 * real number constants (handle decimals)
 * let expressions
 * convert variadic uses of + etc compile into a series of ADD ops
@@ -28,6 +26,8 @@ Todo
 
 Done
 ====
+* or should return first true value
+* compiler errors should propagate to runtime (when compiling lambdas), if-statments with missing branch collapses for example
 * Låt nil finnas i GC:n så att alla listavslutare är samma nil och det inte finns en enda alloc av onödiga nils någonstans.
 * str function
 * not doing string comparison for special form symbols
