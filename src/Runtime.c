@@ -190,6 +190,19 @@ Obj *runtime_compile(Runtime *r, Obj *args[], int arg_count) {
   }
 }
 
+Obj *runtime_user_eval(Runtime *r, Obj *args[], int arg_count) {
+  if(arg_count != 1) {
+    printf("Must call 'eval' with exactly one argument.\n");
+  }
+  int code_length;
+  Code *bytecode = compile(r, false, args[0], &code_length, NULL);
+  if(bytecode) {
+    runtime_frame_push(r, 0, NULL, bytecode, "eval");
+  } else {
+    return r->nil;
+  }
+}
+
 void register_builtin_funcs(Runtime *r) {
   register_func(r, "+", &plus);
   register_func(r, "-", &minus);
@@ -216,6 +229,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "str", &str);
   register_func(r, "time", &get_time);
 
+  register_func(r, "eval", &runtime_user_eval);
   register_func(r, "apply", &runtime_apply);
   register_func(r, "break", &runtime_break);
   register_func(r, "push", &runtime_push_value);

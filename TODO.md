@@ -1,18 +1,17 @@
 Prio 1
 ======
-* popping the global scope off the stack should be prohibited
-* apply function
 * macros
 * real number constants (handle decimals)
 * let expressions
 * convert variadic uses of + etc compile into a series of ADD ops
 * direct lookup should look directly at cdr and not even keep a pointer to the pair?
+* popping the global scope off the stack should be prohibited
 
 Todo
 ====
 * remove enums and use actual bytes (chars) for bytecode
 * docstrings
-* crashes when GC:ing in break mode
+* crashes when calling (gc)
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
 * eval function
 * read function
@@ -26,6 +25,7 @@ Todo
 
 Done
 ====
+* apply function
 * or should return first true value
 * compiler errors should propagate to runtime (when compiling lambdas), if-statments with missing branch collapses for example
 * Låt nil finnas i GC:n så att alla listavslutare är samma nil och det inte finns en enda alloc av onödiga nils någonstans.
