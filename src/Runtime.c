@@ -240,6 +240,13 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "rest", &rest);
   register_func(r, "list", &list);
   register_func(r, "nil?", &nil_p);
+  register_func(r, "symbol?", &symbol_p);
+  register_func(r, "atom?", &atom_p);
+  register_func(r, "list?", &list_p);
+  register_func(r, "number?", &number_p);
+  register_func(r, "string?", &string_p);
+  register_func(r, "callable?", &callable_p);
+  register_func(r, "bytecode?", &bytecode_p);
   register_func(r, "not", &not);
   register_func(r, "print", &print);
   register_func(r, "println", &println);

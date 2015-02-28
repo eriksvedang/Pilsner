@@ -9,6 +9,13 @@
 
 #include "Obj.h"
 
+#define ASSERT_ARG_COUNT(name, x) if(arg_count != x) { printf("Must call '%s' with %d arg(s).\n", name, x); return r->nil; }
+
+Obj *bool_to_obj(Runtime *r, bool b) {
+  if(b) return r->true_val;
+  else  return r->nil;
+}
+
 Obj *plus(Runtime *r, Obj *args[], int arg_count) {
   double sum = 0.0;
   for(int i = 0; i < arg_count; i++) {
@@ -92,16 +99,12 @@ Obj *greater_than(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *internal_cos(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'cos' with 1 argument.\n");
-  }
+  ASSERT_ARG_COUNT("cos", 1);
   return gc_make_number(r->gc, cos(args[0]->number));
 }
 
 Obj *internal_sin(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'cos' with 1 argument.\n");
-  }
+  ASSERT_ARG_COUNT("sin", 1);
   return gc_make_number(r->gc, cos(args[0]->number));
 }
 
@@ -182,10 +185,7 @@ Obj *less_than(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *cons(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 2) {
-    printf("Must call 'cons' with 2 args.\n");
-    return r->nil;
-  }
+  ASSERT_ARG_COUNT("cons", 2);
   Obj *o = args[0];
   Obj *rest = args[1];
   if(rest->type != CONS) {
@@ -197,11 +197,8 @@ Obj *cons(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *first(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'first' with 1 arg.\n");
-    return r->nil;
-  }
-  else if(args[0]->type != CONS) {
+  ASSERT_ARG_COUNT("first", 1);
+  if(args[0]->type != CONS) {
     printf("Can't call 'first' on non-list: ");
     print_obj(args[0]);
     printf("\n");
@@ -210,11 +207,8 @@ Obj *first(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *rest(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'rest' with 1 arg.\n");
-    return r->nil;
-  }
-  else if(args[0]->type != CONS) {
+  ASSERT_ARG_COUNT("rest", 1);
+  if(args[0]->type != CONS) {
     printf("Can't call 'rest' on non-list: ");
     print_obj(args[0]);
     printf("\n");
@@ -227,10 +221,7 @@ Obj *list(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *nil_p(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'nil?' with 1 arg.\n");
-    return r->nil;
-  }
+  ASSERT_ARG_COUNT("nil?", 1);
   Obj *o = args[0];
   if(o->car == NULL && o->cdr == NULL) {
     return r->true_val;
@@ -239,11 +230,44 @@ Obj *nil_p(Runtime *r, Obj *args[], int arg_count) {
   }
 }
 
+Obj *atom_p(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("atom?", 1);
+  return bool_to_obj(r, args[0]->type != CONS);
+}
+
+Obj *symbol_p(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("symbol?", 1);
+  return bool_to_obj(r, args[0]->type == SYMBOL);
+}
+
+Obj *list_p(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("list?", 1);
+  return bool_to_obj(r, args[0]->type == CONS);
+}
+
+Obj *string_p(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("string?", 1);
+  return bool_to_obj(r, args[0]->type == STRING);
+}
+
+Obj *number_p(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("number?", 1);
+  return bool_to_obj(r, args[0]->type == NUMBER);
+}
+
+Obj *callable_p(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("callable?", 1);
+  return bool_to_obj(r, args[0]->type == FUNC || args[0]->type == LAMBDA);
+}
+
+Obj *bytecode_p(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("bytecode?", 1);
+  return bool_to_obj(r, args[0]->type == BYTECODE);
+}
+
 Obj *get_bytecode(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'bytecode' with 1 arg.\n");
-  }
-  else if(args[0]->type != LAMBDA) {
+  ASSERT_ARG_COUNT("bytecode", 1);
+  if(args[0]->type != LAMBDA) {
     printf("Can't call 'bytecode' on non-lambda.\n");
   }
   else {
@@ -266,6 +290,7 @@ double current_timestamp() {
 }
 
 Obj *get_time(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("time", 0);
   return gc_make_number(r->gc, (double)current_timestamp());
 }
 
