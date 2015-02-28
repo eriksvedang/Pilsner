@@ -21,11 +21,12 @@ bool iswhitespace(char c) {
   return c == ' ' || c == '\t' || c == '\n';
 }
 
-static const char *reserved = "()#'\";\0";
+static const char *reserved = "()#\";\0";
   
 bool isokinsymbol(char c, bool is_first_char) {
   for (int i = 0; i < strlen(reserved); i++) {
     if((is_first_char && isdigit(c)) ||
+       (is_first_char && c == '\'') ||
        reserved[i] == c ||
        iswhitespace(c)) {
       return false;
