@@ -21,13 +21,17 @@ bool iswhitespace(char c) {
   return c == ' ' || c == '\t' || c == '\n';
 }
 
-static const char *specials = "+-*/=%&_!@?§<>λ§°'$";
-
-bool isokinsymbol(char c) {
-  for (int i = 0; i < strlen(specials); i++) {
-    if(specials[i] == c) return true;
+static const char *reserved = "()#'\";\0";
+  
+bool isokinsymbol(char c, bool is_first_char) {
+  for (int i = 0; i < strlen(reserved); i++) {
+    if((is_first_char && isdigit(c)) ||
+       reserved[i] == c ||
+       iswhitespace(c)) {
+      return false;
+    }
   }
-  return false;
+  return true;
 }
 
 Obj *parse_form(GC *gc, Parser *p, const char *source) {
@@ -49,17 +53,16 @@ Obj *parse_form(GC *gc, Parser *p, const char *source) {
     Obj *cons = gc_make_cons(gc, quote, rest);
     return cons;
   }
-  else if(isalpha(source[p->pos]) || isokinsymbol(source[p->pos])) {
+  else if(isokinsymbol(source[p->pos], true)) {
     char *name = malloc(sizeof(char) * 256);
     int i = 0;
-    while(!iswhitespace(source[p->pos]) &&
-	  source[p->pos] != ')' &&
-	  source[p->pos] != '(' &&
-	  source[p->pos] != '\0') {
+    while(isokinsymbol(source[p->pos], false)) {
       name[i++] = source[p->pos];
       p->pos++;
       if(i >= 256) {
-	error("Can't have symbols longer than 256 chars");
+	name[256] = '\0';
+	error("Can't have symbols longer than 256 chars: ");
+	printf("%s\n", name);
       }
     }
     name[i] = '\0';

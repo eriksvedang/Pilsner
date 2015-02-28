@@ -111,6 +111,12 @@ Obj *internal_mod(Runtime *r, Obj *args[], int arg_count) {
   return gc_make_number(r->gc, (int)args[0]->number % (int)args[1]->number);
 }
 
+Obj *internal_floor(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("mod", 1);
+  ASSERT_ARG_TYPE("mod", 0, NUMBER);
+  return gc_make_number(r->gc, (double)(int)args[0]->number);
+}
+
 Obj *internal_rand(Runtime *r, Obj *args[], int arg_count) {
   if(arg_count == 0) {
     return gc_make_number(r->gc, rand());
