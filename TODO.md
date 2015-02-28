@@ -2,7 +2,6 @@ Prio 1
 ======
 * macros
 * let expressions
-* popping the global scope off the stack should be prohibited
 * user proper typedef over function pointer instead of void *
 * print numbers more nicely
 * real number constants (handle decimals)
@@ -28,6 +27,7 @@ Todo
 
 Done
 ====
+* popping the global scope off the stack should be prohibited
 * eval function
 * read function
 * apply function
