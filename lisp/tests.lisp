@@ -7,3 +7,9 @@
 	   '(1 1 2 3 5 8 13)
 	   (map fib (range 1 7)))
 
+(assert-eq "Read and Eval"
+	   '420
+	   (eval (read "(* 42 10)")))
+
+
+
