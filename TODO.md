@@ -6,6 +6,7 @@ Prio 1
 * user proper typedef over function pointer instead of void *
 * print numbers more nicely
 * real number constants (handle decimals)
+* str should print objects (lists etc) correctly
 
 Todo
 ====
@@ -14,7 +15,7 @@ Todo
 * docstrings
 * crashes when calling (gc)
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
-* more math functions like mod, round, max, min, text->number, get-line
+* more math functions like round, get-line
 * quasiquoting
 * some kind of support for lists/arrays using [ and ]
 * rest arg syntax

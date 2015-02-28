@@ -17,9 +17,7 @@ void gc_stack_push(GC *gc, Obj *o) {
   if(gc->stackSize >= STACK_MAX) error("Stack overflow.");
   gc->stack[gc->stackSize++] = o;
   #if LOG_PUSH_AND_POP
-  printf("Pushed: ");
-  print_obj(o);
-  printf("\n");
+  obj_describe("Popped:", o);
   #endif
 }
 
@@ -27,9 +25,19 @@ Obj *gc_stack_pop(GC *gc) {
   if(gc->stackSize < 0) error("Stack underflow.");
   Obj *o = gc->stack[--gc->stackSize];
   #if LOG_PUSH_AND_POP
-  printf("Popped: ");
-  print_obj(o);
-  printf("\n");
+  obj_describe("Popped:", o);
+  #endif
+  return o;
+}
+
+Obj *gc_stack_pop_safely(GC *gc) {
+  if(gc->stackSize <= 1) {
+    printf("Can't pop bottom value off the stack.\n");
+    return gc->nil;
+  }
+  Obj *o = gc->stack[--gc->stackSize];
+  #if LOG_PUSH_AND_POP
+  obj_describe("Safely popped:", o);
   #endif
   return o;
 }

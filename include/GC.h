@@ -34,7 +34,7 @@ GCResult gc_collect(GC *gc);
 
 // Stack
 void gc_stack_push(GC *gc, Obj *o);
-Obj *gc_stack_pop(GC *gc);
+Obj *gc_stack_pop_safely(GC *gc);
 void gc_stack_print(GC *gc, bool show_bottom_frame);
 
 // Make objects

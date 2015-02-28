@@ -51,7 +51,8 @@ const char *type_to_str(Type type);
 const char *obj_to_str(Obj *o);
 
 void print_obj(Obj *o);
-
+void obj_describe(const char *description, Obj *o);
+  
 bool eq(Obj *a, Obj *b);
 int count(Obj *list);
 

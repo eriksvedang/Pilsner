@@ -41,7 +41,7 @@ void test_gc() {
   assert(r2.alive == 4);
   assert(r2.freed == 0);
 
-  gc_stack_pop(gc);
+  gc_stack_pop_safely(gc);
   
   GCResult r3 = gc_collect(gc);
   assert(r3.alive == 0);

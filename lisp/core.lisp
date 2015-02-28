@@ -62,9 +62,8 @@
     (fn (pred xs)
 	(keep (fn (x) (not (pred x))) xs)))
 
-;; Use local let bindings instead!!!
 (def timing
-  (fn (f) (do (def start-time (time))
+  (fn (f) (do (def start-time (time)) ; TODO: Use local let bindings instead
               (f)
               (def end-time (time))
               (print "dt:")

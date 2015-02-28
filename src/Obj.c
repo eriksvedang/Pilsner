@@ -139,3 +139,8 @@ int count(Obj *list) {
   return i;
 }
 
+void obj_describe(const char *description, Obj *o) {
+  printf("%s ", description);
+  print_obj(o);
+  printf("\n");
+}

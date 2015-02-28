@@ -170,10 +170,14 @@ Obj *runtime_load(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *runtime_push_value(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'push-value' with exactly one argument.\n");
-  }
+  ASSERT_ARG_COUNT("push", 1);
   gc_stack_push(r->gc, args[0]);
+  return r->nil;
+}
+
+Obj *runtime_pop_value(Runtime *r, Obj *args[], int arg_count) {
+  ASSERT_ARG_COUNT("pop", 0);
+  gc_stack_pop_safely(r->gc);
   return r->nil;
 }
 
@@ -259,6 +263,7 @@ void register_builtin_funcs(Runtime *r) {
   register_func(r, "read", &runtime_read);
   register_func(r, "break", &runtime_break);
   register_func(r, "push", &runtime_push_value);
+  register_func(r, "pop", &runtime_pop_value);
   register_func(r, "quit", &runtime_quit);
   register_func(r, "help", &help);
   register_func(r, "bytecode", &get_bytecode);
@@ -307,7 +312,7 @@ Frame *runtime_frame_init(Runtime *r, int arg_count, Obj *arg_symbols, Code *cod
   frame->p = code;
   strcpy(frame->name, name);
   for(int i = arg_count - 1; i >= 0; i--) {
-    frame->args[i] = gc_stack_pop(r->gc);
+    frame->args[i] = gc_stack_pop_safely(r->gc);
   }
   frame->arg_symbols = arg_symbols;  
   return frame;
@@ -337,7 +342,7 @@ Frame *runtime_frame_replace(Runtime *r, int arg_count, Obj *arg_symbols, Code *
 void call_func(Runtime *r, Obj *f, int arg_count) {
   Obj *args[arg_count];
   for(int i = arg_count - 1; i >= 0; i--) {
-    args[i] = gc_stack_pop(r->gc);
+    args[i] = gc_stack_pop_safely(r->gc);
   }
   Obj *result = ((Obj*(*)(Runtime*,Obj**,int))f->func)(r, args, arg_count);
   if(result) {
@@ -432,7 +437,7 @@ void runtime_step_eval(Runtime *r) {
     runtime_frame_pop(r);
   }
   else if(code == IF) {
-    Obj *value = gc_stack_pop(r->gc);
+    Obj *value = gc_stack_pop_safely(r->gc);
     if(eq(value, r->nil)) {
       frame->p += 2;
     } else {
@@ -457,36 +462,36 @@ void runtime_step_eval(Runtime *r) {
     gc_stack_push(r->gc, value);
   }
   else if(code == POP_AND_DISCARD) {
-    gc_stack_pop(r->gc);
+    gc_stack_pop_safely(r->gc);
   }
   else if(code == ADD) {
-    double a = gc_stack_pop(r->gc)->number;
-    double b = gc_stack_pop(r->gc)->number;
+    double a = gc_stack_pop_safely(r->gc)->number;
+    double b = gc_stack_pop_safely(r->gc)->number;
     gc_stack_push(r->gc, gc_make_number(r->gc, a + b));
   }
   else if(code == SUB) {
-    double a = gc_stack_pop(r->gc)->number;
-    double b = gc_stack_pop(r->gc)->number;
+    double a = gc_stack_pop_safely(r->gc)->number;
+    double b = gc_stack_pop_safely(r->gc)->number;
     gc_stack_push(r->gc, gc_make_number(r->gc, b - a));
   }
   else if(code == MUL) {
-    double a = gc_stack_pop(r->gc)->number;
-    double b = gc_stack_pop(r->gc)->number;
+    double a = gc_stack_pop_safely(r->gc)->number;
+    double b = gc_stack_pop_safely(r->gc)->number;
     gc_stack_push(r->gc, gc_make_number(r->gc, a * b));
   }
   else if(code == DIV) {
-    double a = gc_stack_pop(r->gc)->number;
-    double b = gc_stack_pop(r->gc)->number;
+    double a = gc_stack_pop_safely(r->gc)->number;
+    double b = gc_stack_pop_safely(r->gc)->number;
     gc_stack_push(r->gc, gc_make_number(r->gc, b / a));
   }
   else if(code == EQ) {
-    Obj *a = gc_stack_pop(r->gc);
-    Obj *b = gc_stack_pop(r->gc);
+    Obj *a = gc_stack_pop_safely(r->gc);
+    Obj *b = gc_stack_pop_safely(r->gc);
     gc_stack_push(r->gc, eq(a, b) ? r->true_val : r->nil);
   }
   else if(code == DEFINE) {
     Obj *sym = read_next_code_as_obj(frame);
-    Obj *value = gc_stack_pop(r->gc);
+    Obj *value = gc_stack_pop_safely(r->gc);
     runtime_env_assoc(r, r->global_env, sym, value);
     gc_stack_push(r->gc, sym);
   }
@@ -503,7 +508,7 @@ void runtime_step_eval(Runtime *r) {
     }
   }
   else if(code == CALL || code == TAIL_CALL) {
-    Obj *f = gc_stack_pop(r->gc);
+    Obj *f = gc_stack_pop_safely(r->gc);
     int arg_count = read_next_code_as_int(frame);
     if(f->type == FUNC) {
       call_func(r, f, arg_count);
@@ -599,7 +604,7 @@ void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_
   Obj *current_form = top_level_forms;
   while(current_form && current_form->car) {
     eval_top_form(r, env, current_form->car, top_frame_index, break_frame_index);
-    Obj *result = gc_stack_pop(r->gc);
+    Obj *result = gc_stack_pop_safely(r->gc);
     if(print_result && result) {
       print_obj(result);
       printf("\n");
