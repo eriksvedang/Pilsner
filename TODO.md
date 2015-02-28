@@ -2,8 +2,6 @@ Prio 1
 ======
 * macros
 * let expressions
-* convert variadic uses of + etc compile into a series of ADD ops
-* direct lookup should look directly at cdr and not even keep a pointer to the pair?
 * popping the global scope off the stack should be prohibited
 * user proper typedef over function pointer instead of void *
 * print numbers more nicely
@@ -24,6 +22,8 @@ Todo
 * run gc when "low" on memory
 * memory pool to avoid unnecessary amounts of alloc / free
 * being able to break to repl with a keyboard shortcut when in an infinite loop or similar
+* convert variadic uses of + etc compile into a series of ADD ops
+* direct lookup should look directly at cdr and not even keep a pointer to the pair?
 
 Done
 ====
