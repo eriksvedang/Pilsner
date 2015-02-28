@@ -307,7 +307,7 @@ Frame *runtime_frame_init(Runtime *r, int arg_count, Obj *arg_symbols, Code *cod
 Frame *runtime_frame_push(Runtime *r, int arg_count, Obj *arg_symbols, Code *code, const char *name) {
   r->top_frame++;
   if(r->top_frame >= MAX_FRAMES) {
-    printf("Can't push more stack frames, reached max limit: %d.\n", MAX_FRAMES);
+    printf("Can't push more stack frames, reached max limit %d.\n", MAX_FRAMES);
     exit(1);
   }
   return runtime_frame_init(r, arg_count, arg_symbols, code, name);

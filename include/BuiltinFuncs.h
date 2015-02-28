@@ -14,11 +14,6 @@
 
 #define bool_to_obj(r, b) ((b) ? (r->true_val) : (r->nil) )
 
-/* Obj *bool_to_obj(Runtime *r, bool b) { */
-/*   if(b) return r->true_val; */
-/*   else  return r->nil; */
-/* } */
-
 Obj *plus(Runtime *r, Obj *args[], int arg_count) {
   double sum = 0.0;
   for(int i = 0; i < arg_count; i++) {
@@ -276,7 +271,6 @@ Obj *get_bytecode(Runtime *r, Obj *args[], int arg_count) {
     printf("Can't call 'bytecode' on non-lambda.\n");
   }
   else {
-    //code_print((Code*)GET_CODE(args[0]));
     return gc_make_bytecode(r->gc, (Code*)GET_CODE(args[0]));
   }
   return r->nil;
