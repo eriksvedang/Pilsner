@@ -12,7 +12,7 @@
 #define ASSERT_ARG_COUNT(name, x) if(arg_count != x) { printf("Must call '%s' with %d arg(s).\n", name, x); return r->nil; }
 #define ASSERT_ARG_TYPE(name, pos, req_type) if(args[pos]->type != req_type) { printf("Argument %d of '%s' must be a %s.\n", pos, name, type_to_str(req_type)); return r->nil; }
 
-#define bool_to_obj(r, b) ((b) ? (r->true_val) : (r->nil) )
+#define BOOL_TO_OBJ(r, b) ((b) ? (r->true_val) : (r->nil) )
 
 Obj *plus(Runtime *r, Obj *args[], int arg_count) {
   double sum = 0.0;
@@ -172,7 +172,7 @@ Obj *str(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *not_internal(Runtime *r, Obj *o) {
-  return bool_to_obj(r, eq(o, r->nil));
+  return BOOL_TO_OBJ(r, eq(o, r->nil));
 }
 
 Obj *not(Runtime *r, Obj *args[], int arg_count) {
@@ -232,37 +232,37 @@ Obj *nil_p(Runtime *r, Obj *args[], int arg_count) {
 
 Obj *atom_p(Runtime *r, Obj *args[], int arg_count) {
   ASSERT_ARG_COUNT("atom?", 1);
-  return bool_to_obj(r, args[0]->type != CONS);
+  return BOOL_TO_OBJ(r, args[0]->type != CONS);
 }
 
 Obj *symbol_p(Runtime *r, Obj *args[], int arg_count) {
   ASSERT_ARG_COUNT("symbol?", 1);
-  return bool_to_obj(r, args[0]->type == SYMBOL);
+  return BOOL_TO_OBJ(r, args[0]->type == SYMBOL);
 }
 
 Obj *list_p(Runtime *r, Obj *args[], int arg_count) {
   ASSERT_ARG_COUNT("list?", 1);
-  return bool_to_obj(r, args[0]->type == CONS);
+  return BOOL_TO_OBJ(r, args[0]->type == CONS);
 }
 
 Obj *string_p(Runtime *r, Obj *args[], int arg_count) {
   ASSERT_ARG_COUNT("string?", 1);
-  return bool_to_obj(r, args[0]->type == STRING);
+  return BOOL_TO_OBJ(r, args[0]->type == STRING);
 }
 
 Obj *number_p(Runtime *r, Obj *args[], int arg_count) {
   ASSERT_ARG_COUNT("number?", 1);
-  return bool_to_obj(r, args[0]->type == NUMBER);
+  return BOOL_TO_OBJ(r, args[0]->type == NUMBER);
 }
 
 Obj *callable_p(Runtime *r, Obj *args[], int arg_count) {
   ASSERT_ARG_COUNT("callable?", 1);
-  return bool_to_obj(r, args[0]->type == FUNC || args[0]->type == LAMBDA);
+  return BOOL_TO_OBJ(r, args[0]->type == FUNC || args[0]->type == LAMBDA);
 }
 
 Obj *bytecode_p(Runtime *r, Obj *args[], int arg_count) {
   ASSERT_ARG_COUNT("bytecode?", 1);
-  return bool_to_obj(r, args[0]->type == BYTECODE);
+  return BOOL_TO_OBJ(r, args[0]->type == BYTECODE);
 }
 
 Obj *get_bytecode(Runtime *r, Obj *args[], int arg_count) {
