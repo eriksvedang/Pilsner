@@ -5,6 +5,7 @@ Prio 1
 * user proper typedef over function pointer instead of void *
 * print numbers more nicely
 * str should print objects (lists etc) correctly
+* some kind of mutable atom type
 
 Todo
 ====
