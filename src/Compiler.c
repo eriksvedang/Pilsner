@@ -197,7 +197,7 @@ void visit(CodeWriter *writer, Runtime *r, Obj *form, bool tail_position, Obj *a
     printf("Can't visit form:\n");
     print_obj(form);
     printf("\n");
-    exit(1);
+    writer->error = "Can't visit form.";
   }
 }
 

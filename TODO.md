@@ -6,6 +6,7 @@ Prio 1
 * convert variadic uses of + etc compile into a series of ADD ops
 * direct lookup should look directly at cdr and not even keep a pointer to the pair?
 * popping the global scope off the stack should be prohibited
+* user proper typedef over function pointer instead of void *
 
 Todo
 ====
@@ -13,8 +14,6 @@ Todo
 * docstrings
 * crashes when calling (gc)
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
-* eval function
-* read function
 * more math functions like mod, round, max, min, text->number, get-line
 * quasiquoting
 * some kind of support for lists/arrays using [ and ]
@@ -22,9 +21,12 @@ Todo
 * better repl interaction, with keypresses, history, colors, etc
 * run gc when "low" on memory
 * memory pool to avoid unnecessary amounts of alloc / free
+* being able to break to repl with a keyboard shortcut when in an infinite loop or similar
 
 Done
 ====
+* eval function
+* read function
 * apply function
 * or should return first true value
 * compiler errors should propagate to runtime (when compiling lambdas), if-statments with missing branch collapses for example

@@ -42,6 +42,11 @@
 		(iter-n (dec n) f)
 		'done))))
 
+(def loop
+    (fn (f)
+	(do (f)
+	    (loop f))))
+
 ;; Use local let bindings instead!!!
 (def timing
   (fn (f) (do (def start-time (time))
