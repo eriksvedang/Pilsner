@@ -206,7 +206,9 @@ Code *compile(Runtime *r, bool tail_position, Obj *form, int *OUT_code_length, O
   code_writer_init(&writer, 1024);
   visit(&writer, r, form, tail_position, args);
   code_write_end(&writer);
-  *OUT_code_length = writer.pos;
+  if(OUT_code_length) {
+    *OUT_code_length = writer.pos;
+  }
   if(writer.error) {
     free(writer.codes);
     return NULL;

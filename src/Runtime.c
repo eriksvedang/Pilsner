@@ -182,11 +182,8 @@ Obj *runtime_pop_value(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *runtime_compile(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'compile' with exactly one argument.\n");
-  }
-  int code_length;
-  Code *bytecode = compile(r, false, args[0], &code_length, NULL);
+  ASSERT_ARG_COUNT("compile", 1);
+  Code *bytecode = compile(r, false, args[0], NULL, NULL);
   if(bytecode) {
     return gc_make_bytecode(r->gc, bytecode);
   } else {
@@ -195,10 +192,7 @@ Obj *runtime_compile(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *runtime_user_eval(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'eval' with exactly one argument.\n");
-    return r->nil;
-  }
+  ASSERT_ARG_COUNT("eval", 1);
   int code_length;
   Code *bytecode = compile(r, false, args[0], &code_length, NULL);
   if(bytecode) {
@@ -210,18 +204,10 @@ Obj *runtime_user_eval(Runtime *r, Obj *args[], int arg_count) {
 }
 
 Obj *runtime_read(Runtime *r, Obj *args[], int arg_count) {
-  if(arg_count != 1) {
-    printf("Must call 'read' with exactly one argument.\n");
-    return r->nil;
-  }
-  else if(args[0]->type != STRING) {
-    printf("First argument to 'read' must be a string.\n");
-    return r->nil;
-  }
-  else {
-    Obj *top_level_forms = parse(r->gc, args[0]->name);
-    return FIRST(top_level_forms);
-  }
+  ASSERT_ARG_COUNT("read", 1);
+  ASSERT_ARG_TYPE("read", 0, STRING);
+  Obj *top_level_forms = parse(r->gc, args[0]->name);
+  return FIRST(top_level_forms);
 }
 
 void register_builtin_funcs(Runtime *r) {

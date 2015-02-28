@@ -10,6 +10,8 @@
 #include "Obj.h"
 
 #define ASSERT_ARG_COUNT(name, x) if(arg_count != x) { printf("Must call '%s' with %d arg(s).\n", name, x); return r->nil; }
+#define ASSERT_ARG_TYPE(name, pos, req_type) if(args[pos]->type != req_type) { printf("Argument %d of '%s' must be a %s.\n", pos, name, type_to_str(req_type)); return r->nil; }
+
 #define bool_to_obj(r, b) ((b) ? (r->true_val) : (r->nil) )
 
 /* Obj *bool_to_obj(Runtime *r, bool b) { */
