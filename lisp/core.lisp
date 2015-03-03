@@ -8,7 +8,7 @@
 (def even? (fn (x) (= 0 (mod x 2))))
 (def odd? (fn (x) (not (even? x))))
 
-(def π 3.1416)
+(def π 3.141592653589793)
 (def pi π)
 
 (def zip
