@@ -1,6 +1,5 @@
 Prio 1
 ======
-* crashes when calling (gc)
 * macros
 * let expressions
 * hashmaps/dictionaries
@@ -28,6 +27,7 @@ Todo
 
 Done
 ====
+* crashes when calling (gc)
 * real number constants (handle decimals)
 * popping the global scope off the stack should be prohibited
 * eval function
