@@ -1,8 +1,9 @@
 Prio 1
 ======
+* crashes when calling (gc)
 * macros
 * let expressions
-* user proper typedef over function pointer instead of void *
+* hashmaps/dictionaries
 * print numbers more nicely
 * str should print objects (lists etc) correctly
 * some kind of mutable atom type
@@ -12,7 +13,6 @@ Todo
 * crashes on load if recursive function can't find itself
 * remove enums and use actual bytes (chars) for bytecode
 * docstrings
-* crashes when calling (gc)
 * use Obj* with STRING type to handle strings in most cases (instead of c str)
 * more math functions like round, get-line
 * quasiquoting
@@ -24,6 +24,7 @@ Todo
 * being able to break to repl with a keyboard shortcut when in an infinite loop or similar
 * convert variadic uses of + etc compile into a series of ADD ops
 * direct lookup should look directly at cdr and not even keep a pointer to the pair?
+* user proper typedef over function pointer instead of void *
 
 Done
 ====

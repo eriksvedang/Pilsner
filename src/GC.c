@@ -6,6 +6,7 @@
 #include <assert.h>
 
 #define LOG 0
+#define LOG_DETAILED_OBJ_CREATION 1
 #define LOG_GC_COLLECT_RESULT 1
 #define LOG_PUSH_AND_POP 0
 
@@ -85,6 +86,13 @@ Obj *gc_make_cons(GC *gc, Obj *car, Obj *cdr) {
   Obj *o = gc_make_obj(gc, CONS);
   o->car = car;
   o->cdr = cdr;
+  #if LOG_DETAILED_OBJ_CREATION
+  printf("Created cons cell (");
+  print_obj(car);
+  printf(" . ");
+  print_obj(cdr);
+  printf(")\n");
+  #endif
   return o;
 }
 
@@ -97,12 +105,18 @@ void set_name(Obj *o, const char *name) {
 Obj *gc_make_symbol_from_malloced_string(GC *gc, char *name) {
   Obj *o = gc_make_obj(gc, SYMBOL);
   o->name = name;
+  #if LOG_DETAILED_OBJ_CREATION
+  printf("Created symbol '%s' from malloced string.\n", name);
+  #endif
   return o;
 }
 
 Obj *gc_make_symbol(GC *gc, const char *name) {
   Obj *o = gc_make_obj(gc, SYMBOL);
   set_name(o, name);
+  #if LOG_DETAILED_OBJ_CREATION
+  printf("Created symbol '%s' from const char *.\n", name);
+  #endif
   return o;
 }
 
@@ -110,24 +124,36 @@ Obj *gc_make_func(GC *gc, const char *name, void *f) {
   Obj *o = gc_make_obj(gc, FUNC);
   o->name = (char*)name; // names of funcs are static strings and will not need to be freed when Obj is GC:d
   o->func = f;
+  #if LOG_DETAILED_OBJ_CREATION
+  printf("Created func '%s'.\n", name);
+  #endif
   return o;
 }
 
 Obj *gc_make_number(GC *gc, double x) {
   Obj *o = gc_make_obj(gc, NUMBER);
   o->number = x;
+  #if LOG_DETAILED_OBJ_CREATION
+  printf("Created number %f.\n", x);
+  #endif
   return o;
 }
 
 Obj *gc_make_string(GC *gc, char *text) {
   Obj *o = gc_make_obj(gc, STRING);
   o->name = text;
+  #if LOG_DETAILED_OBJ_CREATION
+  printf("Created string '%s'.\n", text);
+  #endif
   return o;
 }
 
 Obj *gc_make_bytecode(GC *gc, Code *code) {
   Obj *o = gc_make_obj(gc, BYTECODE);
   o->code = (enum eCode*)code;
+  #if LOG_DETAILED_OBJ_CREATION
+  printf("Created bytecode.\n");
+  #endif
   return o;
 }
 
@@ -137,6 +163,9 @@ Obj *gc_make_lambda(GC *gc, Obj *args, Obj *body, Code *code) {
   Obj *bodyAndCode = gc_make_cons(gc, body, gc_make_bytecode(gc, code));
   o->car = envAndArgs;
   o->cdr = bodyAndCode;
+  #if LOG_DETAILED_OBJ_CREATION
+  printf("Created λ.\n");
+  #endif
   return o;
 }
 

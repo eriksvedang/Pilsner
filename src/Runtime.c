@@ -588,6 +588,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
 
 void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_result, int top_frame_index, int break_frame_index) {
   Obj *top_level_forms = parse(r->gc, source);
+  gc_stack_push(r->gc, top_level_forms); // root current forms to be evaluated so that GC doesn't eat them
   Obj *current_form = top_level_forms;
   while(current_form && current_form->car) {
     eval_top_form(r, env, current_form->car, top_frame_index, break_frame_index);
@@ -598,6 +599,7 @@ void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_
     }
     current_form = current_form->cdr;
   }
+  gc_stack_pop_safely(r->gc);
 }
 
 void runtime_eval(Runtime *r, const char *source) {

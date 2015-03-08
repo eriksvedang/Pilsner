@@ -40,7 +40,11 @@ void repl() {
     fgets(str, MAX_INPUT_BUFFER_SIZE, stdin);
     if(strcmp(str, "§\n") == 0) {
       gc_collect(r->gc);
-    } else {
+    }
+    else if(strcmp(str, "§stack\n") == 0) {
+      gc_stack_print(r->gc, false);
+    }
+    else {
       runtime_eval(r, str);
     }
   }

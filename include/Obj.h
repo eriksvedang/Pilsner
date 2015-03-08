@@ -45,7 +45,8 @@ typedef struct sObj {
 } Obj;
 
 //typedef Obj (*Func)(Obj *args);
-
+/* struct sRuntime; */
+/* typedef Obj *(*Func)(Runtime *r, Obj *args[], int arg_count); */
 
 const char *type_to_str(Type type);
 const char *obj_to_str(Obj *o);
