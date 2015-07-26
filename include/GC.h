@@ -9,15 +9,13 @@
 #define GLOBAL_OBJ_COUNT 1
 #define USE_MEMORY_POOL 0
 
-#if GLOBAL_OBJ_COUNT
-int g_obj_count;
-#endif
-
 typedef struct {
   Obj *stack[STACK_MAX];
   int stackSize;
   Obj *firstObj; // linked list of all objects
   Obj *nil;
+  long int obj_count;
+  long int collect_limit; // collect when obj_count reaches this level
   #if USE_MEMORY_POOL
   Pool *pool;
   #endif
@@ -31,6 +29,7 @@ typedef struct {
 GC *gc_new();
 void gc_delete(GC *gc);
 GCResult gc_collect(GC *gc);
+void gc_collect_if_necessary(GC *gc);
 
 // Stack
 void gc_stack_push(GC *gc, Obj *o);

@@ -6,13 +6,10 @@
 #include <assert.h>
 
 #define LOG 0
+#define LOG_FREEING 0 // bad idea, object graph is not reliable so printing lists segfaults
 #define LOG_DETAILED_OBJ_CREATION 0
 #define LOG_GC_COLLECT_RESULT 1
 #define LOG_PUSH_AND_POP 0
-
-#if GLOBAL_OBJ_COUNT
-int g_obj_count = 0;
-#endif
 
 void gc_stack_push(GC *gc, Obj *o) {
   if(gc->stackSize >= STACK_MAX) error("Stack overflow.");
@@ -75,9 +72,7 @@ Obj *gc_make_obj(GC *gc, Type type) {
   o->next = gc->firstObj; 
   gc->firstObj = o;
 
-  #if GLOBAL_OBJ_COUNT
-  g_obj_count++;
-  #endif
+  gc->obj_count++;
   
   return o;
 }
@@ -182,9 +177,7 @@ void gc_obj_free(GC *gc, Obj *o) {
   free(o);
   #endif
   
-  #if GLOBAL_OBJ_COUNT
-  g_obj_count--;
-  #endif
+  gc->obj_count--;
 }
 
 void mark(Obj *o) {
@@ -244,6 +237,8 @@ GC *gc_new() {
   GC *gc = malloc(sizeof(GC));
   gc->stackSize = 0;
   gc->firstObj = NULL;
+  gc->obj_count = 0;
+  gc->collect_limit = 1000;
   gc->nil = gc_make_cons(gc, NULL, NULL);
 
 #if USE_MEMORY_POOL
@@ -283,8 +278,10 @@ GCResult gc_collect(GC *gc) {
       obj = &(reached->next); // pointer to the next object
       result.alive++;
     } else {
-      #if LOG
-      printf("Will free object.\n");
+      #if LOG_FREEING
+      printf("Will free object: ");
+      print_obj(*obj);
+      printf("\n");
       #endif      
       Obj* unreached = *obj;
       *obj = unreached->next; // change the pointer in place, *THE MAGIC*
@@ -305,15 +302,20 @@ GCResult gc_collect(GC *gc) {
   return result;
 }
 
+void gc_collect_if_necessary(GC *gc) {
+  //if(gc->obj_count >= gc->collect_limit) {
+    gc_collect(gc);
+    gc->collect_limit *= 2;
+  //}
+}
+
 void gc_delete(GC *gc) {
   while(gc->stackSize >= 1) {
     gc_stack_pop(gc);
   }
   gc_collect(gc);
 
-  #if GLOBAL_OBJ_COUNT
-  assert(g_obj_count == 0);
-  #endif
+  assert(gc->obj_count == 0);
   
   free(gc);
 }

@@ -24,10 +24,10 @@ void repl() {
   Runtime *r = runtime_new(builtins);
 
   if(builtins) {
-    //load(r, lib_path, "minimal.lisp");
     load(r, lib_path, "core.lisp");
     load(r, lib_path, "misc.lisp");
-    load(r, lib_path, "tests.lisp");
+    //load(r, lib_path, "tests.lisp");
+    //load(r, lib_path, "timing.lisp");
   }
   
   printf("\e[33m~ Welcome to the Pilsner REPL ~\e[0m\n");

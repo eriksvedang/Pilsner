@@ -9,6 +9,8 @@ Prio 1
 
 Todo
 ====
+* Jump table instead of if-then-else when executing ops
+* Use goto instead of loop over execute ops function
 * crashes on load if recursive function can't find itself
 * remove enums and use actual bytes (chars) for bytecode
 * docstrings

@@ -6,7 +6,7 @@ OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 TARGET=./bin/pilsner
 
 all: $(OBJ_FILES)
-	clang $(C_FILES) -I ./include -g -o $(TARGET) $(CFLAGS) $(LDFLAGS) $(LDLIBS)
+	clang $(C_FILES) -O3 -I ./include -g -o $(TARGET) $(CFLAGS) $(LDFLAGS) $(LDLIBS)
 
 run:
 	$(TARGET)

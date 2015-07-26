@@ -404,6 +404,7 @@ int read_next_code_as_int(Frame *frame) {
 }
 
 void runtime_step_eval(Runtime *r) {
+
   Frame *frame = &r->frames[r->top_frame];
 
   Code code = *frame->p;
@@ -415,7 +416,7 @@ void runtime_step_eval(Runtime *r) {
   #endif
 
   #if LOG_OBJ_COUNT
-  int old_obj_count = g_obj_count;
+  int old_obj_count = r->gc->obj_count;
   #endif
   
   frame->p++;
@@ -514,6 +515,9 @@ void runtime_step_eval(Runtime *r) {
     printf("runtime_step_eval can't understand code %s\n", code_to_str(code));
   }
 
+  // Hard to run GC here because might remove things that are not rooted:
+  gc_collect_if_necessary(r->gc);
+
 #if LOG_FRAMES
   runtime_print_frames(r);
 #endif
@@ -523,8 +527,9 @@ void runtime_step_eval(Runtime *r) {
 #endif
 
 #if LOG_OBJ_COUNT
-  printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
+  printf("+ %ld Obj:s\n", r->gc->obj_count - old_obj_count);
 #endif
+  
 }
 
 void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int break_frame_index) {
@@ -544,7 +549,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
   code_print(bytecode);
   #endif
   
-  int old_obj_count = g_obj_count;
+  long int old_obj_count = r->gc->obj_count;
   
   runtime_frame_push(r, 0, NULL, bytecode, "top-level");
   
@@ -582,7 +587,7 @@ void eval_top_form(Runtime *r, Obj *env, Obj *form, int top_frame_index, int bre
   }
 
   #if LOG_OBJ_COUNT_TOP_LEVEL
-  printf("+ %d Obj:s\n", g_obj_count - old_obj_count);
+  printf("+ %ld Obj:s\n", r->gc->obj_count - old_obj_count);
   #endif
 }
 
@@ -599,7 +604,8 @@ void runtime_eval_internal(Runtime *r, Obj *env, const char *source, bool print_
     }
     current_form = current_form->cdr;
   }
-  gc_stack_pop_safely(r->gc);
+  gc_stack_pop_safely(r->gc); // pop current forms so that they can be collected
+  gc_collect_if_necessary(r->gc);
 }
 
 void runtime_eval(Runtime *r, const char *source) {
